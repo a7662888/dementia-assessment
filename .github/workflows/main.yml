@@ -1,0 +1,4 @@
+mkdir .github\workflows
+mkdir scripts
+mkdir data
+mkdir reports
