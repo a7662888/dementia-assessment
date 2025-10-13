@@ -192,13 +192,13 @@
         }
 
         .button-group {
-            display: flex;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
             gap: 15px;
             margin-top: 30px;
         }
 
         .btn {
-            flex: 1;
             padding: 15px 30px;
             border: none;
             border-radius: 10px;
@@ -472,7 +472,7 @@
                 flex-direction: column;
             }
             .button-group {
-                flex-direction: column;
+                grid-template-columns: 1fr;
             }
         }
     </style>
@@ -498,7 +498,18 @@
                     <li>請由了解患者狀況的家屬或照顧者協助填寫</li>
                     <li>評估約需15-20分鐘，請依實際情況誠實作答</li>
                     <li>所有資料將嚴格保密，僅供臨床參考</li>
-                    <li>完成後可下載完整文字報告</li>
+                    <li>完成後可下載完整文字報告或匯出資料供分析</li>
+                    <li><strong>✨ 填答過程中可隨時返回修改，完成後也能回到任何步驟重新調整</strong></li>
+                </ul>
+            </div>
+
+            <div class="info-box" style="background: #fff7ed; border-left-color: #f59e0b;">
+                <h3>💡 檔案自動儲存設定</h3>
+                <ul>
+                    <li><strong>Chrome/Edge</strong>：設定 → 下載 → 設定預設下載位置（不勾選「下載前詢問」）</li>
+                    <li><strong>Firefox</strong>：設定 → 一般 → 檔案與應用程式 → 選擇「儲存檔案至」並設定資料夾</li>
+                    <li><strong>Safari</strong>：偏好設定 → 一般 → 檔案下載位置</li>
+                    <li>設定完成後，報告會自動下載到您指定的資料夾，完成後自動返回首頁</li>
                 </ul>
             </div>
 
@@ -679,14 +690,14 @@
                 title: '九、日常生活狀況',
                 subtitle: '(請照顧者務必依病患現階段能力選擇其中一個項目)',
                 questions: [
-                    { id: 'adl9_1', text: '能上街購物嗎？', type: 'adl', options: ['能獨立購買生活用品', '上街購物需要有人陪或完全不會購買'] },
-                    { id: 'adl9_2', text: '能夠自行外出活動嗎？', type: 'adl', options: ['能自行搭車或騎/開車', '需要有人陪同或完全不能出門'] },
-                    { id: 'adl9_3', text: '能夠準備飯菜嗎？例如作菜、點菜或外燴', type: 'adl3', options: ['不適用(平常沒在做)', '正常或有人協助下，可以作菜點菜', '需要別人把飯菜煮好、擺好'] },
-                    { id: 'adl9_4', text: '能夠做家事嗎？例如收拾房間、打掃', type: 'adl3', options: ['不適用(平常沒在做)', '至少能完成簡單家事', '所有的家事都需要別人協助'] },
-                    { id: 'adl9_5', text: '能夠洗衣服嗎？', type: 'adl3', options: ['不適用(平常沒在做)', '正常或至少會清洗小件衣物', '完全依靠別人'] },
-                    { id: 'adl9_6', text: '能夠使用電話或手機嗎？', type: 'adl', options: ['正常或僅可撥熟悉的電話號碼', '僅會接不會撥電話或完全不會'] },
-                    { id: 'adl9_7', text: '還能夠自行服用藥物嗎？', type: 'adl', options: ['正常或需要提醒', '如果別人事先準備好或完全依靠別人'] },
-                    { id: 'adl9_8', text: '能夠處理錢財嗎？', type: 'adl', options: ['至少可以處理日常的購買', '完全無法處理錢財'] },
+                    { id: 'adl9_1', text: '能上街購物嗎？', type: 'adl3', options: ['能獨立購買生活用品', '需要有人陪同或協助', '完全不會購買'] },
+                    { id: 'adl9_2', text: '能夠自行外出活動嗎？', type: 'adl3', options: ['能獨立搭車或騎/開車', '需要有人陪同', '完全不能出門'] },
+                    { id: 'adl9_3', text: '能夠準備飯菜嗎？例如作菜、點菜或外燴', type: 'adl4', options: ['不適用(平常沒在做)', '正常(可以獨立完成)', '部分自理(需要協助或只能做簡單的)', '無法自理(需要別人煮好、擺好)'] },
+                    { id: 'adl9_4', text: '能夠做家事嗎？例如收拾房間、打掃', type: 'adl4', options: ['不適用(平常沒在做)', '正常(可以獨立完成)', '部分自理(只能做簡單家事)', '無法自理(完全需要別人協助)'] },
+                    { id: 'adl9_5', text: '能夠洗衣服嗎？', type: 'adl4', options: ['不適用(平常沒在做)', '正常(可以獨立完成)', '部分自理(只能洗小件衣物)', '無法自理(完全依靠別人)'] },
+                    { id: 'adl9_6', text: '能夠使用電話或手機嗎？', type: 'adl3', options: ['正常使用', '只會接聽或撥熟悉號碼', '完全不會使用'] },
+                    { id: 'adl9_7', text: '還能夠自行服用藥物嗎？', type: 'adl3', options: ['正常或不需服藥', '需要提醒才會服用', '需要別人準備或完全依賴'] },
+                    { id: 'adl9_8', text: '能夠處理錢財嗎？', type: 'adl3', options: ['能處理日常購買及財務', '只能處理簡單的零錢交易', '完全無法處理錢財'] },
                     { id: 'adl9_9', text: '現在還在從事例行的活動或平常的嗜好興趣嗎？例如運動、唸佛、上教堂、打牌、麻將、唱歌、或與孫子女玩等', type: 'adl3', options: ['如常', '有減少', '幾乎沒有或完全沒有，整天在自己房間'] },
                     { id: 'adl9_10', text: '上述活動困難，病人是因肢體或行動不便嗎？', type: 'yesno' }
                 ]
@@ -727,7 +738,6 @@
 
         // 開始評估
         function startAssessment() {
-            // 驗證必填欄位
             const name = document.getElementById('patientName').value.trim();
             const chartNumber = document.getElementById('chartNumber').value.trim();
             const birthDate = document.getElementById('birthDate').value;
@@ -740,7 +750,6 @@
                 return;
             }
 
-            // 儲存基本資料
             patientInfo = {
                 name: name,
                 chartNumber: chartNumber,
@@ -752,7 +761,6 @@
                 informantRelation: informantRelation
             };
 
-            // 顯示第一個問卷部分
             currentStep = 1;
             showStep(currentStep);
         }
@@ -764,35 +772,30 @@
             document.getElementById('resultsPage').classList.add('hidden');
 
             const section = questionSections[step - 1];
-            let html = `
-                <div class="section-title">${section.title}</div>
-                <div class="section-subtitle">${section.subtitle}</div>
-            `;
+            let html = '<div class="section-title">' + section.title + '</div>';
+            html += '<div class="section-subtitle">' + section.subtitle + '</div>';
 
-            section.questions.forEach((q, idx) => {
-                html += `
-                    <div class="question-item">
-                        <div class="question-header">
-                            <span class="question-number">Q${idx + 1}</span>
-                            <span class="question-text">${q.text}</span>
-                        </div>
-                        ${q.note ? `<div class="question-note">${q.note}</div>` : ''}
-                        ${renderQuestionInput(q)}
-                    </div>
-                `;
+            section.questions.forEach(function(q, idx) {
+                html += '<div class="question-item">';
+                html += '<div class="question-header">';
+                html += '<span class="question-number">Q' + (idx + 1) + '</span>';
+                html += '<span class="question-text">' + q.text + '</span>';
+                html += '</div>';
+                if (q.note) {
+                    html += '<div class="question-note">' + q.note + '</div>';
+                }
+                html += renderQuestionInput(q);
+                html += '</div>';
             });
 
-            html += `
-                <div class="button-group">
-                    <button class="btn btn-secondary" onclick="previousStep()">
-                        ← 上一步
-                    </button>
-                    ${step < questionSections.length ? 
-                        `<button class="btn btn-primary" onclick="nextStep()">下一步 →</button>` :
-                        `<button class="btn btn-success" onclick="showResults()">✓ 完成評估</button>`
-                    }
-                </div>
-            `;
+            html += '<div class="button-group">';
+            html += '<button class="btn btn-secondary" onclick="previousStep()">← 上一步</button>';
+            if (step < questionSections.length) {
+                html += '<button class="btn btn-primary" onclick="nextStep()">下一步 →</button>';
+            } else {
+                html += '<button class="btn btn-success" onclick="showResults()">✓ 完成評估</button>';
+            }
+            html += '</div>';
 
             document.getElementById('questionSteps').innerHTML = html;
             updateProgress();
@@ -802,104 +805,69 @@
         // 渲染問題輸入
         function renderQuestionInput(question) {
             const savedValue = responses[question.id];
+            let html = '';
             
             switch(question.type) {
                 case 'yesno':
-                    return `
-                        <div class="radio-group">
-                            <label class="radio-label">
-                                <input type="radio" name="${question.id}" value="否" 
-                                    ${savedValue === '否' ? 'checked' : ''}
-                                    onchange="saveResponse('${question.id}', '否')">
-                                否
-                            </label>
-                            <label class="radio-label">
-                                <input type="radio" name="${question.id}" value="是"
-                                    ${savedValue === '是' ? 'checked' : ''}
-                                    onchange="saveResponse('${question.id}', '是')">
-                                是
-                            </label>
-                        </div>
-                    `;
+                    html = '<div class="radio-group">';
+                    html += '<label class="radio-label">';
+                    html += '<input type="radio" name="' + question.id + '" value="否" ' + (savedValue === '否' ? 'checked' : '') + ' onchange="saveResponse(\'' + question.id + '\', \'否\')"> 否';
+                    html += '</label>';
+                    html += '<label class="radio-label">';
+                    html += '<input type="radio" name="' + question.id + '" value="是" ' + (savedValue === '是' ? 'checked' : '') + ' onchange="saveResponse(\'' + question.id + '\', \'是\')"> 是';
+                    html += '</label>';
+                    html += '</div>';
+                    break;
                 
                 case 'noyes':
-                    return `
-                        <div class="radio-group">
-                            <label class="radio-label">
-                                <input type="radio" name="${question.id}" value="不會"
-                                    ${savedValue === '不會' ? 'checked' : ''}
-                                    onchange="saveResponse('${question.id}', '不會')">
-                                不會
-                            </label>
-                            <label class="radio-label">
-                                <input type="radio" name="${question.id}" value="會"
-                                    ${savedValue === '會' ? 'checked' : ''}
-                                    onchange="saveResponse('${question.id}', '會')">
-                                會
-                            </label>
-                        </div>
-                    `;
+                    html = '<div class="radio-group">';
+                    html += '<label class="radio-label">';
+                    html += '<input type="radio" name="' + question.id + '" value="不會" ' + (savedValue === '不會' ? 'checked' : '') + ' onchange="saveResponse(\'' + question.id + '\', \'不會\')"> 不會';
+                    html += '</label>';
+                    html += '<label class="radio-label">';
+                    html += '<input type="radio" name="' + question.id + '" value="會" ' + (savedValue === '會' ? 'checked' : '') + ' onchange="saveResponse(\'' + question.id + '\', \'會\')"> 會';
+                    html += '</label>';
+                    html += '</div>';
+                    break;
                 
                 case 'frequency3':
-                    return `
-                        <div class="radio-group">
-                            <label class="radio-label">
-                                <input type="radio" name="${question.id}" value="不會"
-                                    ${savedValue === '不會' ? 'checked' : ''}
-                                    onchange="saveResponse('${question.id}', '不會')">
-                                不會
-                            </label>
-                            <label class="radio-label">
-                                <input type="radio" name="${question.id}" value="偶爾"
-                                    ${savedValue === '偶爾' ? 'checked' : ''}
-                                    onchange="saveResponse('${question.id}', '偶爾')">
-                                偶爾
-                            </label>
-                            <label class="radio-label">
-                                <input type="radio" name="${question.id}" value="常常"
-                                    ${savedValue === '常常' ? 'checked' : ''}
-                                    onchange="saveResponse('${question.id}', '常常')">
-                                常常
-                            </label>
-                        </div>
-                    `;
+                    html = '<div class="radio-group">';
+                    html += '<label class="radio-label">';
+                    html += '<input type="radio" name="' + question.id + '" value="不會" ' + (savedValue === '不會' ? 'checked' : '') + ' onchange="saveResponse(\'' + question.id + '\', \'不會\')"> 不會';
+                    html += '</label>';
+                    html += '<label class="radio-label">';
+                    html += '<input type="radio" name="' + question.id + '" value="偶爾" ' + (savedValue === '偶爾' ? 'checked' : '') + ' onchange="saveResponse(\'' + question.id + '\', \'偶爾\')"> 偶爾';
+                    html += '</label>';
+                    html += '<label class="radio-label">';
+                    html += '<input type="radio" name="' + question.id + '" value="常常" ' + (savedValue === '常常' ? 'checked' : '') + ' onchange="saveResponse(\'' + question.id + '\', \'常常\')"> 常常';
+                    html += '</label>';
+                    html += '</div>';
+                    break;
                 
                 case 'decision':
-                    return `
-                        <div class="radio-group vertical">
-                            <label class="radio-label">
-                                <input type="radio" name="${question.id}" value="不會"
-                                    ${savedValue === '不會' ? 'checked' : ''}
-                                    onchange="saveResponse('${question.id}', '不會')">
-                                不會，大都是自己決定
-                            </label>
-                            <label class="radio-label">
-                                <input type="radio" name="${question.id}" value="會"
-                                    ${savedValue === '會' ? 'checked' : ''}
-                                    onchange="saveResponse('${question.id}', '會')">
-                                會，大都由別人幫忙決定
-                            </label>
-                        </div>
-                    `;
+                    html = '<div class="radio-group vertical">';
+                    html += '<label class="radio-label">';
+                    html += '<input type="radio" name="' + question.id + '" value="不會" ' + (savedValue === '不會' ? 'checked' : '') + ' onchange="saveResponse(\'' + question.id + '\', \'不會\')"> 不會，大都是自己決定';
+                    html += '</label>';
+                    html += '<label class="radio-label">';
+                    html += '<input type="radio" name="' + question.id + '" value="會" ' + (savedValue === '會' ? 'checked' : '') + ' onchange="saveResponse(\'' + question.id + '\', \'會\')"> 會，大都由別人幫忙決定';
+                    html += '</label>';
+                    html += '</div>';
+                    break;
                 
-                case 'adl':
                 case 'adl3':
-                    return `
-                        <div class="radio-group vertical">
-                            ${question.options.map((opt, idx) => `
-                                <label class="radio-label">
-                                    <input type="radio" name="${question.id}" value="${idx}"
-                                        ${savedValue == idx ? 'checked' : ''}
-                                        onchange="saveResponse('${question.id}', ${idx})">
-                                    ${opt}
-                                </label>
-                            `).join('')}
-                        </div>
-                    `;
-                
-                default:
-                    return '';
+                case 'adl4':
+                    html = '<div class="radio-group vertical">';
+                    question.options.forEach(function(opt, idx) {
+                        html += '<label class="radio-label">';
+                        html += '<input type="radio" name="' + question.id + '" value="' + idx + '" ' + (savedValue == idx ? 'checked' : '') + ' onchange="saveResponse(\'' + question.id + '\', ' + idx + ')"> ' + opt;
+                        html += '</label>';
+                    });
+                    html += '</div>';
+                    break;
             }
+            
+            return html;
         }
 
         // 儲存回應
@@ -934,7 +902,7 @@
             document.getElementById('progressFill').style.width = progress + '%';
             document.getElementById('progressText').textContent = 
                 currentStep === 0 ? '準備開始' : 
-                `第 ${currentStep} 部分，共 ${questionSections.length} 部分 (${Math.round(progress)}% 完成)`;
+                '第 ' + currentStep + ' 部分，共 ' + questionSections.length + ' 部分 (' + Math.round(progress) + '% 完成)';
         }
 
         // 計算評分
@@ -942,11 +910,10 @@
             const scores = { DLB: 0, AD: 0, VaD: 0, FTD: 0, PPA: 0 };
             const maxScores = { DLB: 0, AD: 0, VaD: 0, FTD: 0, PPA: 0 };
 
-            // 計算基礎分數
-            Object.keys(responses).forEach(qId => {
+            Object.keys(responses).forEach(function(qId) {
                 const value = responses[qId];
                 
-                Object.keys(scoringWeights).forEach(type => {
+                Object.keys(scoringWeights).forEach(function(type) {
                     if (scoringWeights[type][qId]) {
                         const weight = scoringWeights[type][qId];
                         maxScores[type] += weight;
@@ -964,14 +931,12 @@
                 });
             });
 
-            // ADL功能障礙
             const adlImpairment = calculateADLImpairment();
             const functionalMultiplier = 1 + (adlImpairment / 100);
-            Object.keys(scores).forEach(type => {
+            Object.keys(scores).forEach(function(type) {
                 scores[type] *= functionalMultiplier;
             });
 
-            // 症狀組合加成
             if (responses['dlb1_4'] === '是' && responses['dlb3_1'] === '是' && responses['dlb1_3'] === '會') {
                 scores.DLB *= 1.5;
             }
@@ -985,17 +950,15 @@
                 scores.PPA *= 1.5;
             }
 
-            // 計算百分比
             const percentages = {};
-            Object.keys(scores).forEach(type => {
+            Object.keys(scores).forEach(function(type) {
                 percentages[type] = maxScores[type] > 0 ? 
                     Math.min(100, (scores[type] / maxScores[type]) * 100) : 0;
             });
 
-            // 相對機率
-            const totalScore = Object.values(percentages).reduce((a, b) => a + b, 0);
+            const totalScore = Object.values(percentages).reduce(function(a, b) { return a + b; }, 0);
             const probabilities = {};
-            Object.keys(percentages).forEach(type => {
+            Object.keys(percentages).forEach(function(type) {
                 probabilities[type] = totalScore > 0 ? (percentages[type] / totalScore) * 100 : 0;
             });
 
@@ -1010,26 +973,49 @@
 
         // 計算ADL障礙
         function calculateADLImpairment() {
-            let impairmentCount = 0;
+            let impairmentScore = 0;
             let totalItems = 0;
             
             for (let i = 1; i <= 9; i++) {
-                const qId = `adl9_${i}`;
+                const qId = 'adl9_' + i;
                 if (responses[qId] !== undefined) {
-                    totalItems++;
-                    if (typeof responses[qId] === 'number' && responses[qId] > 0) {
-                        impairmentCount++;
+                    const value = responses[qId];
+                    
+                    if (typeof value === 'number') {
+                        if (qId === 'adl9_3' || qId === 'adl9_4' || qId === 'adl9_5') {
+                            if (value === 0) {
+                                continue;
+                            } else {
+                                totalItems++;
+                                if (value === 1) {
+                                    impairmentScore += 0;
+                                } else if (value === 2) {
+                                    impairmentScore += 0.5;
+                                } else if (value === 3) {
+                                    impairmentScore += 1.0;
+                                }
+                            }
+                        } else {
+                            totalItems++;
+                            if (value === 0) {
+                                impairmentScore += 0;
+                            } else if (value === 1) {
+                                impairmentScore += 0.5;
+                            } else if (value >= 2) {
+                                impairmentScore += 1.0;
+                            }
+                        }
                     }
                 }
             }
             
-            return totalItems > 0 ? (impairmentCount / totalItems) * 100 : 0;
+            return totalItems > 0 ? (impairmentScore / totalItems) * 100 : 0;
         }
 
         // 計算整體風險
         function calculateOverallRisk(percentages) {
-            const maxScore = Math.max(...Object.values(percentages));
-            const avgScore = Object.values(percentages).reduce((a, b) => a + b, 0) / 5;
+            const maxScore = Math.max.apply(null, Object.values(percentages));
+            const avgScore = Object.values(percentages).reduce(function(a, b) { return a + b; }, 0) / 5;
             
             if (maxScore >= 60 && avgScore >= 30) return 'high';
             if (maxScore >= 40 || avgScore >= 20) return 'moderate';
@@ -1039,12 +1025,14 @@
 
         // 生成建議
         function generateRecommendations(results) {
-            const { probabilities, overallRisk, adlImpairment } = results;
+            const probabilities = results.probabilities;
+            const overallRisk = results.overallRisk;
+            const adlImpairment = results.adlImpairment;
             const recommendations = [];
             
             const sorted = Object.entries(probabilities)
-                .sort(([,a], [,b]) => b - a)
-                .filter(([, prob]) => prob > 15);
+                .sort(function(a, b) { return b[1] - a[1]; })
+                .filter(function(item) { return item[1] > 15; });
 
             if (overallRisk === 'high') {
                 recommendations.push({
@@ -1102,7 +1090,7 @@
                 });
             }
 
-            return { sorted, recommendations };
+            return { sorted: sorted, recommendations: recommendations };
         }
 
         // 計算年齡
@@ -1122,22 +1110,33 @@
         function getAbnormalSymptoms() {
             const abnormalSymptoms = [];
             
-            questionSections.forEach(section => {
-                section.questions.forEach(q => {
+            questionSections.forEach(function(section) {
+                section.questions.forEach(function(q) {
                     const value = responses[q.id];
                     let isAbnormal = false;
                     
                     if (value === '是' || value === '會' || value === '常常') {
                         isAbnormal = true;
                     } else if (typeof value === 'number' && value > 0) {
-                        isAbnormal = true;
+                        if (q.type === 'adl4') {
+                            isAbnormal = (value === 3);
+                        } else if (q.type === 'adl3') {
+                            isAbnormal = (value === 2);
+                        } else {
+                            isAbnormal = true;
+                        }
                     }
                     
                     if (isAbnormal) {
+                        let responseText = value;
+                        if (q.type === 'adl3' || q.type === 'adl4') {
+                            responseText = q.options[value] || value;
+                        }
+                        
                         abnormalSymptoms.push({
                             section: section.title,
                             question: q.text,
-                            response: value
+                            response: responseText
                         });
                     }
                 });
@@ -1172,59 +1171,57 @@
         // 顯示結果
         function showResults() {
             const results = calculateScores();
-            const { sorted, recommendations } = generateRecommendations(results);
+            const recsData = generateRecommendations(results);
+            const sorted = recsData.sorted;
+            const recommendations = recsData.recommendations;
             const abnormalSymptoms = getAbnormalSymptoms();
             const riskInfo = getRiskInfo(results.overallRisk);
 
-            let html = `
-                <div class="results-container">
-                    <div class="section-title">📊 評估結果報告</div>
-                    
-                    <div class="risk-card">
-                        <h3 style="margin-bottom: 15px;">整體評估摘要</h3>
-                        <div class="risk-summary">
-                            <div class="risk-item">
-                                <div class="risk-label">整體認知障礙風險等級</div>
-                                <div class="risk-value ${riskInfo.color}">${riskInfo.text}</div>
-                            </div>
-                            <div class="risk-item">
-                                <div class="risk-label">日常功能障礙程度</div>
-                                <div class="risk-value" style="color: #8b5cf6;">${results.adlImpairment.toFixed(1)}%</div>
-                            </div>
-                        </div>
-                    </div>
+            let html = '<div class="results-container">';
+            html += '<div class="section-title">📊 評估結果報告</div>';
+            
+            html += '<div class="risk-card">';
+            html += '<h3 style="margin-bottom: 15px;">整體評估摘要</h3>';
+            html += '<div class="risk-summary">';
+            html += '<div class="risk-item">';
+            html += '<div class="risk-label">整體認知障礙風險等級</div>';
+            html += '<div class="risk-value ' + riskInfo.color + '">' + riskInfo.text + '</div>';
+            html += '</div>';
+            html += '<div class="risk-item">';
+            html += '<div class="risk-label">日常功能障礙程度</div>';
+            html += '<div class="risk-value" style="color: #8b5cf6;">' + results.adlImpairment.toFixed(1) + '%</div>';
+            html += '</div>';
+            html += '</div>';
+            html += '</div>';
 
-                    <div class="risk-card">
-                        <h3 style="margin-bottom: 15px;">各類型失智症相對機率分析</h3>
-                        <div class="probability-bars">
-            `;
+            html += '<div class="risk-card">';
+            html += '<h3 style="margin-bottom: 15px;">各類型失智症相對機率分析</h3>';
+            html += '<div class="probability-bars">';
 
-            sorted.forEach(([type, prob]) => {
-                html += `
-                    <div class="probability-item">
-                        <div class="probability-header">
-                            <span class="probability-name">${getDementiaName(type)}</span>
-                            <span class="probability-percent">${prob.toFixed(1)}%</span>
-                        </div>
-                        <div class="probability-bar">
-                            <div class="probability-fill" style="width: ${prob}%;">
-                                ${prob > 10 ? prob.toFixed(1) + '%' : ''}
-                            </div>
-                        </div>
-                    </div>
-                `;
+            sorted.forEach(function(item) {
+                const type = item[0];
+                const prob = item[1];
+                html += '<div class="probability-item">';
+                html += '<div class="probability-header">';
+                html += '<span class="probability-name">' + getDementiaName(type) + '</span>';
+                html += '<span class="probability-percent">' + prob.toFixed(1) + '%</span>';
+                html += '</div>';
+                html += '<div class="probability-bar">';
+                html += '<div class="probability-fill" style="width: ' + prob + '%;">';
+                html += (prob > 10 ? prob.toFixed(1) + '%' : '');
+                html += '</div>';
+                html += '</div>';
+                html += '</div>';
             });
 
-            html += `
-                        </div>
-                    </div>
+            html += '</div>';
+            html += '</div>';
 
-                    <div class="risk-card">
-                        <h3 style="margin-bottom: 15px;">🩺 臨床建議</h3>
-                        <div class="recommendations">
-            `;
+            html += '<div class="risk-card">';
+            html += '<h3 style="margin-bottom: 15px;">🩺 臨床建議</h3>';
+            html += '<div class="recommendations">';
 
-            recommendations.forEach(rec => {
+            recommendations.forEach(function(rec) {
                 const recClass = rec.type === 'urgent' ? 'rec-urgent' :
                                 rec.type === 'important' ? 'rec-important' :
                                 rec.type === 'clinical' ? 'rec-clinical' : 'rec-safety';
@@ -1232,65 +1229,73 @@
                             rec.type === 'important' ? '▶️' :
                             rec.type === 'clinical' ? '📋' : '🛡️';
                 
-                html += `
-                    <div class="recommendation-item ${recClass}">
-                        <div class="rec-title">${icon} ${rec.type === 'urgent' ? '重要' :
-                                                        rec.type === 'important' ? '建議' :
-                                                        rec.type === 'clinical' ? '臨床檢查' : '安全提醒'}</div>
-                        <div>${rec.text}</div>
-                    </div>
-                `;
+                html += '<div class="recommendation-item ' + recClass + '">';
+                html += '<div class="rec-title">' + icon + ' ';
+                html += (rec.type === 'urgent' ? '重要' :
+                         rec.type === 'important' ? '建議' :
+                         rec.type === 'clinical' ? '臨床檢查' : '安全提醒');
+                html += '</div>';
+                html += '<div>' + rec.text + '</div>';
+                html += '</div>';
             });
 
-            html += `
-                        </div>
-                    </div>
+            html += '</div>';
+            html += '</div>';
 
-                    <div class="risk-card">
-                        <h3 style="margin-bottom: 15px;">⚕️ 異常症狀清單</h3>
-                        ${abnormalSymptoms.length > 0 ? `
-                            <table class="symptoms-table">
-                                <thead>
-                                    <tr>
-                                        <th>症狀領域</th>
-                                        <th>項目</th>
-                                        <th>回答</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    ${abnormalSymptoms.map(symptom => `
-                                        <tr>
-                                            <td>${symptom.section}</td>
-                                            <td>${symptom.question}</td>
-                                            <td class="symptom-positive">${symptom.response}</td>
-                                        </tr>
-                                    `).join('')}
-                                </tbody>
-                            </table>
-                        ` : '<p style="color: #16a34a; font-weight: 600;">✓ 未發現明顯異常症狀</p>'}
-                    </div>
+            html += '<div class="risk-card">';
+            html += '<h3 style="margin-bottom: 15px;">⚕️ 異常症狀清單</h3>';
+            if (abnormalSymptoms.length > 0) {
+                html += '<table class="symptoms-table">';
+                html += '<thead><tr>';
+                html += '<th>症狀領域</th>';
+                html += '<th>項目</th>';
+                html += '<th>回答</th>';
+                html += '</tr></thead>';
+                html += '<tbody>';
+                abnormalSymptoms.forEach(function(symptom) {
+                    html += '<tr>';
+                    html += '<td>' + symptom.section + '</td>';
+                    html += '<td>' + symptom.question + '</td>';
+                    html += '<td class="symptom-positive">' + symptom.response + '</td>';
+                    html += '</tr>';
+                });
+                html += '</tbody>';
+                html += '</table>';
+            } else {
+                html += '<p style="color: #16a34a; font-weight: 600;">✓ 未發現明顯異常症狀</p>';
+            }
+            html += '</div>';
 
-                    <div class="disclaimer">
-                        <h3>⚠️ 重要聲明</h3>
-                        <ul>
-                            <li>本工具僅供初步篩檢使用，不能取代專業醫療診斷</li>
-                            <li>失智症診斷需要完整的神經學檢查、認知功能評估、腦部影像及實驗室檢查</li>
-                            <li>評估結果受教育程度、文化背景、年齡等因素影響</li>
-                            <li>請務必將本報告提供給專科醫師，進行完整的臨床評估</li>
-                            <li>若有急性意識改變、嚴重記憶喪失或其他緊急症狀，請立即就醫</li>
-                        </ul>
-                    </div>
+            html += '<div class="disclaimer">';
+            html += '<h3>⚠️ 重要聲明</h3>';
+            html += '<ul>';
+            html += '<li>本工具僅供初步篩檢使用，不能取代專業醫療診斷</li>';
+            html += '<li>失智症診斷需要完整的神經學檢查、認知功能評估、腦部影像及實驗室檢查</li>';
+            html += '<li>評估結果受教育程度、文化背景、年齡等因素影響</li>';
+            html += '<li>請務必將本報告提供給專科醫師，進行完整的臨床評估</li>';
+            html += '<li>若有急性意識改變、嚴重記憶喪失或其他緊急症狀，請立即就醫</li>';
+            html += '</ul>';
+            html += '</div>';
 
-                    <div class="button-group">
-                        <button class="btn btn-primary" onclick="downloadTextReport()">
-                            📥 下載文字報告
-                        </button>
-                        <button class="btn btn-secondary" onclick="restartAssessment()">
-                            🔄 重新評估
-                        </button>
-                    </div>
-                </div>
-            `;
+            html += '<div class="info-box">';
+            html += '<h3>📊 資料收集與分析說明</h3>';
+            html += '<ul>';
+            html += '<li><strong>下載報告</strong>：點擊「下載報告」會自動下載文字檔，完成後詢問是否返回首頁</li>';
+            html += '<li><strong>匯出個案資料</strong>：點擊「匯出資料」可下載JSON格式的完整評估資料</li>';
+            html += '<li><strong>返回修改</strong>：可返回任何步驟修改答案，所有已填資料都會保留</li>';
+            html += '<li><strong>用於研究分析</strong>：收集多個個案的JSON檔案後，可使用統計軟體（如R、Python、SPSS）進行批次分析</li>';
+            html += '<li><strong>資料欄位包含</strong>：基本資料、所有問題回答、計算分數、風險評估等完整資訊</li>';
+            html += '<li><strong>隱私保護</strong>：在進行資料收集前，請確保已取得適當的倫理審查與受試者同意</li>';
+            html += '</ul>';
+            html += '</div>';
+
+            html += '<div class="button-group">';
+            html += '<button class="btn btn-secondary" onclick="backToEdit()">✏️ 返回修改</button>';
+            html += '<button class="btn btn-primary" onclick="downloadTextReport()">📥 下載報告</button>';
+            html += '<button class="btn btn-primary" onclick="downloadJSONData()">💾 匯出資料</button>';
+            html += '<button class="btn btn-secondary" onclick="restartAssessment()">🔄 重新開始</button>';
+            html += '</div>';
+            html += '</div>';
 
             document.getElementById('questionSteps').classList.add('hidden');
             document.getElementById('resultsPage').innerHTML = html;
@@ -1300,127 +1305,179 @@
             window.scrollTo(0, 0);
         }
 
+        // 返回修改答案
+        function backToEdit() {
+            document.getElementById('resultsPage').classList.add('hidden');
+            currentStep = 1;
+            showStep(currentStep);
+            window.scrollTo(0, 0);
+        }
+
         // 下載文字報告
         function downloadTextReport() {
             const results = calculateScores();
-            const { sorted, recommendations } = generateRecommendations(results);
+            const recsData = generateRecommendations(results);
+            const sorted = recsData.sorted;
+            const recommendations = recsData.recommendations;
             const abnormalSymptoms = getAbnormalSymptoms();
             const riskInfo = getRiskInfo(results.overallRisk);
             const age = calculateAge(patientInfo.birthDate);
 
-            let report = `
-═══════════════════════════════════════════════════════════════
-              臨床病史失智診斷結構性問卷 - 評估報告
-═══════════════════════════════════════════════════════════════
+            let report = '\n';
+            report += '═══════════════════════════════════════════════════════════════\n';
+            report += '              臨床病史失智診斷結構性問卷 - 評估報告\n';
+            report += '═══════════════════════════════════════════════════════════════\n\n';
+            report += '【基本資料】\n';
+            report += '────────────────────────────────────────────────\n';
+            report += '病患姓名：' + patientInfo.name + '\n';
+            report += '病歷號：' + patientInfo.chartNumber + '\n';
+            report += '出生日期：' + patientInfo.birthDate + (age ? ' (' + age + '歲)' : '') + '\n';
+            report += '性別：' + patientInfo.gender + '\n';
+            report += '教育程度：' + (patientInfo.education || '未填寫') + '\n';
+            report += '評估日期：' + patientInfo.assessmentDate + '\n';
+            report += '資訊提供者：' + patientInfo.informantName + '（' + patientInfo.informantRelation + '）\n\n';
+            report += '【評估結果摘要】\n';
+            report += '────────────────────────────────────────────────\n';
+            report += '整體認知障礙風險等級：' + riskInfo.text + '\n';
+            report += '日常功能障礙程度：' + results.adlImpairment.toFixed(1) + '%\n\n';
+            report += '【各類型失智症相對機率分析】\n';
+            report += '────────────────────────────────────────────────\n';
 
-【基本資料】
-────────────────────────────────────────────────
-病患姓名：${patientInfo.name}
-病歷號：${patientInfo.chartNumber}
-出生日期：${patientInfo.birthDate}${age ? ` (${age}歲)` : ''}
-性別：${patientInfo.gender}
-教育程度：${patientInfo.education || '未填寫'}
-評估日期：${patientInfo.assessmentDate}
-資訊提供者：${patientInfo.informantName}（${patientInfo.informantRelation}）
-
-【評估結果摘要】
-────────────────────────────────────────────────
-整體認知障礙風險等級：${riskInfo.text}
-日常功能障礙程度：${results.adlImpairment.toFixed(1)}%
-
-【各類型失智症相對機率分析】
-────────────────────────────────────────────────
-`;
-
-            sorted.forEach(([type, prob]) => {
-                report += `${getDementiaName(type)}：${prob.toFixed(1)}%\n`;
+            sorted.forEach(function(item) {
+                const type = item[0];
+                const prob = item[1];
+                report += getDementiaName(type) + '：' + prob.toFixed(1) + '%\n';
             });
 
-            report += `
-【臨床建議】
-────────────────────────────────────────────────
-`;
+            report += '\n【臨床建議】\n';
+            report += '────────────────────────────────────────────────\n';
 
-            recommendations.forEach((rec, idx) => {
+            recommendations.forEach(function(rec, idx) {
                 const label = rec.type === 'urgent' ? '⚠ 重要' :
                              rec.type === 'important' ? '▶ 建議' :
                              rec.type === 'clinical' ? '📋 臨床檢查' : '🛡 安全提醒';
-                report += `${idx + 1}. [${label}] ${rec.text}\n\n`;
+                report += (idx + 1) + '. [' + label + '] ' + rec.text + '\n\n';
             });
 
-            report += `
-【異常症狀清單】
-────────────────────────────────────────────────
-`;
+            report += '\n【異常症狀清單】\n';
+            report += '────────────────────────────────────────────────\n';
 
             if (abnormalSymptoms.length > 0) {
-                abnormalSymptoms.forEach((symptom, idx) => {
-                    report += `${idx + 1}. ${symptom.section}\n`;
-                    report += `   問題：${symptom.question}\n`;
-                    report += `   回答：${symptom.response}\n\n`;
+                abnormalSymptoms.forEach(function(symptom, idx) {
+                    report += (idx + 1) + '. ' + symptom.section + '\n';
+                    report += '   問題：' + symptom.question + '\n';
+                    report += '   回答：' + symptom.response + '\n\n';
                 });
             } else {
                 report += '未發現明顯異常症狀\n\n';
             }
 
-            report += `
-【重要聲明】
-────────────────────────────────────────────────
-⚠ 本工具僅供初步篩檢使用，不能取代專業醫療診斷
+            report += '\n【重要聲明】\n';
+            report += '────────────────────────────────────────────────\n';
+            report += '⚠ 本工具僅供初步篩檢使用，不能取代專業醫療診斷\n\n';
+            report += '1. 失智症診斷需要完整的神經學檢查、認知功能評估、腦部影像\n';
+            report += '   及實驗室檢查\n\n';
+            report += '2. 評估結果受教育程度、文化背景、年齡等因素影響\n\n';
+            report += '3. 請務必將本報告提供給專科醫師，進行完整的臨床評估\n\n';
+            report += '4. 若有急性意識改變、嚴重記憶喪失或其他緊急症狀，請立即就醫\n\n';
+            report += '════════════════════════════════════════════════════════════════\n';
+            report += '報告生成時間：' + new Date().toLocaleString('zh-TW') + '\n';
+            report += '本報告由AI輔助評估工具生成，僅供臨床參考\n';
+            report += '════════════════════════════════════════════════════════════════\n';
 
-1. 失智症診斷需要完整的神經學檢查、認知功能評估、腦部影像
-   及實驗室檢查
-
-2. 評估結果受教育程度、文化背景、年齡等因素影響
-
-3. 請務必將本報告提供給專科醫師，進行完整的臨床評估
-
-4. 若有急性意識改變、嚴重記憶喪失或其他緊急症狀，請立即就醫
-
-5. 本評估基於以下最新臨床診斷標準：
-   - NIA-AA 2024 Revised Diagnostic Criteria for Alzheimer's Disease
-   - McKeith et al. 2017 - Fourth Consensus Report of DLB Consortium
-   - Rascovsky et al. 2011 - International Consensus Criteria for bvFTD
-   - NINDS-AIREN Criteria for Vascular Dementia
-   - Gorno-Tempini et al. 2011 - Classification of Primary Progressive Aphasia
-
-════════════════════════════════════════════════════════════════
-報告生成時間：${new Date().toLocaleString('zh-TW')}
-本報告由AI輔助評估工具生成，僅供臨床參考
-════════════════════════════════════════════════════════════════
-`;
-
-            // 下載文字檔
             const blob = new Blob([report], { type: 'text/plain;charset=utf-8' });
             const url = URL.createObjectURL(blob);
             const a = document.createElement('a');
             a.href = url;
-            a.download = `失智症評估報告_${patientInfo.name}_${patientInfo.assessmentDate}.txt`;
+            a.download = '失智症評估報告_' + patientInfo.name + '_' + patientInfo.assessmentDate + '.txt';
             document.body.appendChild(a);
             a.click();
             document.body.removeChild(a);
             URL.revokeObjectURL(url);
+
+            setTimeout(function() {
+                if (confirm('報告已開始下載！\n\n是否要返回首頁重新評估？')) {
+                    restartAssessment();
+                }
+            }, 500);
+        }
+
+        // 匯出JSON資料
+        function downloadJSONData() {
+            const results = calculateScores();
+            const recsData = generateRecommendations(results);
+            const sorted = recsData.sorted;
+            const recommendations = recsData.recommendations;
+            const abnormalSymptoms = getAbnormalSymptoms();
+            const age = calculateAge(patientInfo.birthDate);
+
+            const exportData = {
+                metadata: {
+                    exportDate: new Date().toISOString(),
+                    assessmentDate: patientInfo.assessmentDate,
+                    toolVersion: '2.0'
+                },
+                patientInfo: Object.assign({}, patientInfo, { age: age }),
+                responses: responses,
+                results: {
+                    overallRisk: results.overallRisk,
+                    adlImpairment: results.adlImpairment,
+                    rawScores: results.rawScores,
+                    percentages: results.percentages,
+                    probabilities: results.probabilities,
+                    dementiaTypeProbabilities: sorted.map(function(item) {
+                        return {
+                            type: item[0],
+                            name: getDementiaName(item[0]),
+                            probability: item[1]
+                        };
+                    })
+                },
+                abnormalSymptoms: abnormalSymptoms,
+                recommendations: recommendations.map(function(rec) {
+                    return {
+                        type: rec.type,
+                        text: rec.text
+                    };
+                })
+            };
+
+            const jsonString = JSON.stringify(exportData, null, 2);
+            const blob = new Blob([jsonString], { type: 'application/json;charset=utf-8' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = '評估資料_' + patientInfo.name + '_' + patientInfo.assessmentDate + '_' + Date.now() + '.json';
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+
+            setTimeout(function() {
+                if (confirm('資料已開始下載！\n\n是否要返回首頁重新評估？')) {
+                    restartAssessment();
+                }
+            }, 500);
         }
 
         // 重新評估
         function restartAssessment() {
-            if (confirm('確定要重新開始評估嗎？目前的填答資料將會清除。')) {
-                currentStep = 0;
-                responses = {};
-                patientInfo = {};
-                document.getElementById('resultsPage').classList.add('hidden');
-                document.getElementById('step0').classList.remove('hidden');
-                document.getElementById('patientName').value = '';
-                document.getElementById('chartNumber').value = '';
-                document.getElementById('birthDate').value = '';
-                document.getElementById('gender').value = '';
-                document.getElementById('education').value = '';
-                document.getElementById('assessmentDate').valueAsDate = new Date();
-                document.getElementById('informantName').value = '';
-                document.getElementById('informantRelation').value = '';
-                updateProgress();
-                window.scrollTo(0, 0);
-            }
+            currentStep = 0;
+            responses = {};
+            patientInfo = {};
+            document.getElementById('resultsPage').classList.add('hidden');
+            document.getElementById('questionSteps').classList.add('hidden');
+            document.getElementById('step0').classList.remove('hidden');
+            document.getElementById('patientName').value = '';
+            document.getElementById('chartNumber').value = '';
+            document.getElementById('birthDate').value = '';
+            document.getElementById('gender').value = '';
+            document.getElementById('education').value = '';
+            document.getElementById('assessmentDate').valueAsDate = new Date();
+            document.getElementById('informantName').value = '';
+            document.getElementById('informantRelation').value = '';
+            updateProgress();
+            window.scrollTo(0, 0);
         }
 
         // 初始化
