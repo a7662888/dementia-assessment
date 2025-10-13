@@ -1454,9 +1454,16 @@
             URL.revokeObjectURL(url);
 
             setTimeout(function() {
-                if (confirm('資料已開始下載！\n\n是否要返回首頁重新評估？')) {
-                    restartAssessment();
+                if (confirm('💾 資料已下載到本機\n\n📤 是否要同時上傳到 GitHub 進行自動統計分析？')) {
+                    const filename = '評估資料_' + patientInfo.chartNumber + '_' + Date.now() + '.json';
+                    uploadToGitHub(jsonString, filename);
                 }
+                
+                setTimeout(function() {
+                    if (confirm('是否要返回首頁重新評估？')) {
+                        restartAssessment();
+                    }
+                }, 1000);
             }, 500);
         }
 
@@ -1481,6 +1488,87 @@
         }
 
         // 初始化
+        // 上傳到 GitHub
+        function uploadToGitHub(jsonData, filename) {
+            const repoOwner = 'a7662888';
+            const repoName = 'dementia-assessment';
+            const branch = 'main';
+            
+            // 從 localStorage 讀取 token
+            let token = localStorage.getItem('github_token');
+            
+            if (!token) {
+                token = prompt('⚙️ GitHub 設定\n\n請輸入您的 GitHub Personal Access Token\n\n📝 如何取得 Token:\n1. GitHub → Settings → Developer settings\n2. Personal access tokens → Tokens (classic)\n3. Generate new token\n4. 權限選擇: repo (Full control)\n\n💡 Token 會安全儲存在本機，下次不用再輸入');
+                
+                if (!token) {
+                    return;
+                }
+                
+                // 儲存 token
+                if (confirm('是否要將 Token 儲存在本機？\n(下次使用就不用再輸入)')) {
+                    localStorage.setItem('github_token', token);
+                }
+            }
+            
+            // Base64 編碼
+            const content = btoa(unescape(encodeURIComponent(jsonData)));
+            
+            const url = 'https://api.github.com/repos/' + repoOwner + '/' + repoName + '/contents/data/' + filename;
+            
+            // 顯示上傳中訊息
+            const uploadMsg = document.createElement('div');
+            uploadMsg.style.cssText = 'position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: rgba(59, 130, 246, 0.95); color: white; padding: 30px; border-radius: 15px; z-index: 10000; text-align: center; font-size: 18px; box-shadow: 0 10px 40px rgba(0,0,0,0.3);';
+            uploadMsg.innerHTML = '⏳ 正在上傳到 GitHub...<br><small style="font-size: 14px; opacity: 0.9;">請稍候</small>';
+            document.body.appendChild(uploadMsg);
+            
+            fetch(url, {
+                method: 'PUT',
+                headers: {
+                    'Authorization': 'token ' + token,
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    message: '📝 新增評估資料: ' + patientInfo.name + ' (' + patientInfo.assessmentDate + ')',
+                    content: content,
+                    branch: branch
+                })
+            })
+            .then(function(response) {
+                document.body.removeChild(uploadMsg);
+                
+                if (response.ok) {
+                    alert('✅ 上傳成功！\n\n資料已上傳到 GitHub\n系統將自動生成統計報表\n\n📊 約 1-2 分鐘後可至 reports/ 資料夾查看\n\n🔗 Repository: https://github.com/' + repoOwner + '/' + repoName);
+                } else if (response.status === 401) {
+                    localStorage.removeItem('github_token');
+                    throw new Error('Token 無效或已過期，請重新輸入');
+                } else if (response.status === 422) {
+                    throw new Error('檔案已存在，請稍後再試或修改檔案名稱');
+                } else {
+                    return response.json().then(function(err) {
+                        throw new Error(err.message || '上傳失敗');
+                    });
+                }
+            })
+            .catch(function(error) {
+                if (uploadMsg.parentNode) {
+                    document.body.removeChild(uploadMsg);
+                }
+                
+                alert('❌ 上傳失敗\n\n錯誤訊息: ' + error.message + '\n\n請確認:\n✓ Token 是否正確\n✓ Repository 權限是否足夠\n✓ 網路連線是否正常');
+                
+                if (error.message.includes('Token')) {
+                    localStorage.removeItem('github_token');
+                }
+            });
+        }
+        
+        // 清除儲存的 Token
+        function clearGitHubToken() {
+            if (confirm('確定要清除已儲存的 GitHub Token 嗎？')) {
+                localStorage.removeItem('github_token');
+                alert('✅ Token 已清除');
+            }
+        }
         updateProgress();
     </script>
 </body>
