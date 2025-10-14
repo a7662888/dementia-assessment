@@ -1293,8 +1293,9 @@
             html += '<button class="btn btn-secondary" onclick="backToEdit()">✏️ 返回修改</button>';
             html += '<button class="btn btn-primary" onclick="downloadTextReport()">📥 下載報告</button>';
             html += '<button class="btn btn-primary" onclick="downloadJSONData()">💾 匯出資料</button>';
+            html += '<button class="btn btn-success" onclick="uploadDataToGitHub()">☁️ 上傳到雲端</button>';
+            html += '<button class="btn btn-secondary" onclick="clearGitHubToken()">🔑 清除Token</button>';
             html += '<button class="btn btn-secondary" onclick="restartAssessment()">🔄 重新開始</button>';
-            html += '</div>';
             html += '</div>';
 
             document.getElementById('questionSteps').classList.add('hidden');
@@ -1562,13 +1563,64 @@
             });
         }
         
-        // 清除儲存的 Token
+// 清除儲存的 Token
         function clearGitHubToken() {
             if (confirm('確定要清除已儲存的 GitHub Token 嗎？')) {
                 localStorage.removeItem('github_token');
                 alert('✅ Token 已清除');
             }
         }
+        
+        // 包裝函數：準備資料並上傳到GitHub
+        function uploadDataToGitHub() {
+            const results = calculateScores();
+            const recsData = generateRecommendations(results);
+            const abnormalSymptoms = getAbnormalSymptoms();
+            const age = calculateAge(patientInfo.birthDate);
+            
+            // 準備完整的資料物件
+            const exportData = {
+                metadata: {
+                    exportDate: new Date().toISOString(),
+                    assessmentDate: patientInfo.assessmentDate,
+                    toolVersion: '2.0'
+                },
+                patientInfo: Object.assign({}, patientInfo, { age: age }),
+                responses: responses,
+                results: {
+                    overallRisk: results.overallRisk,
+                    adlImpairment: results.adlImpairment,
+                    rawScores: results.rawScores,
+                    percentages: results.percentages,
+                    probabilities: results.probabilities,
+                    dementiaTypeProbabilities: recsData.sorted.map(function(item) {
+                        return {
+                            type: item[0],
+                            name: getDementiaName(item[0]),
+                            probability: item[1]
+                        };
+                    })
+                },
+                abnormalSymptoms: abnormalSymptoms,
+                recommendations: recsData.recommendations.map(function(rec) {
+                    return {
+                        type: rec.type,
+                        text: rec.text
+                    };
+                })
+            };
+            
+            // 生成唯一的檔案名稱
+            const timestamp = Date.now();
+            const filename = `assessment_${patientInfo.chartNumber}_${timestamp}.json`;
+            
+            // 轉換為 JSON 字串
+            const jsonString = JSON.stringify(exportData, null, 2);
+            
+            // 調用現有的上傳函數
+            uploadToGitHub(jsonString, filename);
+        }
+        
         updateProgress();
     </script>
 </body>
