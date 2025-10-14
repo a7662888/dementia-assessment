@@ -1,0 +1,128 @@
+{
+  "metadata": {
+    "exportDate": "2025-10-14T14:49:08.338Z",
+    "assessmentDate": "2025-10-14",
+    "toolVersion": "2.0"
+  },
+  "patientInfo": {
+    "name": "456",
+    "chartNumber": "456",
+    "birthDate": "1950-01-01",
+    "gender": "女",
+    "education": "不識字",
+    "assessmentDate": "2025-10-14",
+    "informantName": "456",
+    "informantRelation": "456",
+    "age": 75
+  },
+  "responses": {
+    "dlb2_1": "是",
+    "dlb2_2": "是",
+    "dlb2_3": "是",
+    "dlb2_4": "是",
+    "dlb3_1": "是",
+    "dlb4_2": "是",
+    "ad5_8": "常常",
+    "ppa8_1": "偶爾",
+    "adl9_1": 1,
+    "adl9_2": 0,
+    "adl9_3": 0,
+    "adl9_4": 0,
+    "adl9_5": 0,
+    "adl9_6": 1,
+    "adl9_7": 1,
+    "adl9_8": 1,
+    "adl9_9": 1,
+    "adl9_10": "否"
+  },
+  "results": {
+    "overallRisk": "high",
+    "adlImpairment": 41.66666666666667,
+    "rawScores": {
+      "DLB": 26.916666666666668,
+      "AD": 3.541666666666667,
+      "VaD": 2.8333333333333335,
+      "FTD": 0,
+      "PPA": 2.479166666666667
+    },
+    "percentages": {
+      "DLB": 100,
+      "AD": 100,
+      "VaD": 100,
+      "FTD": 0,
+      "PPA": 70.83333333333334
+    },
+    "probabilities": {
+      "DLB": 26.96629213483146,
+      "AD": 26.96629213483146,
+      "VaD": 26.96629213483146,
+      "FTD": 0,
+      "PPA": 19.101123595505616
+    },
+    "dementiaTypeProbabilities": [
+      {
+        "type": "DLB",
+        "name": "Dementia with Lewy Bodies (路易氏體失智症)",
+        "probability": 26.96629213483146
+      },
+      {
+        "type": "AD",
+        "name": "Alzheimer's Disease (阿茲海默症)",
+        "probability": 26.96629213483146
+      },
+      {
+        "type": "VaD",
+        "name": "Vascular Dementia (血管性失智症)",
+        "probability": 26.96629213483146
+      },
+      {
+        "type": "PPA",
+        "name": "Primary Progressive Aphasia (原發性進行性失語症)",
+        "probability": 19.101123595505616
+      }
+    ]
+  },
+  "abnormalSymptoms": [
+    {
+      "section": "二、動作障礙症狀",
+      "question": "坐著或靜止不動的時候，肢體或頭部會明顯地顫抖",
+      "response": "是"
+    },
+    {
+      "section": "二、動作障礙症狀",
+      "question": "動作變得緩慢，尤其是起步特別困難，面部表情也明顯減少",
+      "response": "是"
+    },
+    {
+      "section": "二、動作障礙症狀",
+      "question": "動作變得僵硬，走路步伐變小身體會前傾",
+      "response": "是"
+    },
+    {
+      "section": "二、動作障礙症狀",
+      "question": "動作變得不穩，走路不平衡，有時候好像要跌倒或真的跌倒",
+      "response": "是"
+    },
+    {
+      "section": "三、情緒行為症狀",
+      "question": "有視幻覺，會「清楚」地看見別人看不到的人、動物或其他物體",
+      "response": "是"
+    },
+    {
+      "section": "四、自律神經症狀",
+      "question": "經常頭暈，尤其是在變換姿勢的時候",
+      "response": "是"
+    },
+    {
+      "section": "五、記憶力症狀",
+      "question": "會因為回答不出問題或是分不清楚過去現在，就亂編故事嗎？",
+      "response": "常常"
+    }
+  ],
+  "recommendations": [
+    {
+      "type": "urgent",
+      "text": "建議盡快（2週內）安排神經內科或老年精神科專科醫師評估"
+    }
+  ]
+}
