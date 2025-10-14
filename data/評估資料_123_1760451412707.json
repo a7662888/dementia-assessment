@@ -1,0 +1,144 @@
+{
+  "metadata": {
+    "exportDate": "2025-10-14T14:16:28.003Z",
+    "assessmentDate": "2025-10-14",
+    "toolVersion": "2.0"
+  },
+  "patientInfo": {
+    "name": "123",
+    "chartNumber": "123",
+    "birthDate": "1950-01-01",
+    "gender": "男",
+    "education": "大學",
+    "assessmentDate": "2025-10-14",
+    "informantName": "123",
+    "informantRelation": "123",
+    "age": 75
+  },
+  "responses": {
+    "dlb1_1": "否",
+    "dlb1_2": "否",
+    "dlb1_3": "不會",
+    "dlb1_4": "否",
+    "dlb2_1": "否",
+    "dlb2_2": "否",
+    "dlb2_3": "否",
+    "dlb2_4": "否",
+    "dlb3_1": "否",
+    "dlb3_2": "否",
+    "dlb3_3": "否",
+    "ftd3_4": "否",
+    "ftd3_5": "否",
+    "ftd3_6": "否",
+    "ftd3_7": "否",
+    "ftd3_8": "否",
+    "vad4_1": "否",
+    "dlb4_2": "否",
+    "dlb4_3": "否",
+    "ad5_1": "不會",
+    "ad5_2": "不會",
+    "ad5_3": "不會",
+    "ad5_4": "不會",
+    "ad5_5": "不會",
+    "ad5_6": "不會",
+    "ad5_7": "不會",
+    "ad5_8": "不會",
+    "ad6_1": "不會",
+    "ad6_2": "不會",
+    "ad6_3": "不會",
+    "ad6_4": "不會",
+    "ad6_5": "不會",
+    "ftd7_1": "不會",
+    "vad7_2": "不會",
+    "vad7_3": "不會",
+    "vad7_4": "不會",
+    "vad7_5": "不會",
+    "vad7_6": "會",
+    "vad7_7": "不會",
+    "ppa8_1": "偶爾",
+    "ppa8_2": "會",
+    "ppa8_3": "會",
+    "ppa8_4": "會",
+    "ppa8_5": "不會",
+    "ftd8_6": "是",
+    "adl9_1": 0,
+    "adl9_2": 0,
+    "adl9_3": 0,
+    "adl9_4": 0,
+    "adl9_5": 0,
+    "adl9_6": 0,
+    "adl9_7": 0,
+    "adl9_8": 1,
+    "adl9_9": 1,
+    "adl9_10": "否"
+  },
+  "results": {
+    "overallRisk": "moderate",
+    "adlImpairment": 16.666666666666664,
+    "rawScores": {
+      "DLB": 0,
+      "AD": 0,
+      "VaD": 2.916666666666666,
+      "FTD": 4.666666666666666,
+      "PPA": 29.312499999999996
+    },
+    "percentages": {
+      "DLB": 0,
+      "AD": 0,
+      "VaD": 10.233918128654969,
+      "FTD": 13.33333333333333,
+      "PPA": 100
+    },
+    "probabilities": {
+      "DLB": 0,
+      "AD": 0,
+      "VaD": 8.282063416942735,
+      "FTD": 10.790345480359678,
+      "PPA": 80.92759110269759
+    },
+    "dementiaTypeProbabilities": [
+      {
+        "type": "PPA",
+        "name": "Primary Progressive Aphasia (原發性進行性失語症)",
+        "probability": 80.92759110269759
+      }
+    ]
+  },
+  "abnormalSymptoms": [
+    {
+      "section": "七、判斷力與執行功能症狀",
+      "question": "操作日常生活用品明顯比以前困難嗎？例如：使用電話、遙控器，或微波爐等",
+      "response": "會"
+    },
+    {
+      "section": "八、語言功能症狀",
+      "question": "說話會變得很少或變得不流利，無法完整地講一個句子嗎？",
+      "response": "會"
+    },
+    {
+      "section": "八、語言功能症狀",
+      "question": "說話變得容易說錯話或文法錯誤？",
+      "response": "會"
+    },
+    {
+      "section": "八、語言功能症狀",
+      "question": "會變得聽不懂別人的話或無法理解文意嗎？",
+      "response": "會"
+    },
+    {
+      "section": "八、語言功能症狀",
+      "question": "語言功能異常是否最早發生，而且比其他認知症狀早很多嗎？",
+      "response": "是"
+    }
+  ],
+  "recommendations": [
+    {
+      "type": "important",
+      "text": "建議於1個月內至記憶門診或神經科接受完整評估"
+    },
+    {
+      "type": "clinical",
+      "text": "語言功能障礙為主要症狀，建議語言治療評估及PET影像檢查"
+    }
+  ]
+}
