@@ -517,11 +517,8 @@
             <div class="info-box" style="background: #e0f2fe; border-left-color: #0ea5e9;">
                 <h3>☁️ 雲端儲存功能</h3>
                 <ul>
-                    <li>評估完成後可選擇「上傳到雲端」自動儲存到 GitHub</li>
-                    <li>首次使用需要輸入 GitHub Personal Access Token</li>
-                    <li>Token 會安全儲存在您的瀏覽器中</li>
+                    <li>評估完成後可選擇「上傳到雲端」自動儲存</li>
                     <li>所有上傳的資料會自動整合成 Excel 報表</li>
-                    <li>如需清除 Token，可在結果頁面點擊「清除Token」</li>
                 </ul>
             </div>
 
@@ -1304,9 +1301,7 @@
             html += '<div class="button-group">';
             html += '<button class="btn btn-secondary" onclick="backToEdit()">✏️ 返回修改</button>';
             html += '<button class="btn btn-primary" onclick="downloadTextReport()">📥 下載報告</button>';
-            html += '<button class="btn btn-primary" onclick="downloadJSONData()">💾 匯出資料</button>';
             html += '<button class="btn btn-success" onclick="uploadDataToGitHub()">☁️ 上傳到雲端</button>';
-            html += '<button class="btn btn-secondary" onclick="clearGitHubToken()">🔑 清除Token</button>';
             html += '<button class="btn btn-secondary" onclick="restartAssessment()">🔄 重新開始</button>';
             html += '</div>';
 
