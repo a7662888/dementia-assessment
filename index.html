@@ -1484,9 +1484,9 @@
         // 上傳到 Google Drive
         function uploadToGoogleDrive(jsonData, callback) {
             // 🔧 請將下面的 URL 替換為您的 Google Apps Script URL
-            const scriptUrl = 'YOUR_SCRIPT_URL_HERE';
+            const scriptUrl = 'https://script.google.com/macros/s/AKfycbw3uS2wMJkXhrRnqrmzYoA_5-DpfHT0atHGZR0203WjDNzkAMpddbdtqXXv8sggWfMq/exec';
             
-            if (scriptUrl === 'YOUR_SCRIPT_URL_HERE') {
+            if (scriptUrl === 'https://script.google.com/macros/s/AKfycbw3uS2wMJkXhrRnqrmzYoA_5-DpfHT0atHGZR0203WjDNzkAMpddbdtqXXv8sggWfMq/exec') {
                 alert('⚠️ 尚未設定 Google Drive API\n\n請先完成以下步驟：\n1. 創建 Google Apps Script\n2. 部署為 Web App\n3. 將 URL 填入 index.html 的 scriptUrl');
                 if (callback) callback(false);
                 return;
