@@ -1,4 +1,3 @@
-mkdir .github\workflows
-mkdir scripts
-mkdir data
-mkdir reports
+git add index.html
+git commit -m "🔧 設定 Google Drive API URL"
+git push
