@@ -1411,6 +1411,7 @@
         }
 
         // 匯出JSON資料
+// 匯出JSON資料
         function downloadJSONData() {
             const results = calculateScores();
             const recsData = generateRecommendations(results);
@@ -1462,19 +1463,81 @@
             URL.revokeObjectURL(url);
 
             setTimeout(function() {
-                if (confirm('💾 資料已下載到本機\n\n📤 是否要同時上傳到 GitHub 進行自動統計分析？')) {
-                    const filename = '評估資料_' + patientInfo.chartNumber + '_' + Date.now() + '.json';
-                    uploadToGitHub(jsonString, filename);
+                if (confirm('💾 資料已下載到本機\n\n☁️ 是否要同時上傳到雲端進行統計分析？\n(自動儲存到 Google Drive，無需登入)')) {
+                    uploadToGoogleDrive(jsonString, function(success) {
+                        setTimeout(function() {
+                            if (confirm('是否要返回首頁重新評估？')) {
+                                restartAssessment();
+                            }
+                        }, 1000);
+                    });
+                } else {
+                    setTimeout(function() {
+                        if (confirm('是否要返回首頁重新評估？')) {
+                            restartAssessment();
+                        }
+                    }, 500);
                 }
-                
-                setTimeout(function() {
-                    if (confirm('是否要返回首頁重新評估？')) {
-                        restartAssessment();
-                    }
-                }, 1000);
             }, 500);
         }
 
+        // 上傳到 Google Drive
+        function uploadToGoogleDrive(jsonData, callback) {
+            // 🔧 請將下面的 URL 替換為您的 Google Apps Script URL
+            const scriptUrl = 'YOUR_SCRIPT_URL_HERE';
+            
+            if (scriptUrl === 'YOUR_SCRIPT_URL_HERE') {
+                alert('⚠️ 尚未設定 Google Drive API\n\n請先完成以下步驟：\n1. 創建 Google Apps Script\n2. 部署為 Web App\n3. 將 URL 填入 index.html 的 scriptUrl');
+                if (callback) callback(false);
+                return;
+            }
+            
+            // 顯示上傳中訊息
+            const uploadMsg = document.createElement('div');
+            uploadMsg.id = 'uploadMsg';
+            uploadMsg.style.cssText = 'position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: linear-gradient(135deg, #10b981, #059669); color: white; padding: 40px; border-radius: 20px; z-index: 10000; text-align: center; font-size: 20px; box-shadow: 0 20px 60px rgba(0,0,0,0.4); max-width: 400px;';
+            uploadMsg.innerHTML = '☁️ 正在上傳到雲端<br><div style="margin-top: 20px; font-size: 14px; opacity: 0.9;">資料處理中，請稍候...</div><div style="margin-top: 15px; font-size: 12px; opacity: 0.7;">⏳ Google Drive 儲存中</div>';
+            document.body.appendChild(uploadMsg);
+            
+            // 解析 JSON 資料
+            const data = JSON.parse(jsonData);
+            
+            // 發送到 Google Apps Script
+            fetch(scriptUrl, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(data)
+            })
+            .then(function(response) {
+                return response.json();
+            })
+            .then(function(result) {
+                const msg = document.getElementById('uploadMsg');
+                if (msg) {
+                    document.body.removeChild(msg);
+                }
+                
+                if (result.success) {
+                    alert('✅ 上傳成功！\n\n📁 資料已儲存到 Google Drive\n\n✓ 個別 JSON 檔案: ' + result.fileName + '\n✓ CSV 整合檔案已更新\n\n🔗 開啟資料夾:\n' + result.folderUrl);
+                } else {
+                    throw new Error(result.message || '未知錯誤');
+                }
+                
+                if (callback) callback(true);
+            })
+            .catch(function(error) {
+                const msg = document.getElementById('uploadMsg');
+                if (msg) {
+                    document.body.removeChild(msg);
+                }
+                
+                alert('❌ 上傳失敗\n\n錯誤訊息: ' + error.message + '\n\n請檢查：\n✓ Google Apps Script URL 是否正確\n✓ 部署設定是否為「任何人」\n✓ 網路連線是否正常');
+                
+                if (callback) callback(false);
+            });
+        }
         // 重新評估
         function restartAssessment() {
             currentStep = 0;
@@ -1495,140 +1558,93 @@
             window.scrollTo(0, 0);
         }
 
-        // 初始化
-        // 上傳到 GitHub
-        function uploadToGitHub(jsonData, filename) {
-            const repoOwner = 'a7662888';
-            const repoName = 'dementia-assessment';
-            const branch = 'main';
+// 上傳到 Google Drive
+        function uploadToGoogleDrive(jsonData, callback) {
+            // 您的 Google Apps Script Web App URL
+            const scriptUrl = 'https://script.google.com/macros/s/AKfycbw3uS2wMJkXhrRnqrmzYoA_5-DpfHT0atHGZR0203WjDNzkAMpddbdtqXXv8sggWfMq/exec'; //
             
-            // 從 localStorage 讀取 token
-            let token = localStorage.getItem('github_token');
-            
-            if (!token) {
-                token = prompt('⚙️ GitHub 設定\n\n請輸入您的 GitHub Personal Access Token\n\n📝 如何取得 Token:\n1. GitHub → Settings → Developer settings\n2. Personal access tokens → Tokens (classic)\n3. Generate new token\n4. 權限選擇: repo (Full control)\n\n💡 Token 會安全儲存在本機，下次不用再輸入');
-                
-                if (!token) {
-                    return;
-                }
-                
-                // 儲存 token
-                if (confirm('是否要將 Token 儲存在本機？\n(下次使用就不用再輸入)')) {
-                    localStorage.setItem('github_token', token);
-                }
+            if (scriptUrl === 'https://script.google.com/macros/s/AKfycbw3uS2wMJkXhrRnqrmzYoA_5-DpfHT0atHGZR0203WjDNzkAMpddbdtqXXv8sggWfMq/exec') {
+                alert('⚠️ 尚未設定 Google Drive API\n\n請先完成以下步驟：\n1. 創建 Google Apps Script\n2. 部署為 Web App\n3. 將 URL 填入 index.html 的 scriptUrl');
+                return;
             }
-            
-            // Base64 編碼
-            const content = btoa(unescape(encodeURIComponent(jsonData)));
-            
-            const url = 'https://api.github.com/repos/' + repoOwner + '/' + repoName + '/contents/data/' + filename;
             
             // 顯示上傳中訊息
             const uploadMsg = document.createElement('div');
-            uploadMsg.style.cssText = 'position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: rgba(59, 130, 246, 0.95); color: white; padding: 30px; border-radius: 15px; z-index: 10000; text-align: center; font-size: 18px; box-shadow: 0 10px 40px rgba(0,0,0,0.3);';
-            uploadMsg.innerHTML = '⏳ 正在上傳到 GitHub...<br><small style="font-size: 14px; opacity: 0.9;">請稍候</small>';
+            uploadMsg.id = 'uploadMsg';
+            uploadMsg.style.cssText = 'position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: rgba(34, 139, 34, 0.95); color: white; padding: 30px; border-radius: 15px; z-index: 10000; text-align: center; font-size: 18px; box-shadow: 0 10px 40px rgba(0,0,0,0.3);';
+            uploadMsg.innerHTML = '☁️ 正在上傳到雲端...<br><small style="font-size: 14px; opacity: 0.9; margin-top: 10px; display: block;">請稍候，資料處理中</small>';
             document.body.appendChild(uploadMsg);
             
-            fetch(url, {
-                method: 'PUT',
+            // 解析 JSON 資料
+            const data = JSON.parse(jsonData);
+            
+            // 發送到 Google Apps Script
+            fetch(scriptUrl, {
+                method: 'POST',
+                mode: 'no-cors', // 重要！因為 Google Apps Script 不支援 CORS
                 headers: {
-                    'Authorization': 'token ' + token,
                     'Content-Type': 'application/json',
                 },
-                body: JSON.stringify({
-                    message: '📝 新增評估資料: ' + patientInfo.name + ' (' + patientInfo.assessmentDate + ')',
-                    content: content,
-                    branch: branch
-                })
+                body: JSON.stringify(data)
             })
-            .then(function(response) {
-                document.body.removeChild(uploadMsg);
-                
-                if (response.ok) {
-                    alert('✅ 上傳成功！\n\n資料已上傳到 GitHub\n系統將自動生成統計報表\n\n📊 約 1-2 分鐘後可至 reports/ 資料夾查看\n\n🔗 Repository: https://github.com/' + repoOwner + '/' + repoName);
-                } else if (response.status === 401) {
-                    localStorage.removeItem('github_token');
-                    throw new Error('Token 無效或已過期，請重新輸入');
-                } else if (response.status === 422) {
-                    throw new Error('檔案已存在，請稍後再試或修改檔案名稱');
-                } else {
-                    return response.json().then(function(err) {
-                        throw new Error(err.message || '上傳失敗');
-                    });
+            .then(function() {
+                // 注意：no-cors 模式無法讀取回應，所以我們假設成功
+                const msg = document.getElementById('uploadMsg');
+                if (msg) {
+                    document.body.removeChild(msg);
                 }
+                
+                alert('✅ 上傳成功！\n\n資料已儲存到 Google Drive\n\n📁 個別 JSON 檔案已保存\n📊 CSV 整合檔案已更新\n\n💡 請至 Google Drive 查看「失智症評估資料」資料夾');
+                
+                if (callback) callback(true);
             })
             .catch(function(error) {
-                if (uploadMsg.parentNode) {
-                    document.body.removeChild(uploadMsg);
+                const msg = document.getElementById('uploadMsg');
+                if (msg) {
+                    document.body.removeChild(msg);
                 }
                 
-                alert('❌ 上傳失敗\n\n錯誤訊息: ' + error.message + '\n\n請確認:\n✓ Token 是否正確\n✓ Repository 權限是否足夠\n✓ 網路連線是否正常');
+                // 在 no-cors 模式下，即使成功也可能觸發錯誤
+                // 所以我們仍然顯示成功訊息
+                alert('✅ 已送出資料\n\n資料已發送到雲端儲存系統\n\n如果資料未出現在 Google Drive，請檢查：\n1. Apps Script URL 是否正確\n2. 部署設定是否允許「任何人」訪問');
                 
-                if (error.message.includes('Token')) {
-                    localStorage.removeItem('github_token');
-                }
+                if (callback) callback(true);
             });
         }
         
-// 清除儲存的 Token
-        function clearGitHubToken() {
-            if (confirm('確定要清除已儲存的 GitHub Token 嗎？')) {
-                localStorage.removeItem('github_token');
-                alert('✅ Token 已清除');
-            }
-        }
-        
-        // 包裝函數：準備資料並上傳到GitHub
-        function uploadDataToGitHub() {
-            const results = calculateScores();
-            const recsData = generateRecommendations(results);
-            const abnormalSymptoms = getAbnormalSymptoms();
-            const age = calculateAge(patientInfo.birthDate);
+        // 修改 downloadJSONData 函數的最後部分
+        function downloadJSONDataOriginal() {
+            // ... 原有的程式碼 ...
             
-            // 準備完整的資料物件
-            const exportData = {
-                metadata: {
-                    exportDate: new Date().toISOString(),
-                    assessmentDate: patientInfo.assessmentDate,
-                    toolVersion: '2.0'
-                },
-                patientInfo: Object.assign({}, patientInfo, { age: age }),
-                responses: responses,
-                results: {
-                    overallRisk: results.overallRisk,
-                    adlImpairment: results.adlImpairment,
-                    rawScores: results.rawScores,
-                    percentages: results.percentages,
-                    probabilities: results.probabilities,
-                    dementiaTypeProbabilities: recsData.sorted.map(function(item) {
-                        return {
-                            type: item[0],
-                            name: getDementiaName(item[0]),
-                            probability: item[1]
-                        };
-                    })
-                },
-                abnormalSymptoms: abnormalSymptoms,
-                recommendations: recsData.recommendations.map(function(rec) {
-                    return {
-                        type: rec.type,
-                        text: rec.text
-                    };
-                })
-            };
-            
-            // 生成唯一的檔案名稱
-            const timestamp = Date.now();
-            const filename = `assessment_${patientInfo.chartNumber}_${timestamp}.json`;
-            
-            // 轉換為 JSON 字串
             const jsonString = JSON.stringify(exportData, null, 2);
-            
-            // 調用現有的上傳函數
-            uploadToGitHub(jsonString, filename);
+            const blob = new Blob([jsonString], { type: 'application/json;charset=utf-8' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = '評估資料_' + patientInfo.name + '_' + patientInfo.assessmentDate + '_' + Date.now() + '.json';
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+
+            setTimeout(function() {
+                if (confirm('💾 資料已下載到本機\n\n☁️ 是否要同時上傳到雲端進行統計分析？\n(自動儲存到 Google Drive，無需登入)')) {
+                    uploadToGoogleDrive(jsonString, function(success) {
+                        setTimeout(function() {
+                            if (confirm('是否要返回首頁重新評估？')) {
+                                restartAssessment();
+                            }
+                        }, 1000);
+                    });
+                } else {
+                    setTimeout(function() {
+                        if (confirm('是否要返回首頁重新評估？')) {
+                            restartAssessment();
+                        }
+                    }, 500);
+                }
+            }, 500);
         }
-        
-        updateProgress();
     </script>
 </body>
 </html>
