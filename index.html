@@ -1801,41 +1801,61 @@
         }
 
         // [MODIFIED] v2.0: (SILENT) 上傳到 Google Drive (移除 alert)
-        function uploadToGoogleDrive_Silent(jsonData) {
-            // 🔧 請將下面的 URL 替換為您的 Google Apps Script URL
-            const scriptUrl = 'https://script.google.com/macros/s/AKfycbw3uS2wMJkXhrRnqrmzYoA_5-DpfHT0atHGZR0203WjDNzkAMpddbdtqXXv8sggWfMq/exec';
-            
-            // [REMOVED] v2.0: 移除了檢查 scriptUrl 並 alert 的 if 判斷式
-            // if (scriptUrl === '...') { ... }
+        // ==========================================
+// 複製並取代您 HTML 檔案中的 uploadToGoogleDrive_Silent 函數
+// (修正：直接傳遞 JSON 字串)
+// ==========================================
+function uploadToGoogleDrive_Silent(jsonData) { // jsonData 應該已經是字串
+    // 🔧 請將下面的 URL 替換為您的 Google Apps Script URL
+    const scriptUrl = 'https://script.google.com/macros/s/AKfycbw3uS2wMJkXhrRnqrmzYoA_5-DpfHT0atHGZR0203WjDNzkAMpddbdtqXXv8sggWfMq/exec'; // <--- 請確保這裡填寫了您正確的 URL
 
-            const data = JSON.parse(jsonData);
-            
-            fetch(scriptUrl, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify(data)
-            })
-            .then(function(response) {
-                if (response.ok) {
-                    return response.json();
-                }
-                throw new Error('Network response was not ok.');
-            })
-            .then(function(result) {
-                if (result && result.success) {
-                    console.log('Google Drive Upload Success:', result.fileName);
-                } else {
-                    throw new Error(result ? result.message : 'Unknown upload error');
-                }
-            })
-            .catch(function(error) {
-                console.error('Google Drive Upload Failed:', error.message);
-            });
+    // 驗證 jsonData 是否為有效的字串 (基本檢查)
+    if (typeof jsonData !== 'string' || jsonData.length < 2 || !jsonData.startsWith('{')) {
+         console.error('Google Drive Upload Failed: Invalid JSON data string provided.');
+         return; // 如果 jsonData 無效，則不執行 fetch
+    }
+
+    fetch(scriptUrl, {
+        method: 'POST',
+        // **修正:** mode: 'no-cors' 移除或註解掉，因為 Apps Script Web App 通常需要 CORS 才能回傳 JSON 成功訊息
+        // mode: 'no-cors', // 如果您的 Apps Script 不需要回傳，可以保留，但建議移除以接收回傳
+        cache: 'no-cache', // 避免快取舊請求
+        headers: {
+             // **修正:** 改用 'text/plain' 傳送純字串，讓 Apps Script 端更容易解析
+             // 'Content-Type': 'application/json',
+            'Content-Type': 'text/plain;charset=utf-8', // Apps Script 的 e.postData.contents 更容易處理純文字
+        },
+        // **修正:** 直接使用傳入的 jsonData 字串作為 body
+        body: jsonData
+    })
+    .then(function(response) {
+        // 即使是 no-cors, fetch 也不會拋出錯誤，而是返回一個 opaque response
+        // 如果移除 no-cors，這裡可以檢查 response.ok
+        if (response.ok) {
+            return response.json(); // 嘗試解析 Apps Script 回傳的 JSON
         }
-        
-        // --- 結束 v2.0 修改的功能 ---
+        // 如果 fetch 失敗 (網路問題或 CORS 問題)
+        // 嘗試從 response 讀取文字錯誤訊息 (如果有的話)
+        return response.text().then(text => {
+             throw new Error('Network response was not ok. Status: ' + response.status + ' Body: ' + text);
+        });
+    })
+    .then(function(result) {
+        // Apps Script 成功回傳 JSON
+        if (result && result.success) {
+            console.log('Google Drive Upload Success:', result.fileName || 'Unknown Filename');
+        } else {
+            // Apps Script 回傳了 JSON 但 success 為 false 或格式不對
+            throw new Error(result ? result.message : 'Unknown upload error from script');
+        }
+    })
+    .catch(function(error) {
+        // 捕捉 fetch 本身的錯誤 或 then 中拋出的錯誤
+        console.error('Google Drive Upload Failed:', error.message);
+        // 您可以在這裡加入一個給使用者的溫和提示，例如在頁面某處顯示一個小小的錯誤圖示
+        // 但由於是 "Silent" 模式，避免使用 alert()
+    });
+}
 
 
         // 重新評估 (v2.0 logic)
@@ -1862,4 +1882,5 @@
         }
     </script>
 </body>
+
 </html>
