@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>臨床病史失智診斷結構性問卷 - 互動式評估工具</title>
+    <title>臨床病史失智診斷結構性問卷  v2.0</title>
     <style>
         * {
             margin: 0;
@@ -43,6 +43,17 @@
         .header p {
             font-size: 14px;
             opacity: 0.9;
+        }
+
+        .version-badge {
+            display: inline-block;
+            background: #fbbf24;
+            color: #1e3a8a;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: bold;
+            margin-top: 10px;
         }
 
         .progress-bar {
@@ -241,61 +252,64 @@
             box-shadow: 0 10px 20px rgba(16, 185, 129, 0.4);
         }
 
+        .btn-info {
+            background: #0ea5e9;
+            color: white;
+        }
+
         .info-box {
             background: #dbeafe;
             border-left: 4px solid #3b82f6;
             padding: 20px;
-            border-radius: 8px;
-            margin-bottom: 25px;
+            border-radius: 10px;
+            margin-bottom: 20px;
         }
 
         .info-box h3 {
             color: #1e40af;
             margin-bottom: 10px;
-            font-size: 18px;
         }
 
         .info-box ul {
             list-style-position: inside;
-            color: #374151;
+            color: #1e3a8a;
         }
 
         .info-box li {
             margin-bottom: 5px;
-            padding-left: 10px;
         }
 
         .results-container {
-            padding: 30px;
+            padding: 20px;
         }
 
         .risk-card {
-            background: white;
-            border-radius: 12px;
+            background: #f9fafb;
             padding: 25px;
+            border-radius: 12px;
             margin-bottom: 20px;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-            border-left: 5px solid #3b82f6;
+            border: 2px solid #e5e7eb;
         }
 
         .risk-summary {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
             gap: 20px;
-            margin-bottom: 20px;
+            margin-top: 20px;
         }
 
         .risk-item {
             text-align: center;
-            padding: 20px;
-            background: linear-gradient(135deg, #f0f9ff, #e0f2fe);
+            padding: 15px;
+            background: white;
             border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
         }
 
         .risk-label {
             font-size: 14px;
             color: #6b7280;
-            margin-bottom: 8px;
+            margin-bottom: 10px;
         }
 
         .risk-value {
@@ -307,6 +321,30 @@
         .risk-moderate { color: #ea580c; }
         .risk-mild { color: #ca8a04; }
         .risk-low { color: #16a34a; }
+
+        .confidence-indicator {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: bold;
+            margin-left: 10px;
+        }
+
+        .confidence-high {
+            background: #dcfce7;
+            color: #14532d;
+        }
+
+        .confidence-moderate {
+            background: #fef3c7;
+            color: #78350f;
+        }
+
+        .confidence-low {
+            background: #fee2e2;
+            color: #7f1d1d;
+        }
 
         .probability-bars {
             margin: 20px 0;
@@ -354,6 +392,19 @@
             color: white;
             font-weight: bold;
             font-size: 14px;
+        }
+
+        .subtype-info {
+            background: #eff6ff;
+            border-left: 4px solid #3b82f6;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 10px;
+        }
+
+        .subtype-info h4 {
+            color: #1e40af;
+            margin-bottom: 5px;
         }
 
         .recommendations {
@@ -482,6 +533,7 @@
         <div class="header">
             <h1>📋 臨床病史失智診斷結構性問卷</h1>
             <p>Interactive Assessment Tool - 互動式評估工具</p>
+            <span class="version-badge">整合版 v2.0</span>
         </div>
 
         <div class="progress-bar" id="progressBar">
@@ -489,36 +541,26 @@
         </div>
         <div class="progress-text" id="progressText"></div>
 
-        <!-- 步驟0: 基本資料 -->
         <div id="step0" class="content">
             <div class="info-box">
                 <h3>📌 評估說明</h3>
                 <ul>
                     <li>本問卷用於初步評估失智症風險，不能取代專業醫療診斷</li>
                     <li>請由了解患者狀況的家屬或照顧者協助填寫</li>
-                    <li>評估約需15-20分鐘，請依實際情況誠實作答</li>
-                    <li>所有資料將嚴格保密，僅供臨床參考</li>
-                    <li>完成後可下載完整文字報告或匯出資料供分析</li>
-                    <li><strong>✨ 填答過程中可隨時返回修改，完成後也能回到任何步驟重新調整</strong></li>
+                    <li>評估約需10-15分鐘，請依實際情況誠實作答</li>
+                    <li>未勾選的題目將視為「無此症狀」（正常）</li>
+                    <li><strong>完成評估後，資料將自動加密儲存至雲端</strong></li>
+                    <li>完成後可下載完整報告或匯出資料供分析</li>
                 </ul>
             </div>
 
-        <div class="info-box" style="background: #fff7ed; border-left-color: #f59e0b;">
-                <h3>💡 檔案自動儲存設定</h3>
+            <div class="info-box" style="background: #fee2e2; border-left-color: #dc2626;">
+                <h3>🆕 v2.0 版本更新</h3>
                 <ul>
-                    <li><strong>Chrome/Edge</strong>：設定 → 下載 → 設定預設下載位置（不勾選「下載前詢問」）</li>
-                    <li><strong>Firefox</strong>：設定 → 一般 → 檔案與應用程式 → 選擇「儲存檔案至」並設定資料夾</li>
-                    <li><strong>Safari</strong>：偏好設定 → 一般 → 檔案下載位置</li>
-                    <li>設定完成後，報告會自動下載到您指定的資料夾，完成後自動返回首頁</li>
-                </ul>
-            </div>
-
-            <!-- 加入這個新的 info-box -->
-            <div class="info-box" style="background: #e0f2fe; border-left-color: #0ea5e9;">
-                <h3>☁️ 雲端儲存功能</h3>
-                <ul>
-                    <li>評估完成後會「上傳到雲端」自動儲存</li>
-                    <li>所有上傳的資料會自動整合成 Excel 報表</li>
+                    <li>(v2.0) 新增 PDD 為獨立診斷，並依「一年條款」自動區分 PDD/DLB</li>
+                    <li>(v2.0) 強化 Lewy 體光譜症狀權重 (x2.0)，提升鑑別度</li>
+                    <li>(v2.0) 新增中風病史對 AD/PDD/DLB 的診斷排斥權重</li>
+                    </li>
                 </ul>
             </div>
 
@@ -578,10 +620,8 @@
             </div>
         </div>
 
-        <!-- 問卷步驟 -->
         <div id="questionSteps" class="content hidden"></div>
 
-        <!-- 結果頁面 -->
         <div id="resultsPage" class="content hidden"></div>
     </div>
 
@@ -590,8 +630,9 @@
         let currentStep = 0;
         let responses = {};
         let patientInfo = {};
+        let globalResults = {}; 
 
-        // 問卷結構
+        // 優化版問卷結構 v2.0
         const questionSections = [
             {
                 id: 'consciousness',
@@ -599,7 +640,6 @@
                 subtitle: '(不清楚或是不確定請選否)',
                 questions: [
                     { id: 'dlb1_1', text: '白天嗜睡或經常昏昏欲睡', type: 'yesno' },
-                    { id: 'dlb1_2', text: '常常思緒雜亂無章，說話不合邏輯', type: 'yesno' },
                     { id: 'dlb1_3', text: '意識或認知症狀起伏很大，甚至一天之內好壞就差很多嗎？', type: 'noyes' },
                     { id: 'dlb1_4', text: '睡覺時因為夢境而產生一些動作行為，例如：喊叫、揮拳、揮舞雙臂、起身跑等', type: 'yesno' }
                 ]
@@ -612,7 +652,19 @@
                     { id: 'dlb2_1', text: '坐著或靜止不動的時候，肢體或頭部會明顯地顫抖', type: 'yesno' },
                     { id: 'dlb2_2', text: '動作變得緩慢，尤其是起步特別困難，面部表情也明顯減少', type: 'yesno' },
                     { id: 'dlb2_3', text: '動作變得僵硬，走路步伐變小身體會前傾', type: 'yesno' },
-                    { id: 'dlb2_4', text: '動作變得不穩，走路不平衡，有時候好像要跌倒或真的跌倒', type: 'yesno' }
+                    { id: 'dlb2_4', text: '動作變得不穩，走路不平衡，有時候好像要跌倒或真的跌倒', type: 'yesno' },
+                    { 
+                        id: 'dlb_temporal', 
+                        text: '認知問題與動作問題何者先出現？', 
+                        type: 'temporal',
+                        options: [
+                            '認知先或同時（1年內）',
+                            '動作先超過1年',
+                            '只有認知問題',
+                            '只有動作問題',
+                            '不確定'
+                        ]
+                    }
                 ]
             },
             {
@@ -627,7 +679,8 @@
                     { id: 'ftd3_5', text: '變得冷漠，對周邊的事物失去動力或興趣', type: 'yesno' },
                     { id: 'ftd3_6', text: '變得缺乏同理心，毫不在意外界的想法與感受，也不會同情別人', type: 'yesno' },
                     { id: 'ftd3_7', text: '產生怪異行為、重複的動作，或是強迫性的言語或行為', type: 'yesno' },
-                    { id: 'ftd3_8', text: '飲食喜好改變，或更酗菸或酒，不正常地吃甜食，或將不可吃的東西放入口裡', type: 'yesno' }
+                    { id: 'ftd3_8', text: '飲食喜好改變，或更酗菸或酒，不正常地吃甜食，或將不可吃的東西放入口裡', type: 'yesno' },
+                    { id: 'ftd3_9', text: '出現社交不適切行為、失去禮儀或做出衝動魯莽的舉動', type: 'yesno' }
                 ]
             },
             {
@@ -645,13 +698,11 @@
                 title: '五、記憶力症狀',
                 subtitle: '(不清楚或是不確定請選不會)',
                 questions: [
-                    { id: 'ad5_1', text: '會忘記熟悉親人或朋友的名字嗎？', type: 'noyes' },
-                    { id: 'ad5_2', text: '會重複問相同的問題或講相同的事情嗎？', type: 'noyes' },
-                    { id: 'ad5_3', text: '會忘記與別人的重要約會嗎？', type: 'noyes' },
-                    { id: 'ad5_4', text: '學習如何使用新的工具設備（例如：手機或其他電子產品）會變得困難嗎？', type: 'noyes' },
-                    { id: 'ad5_5', text: '會常常忘記物品放置位置嗎？', type: 'frequency3' },
+                    { id: 'ad5_1', text: '會忘記熟悉親人或朋友的名字嗎？', type: 'frequency3' },
+                    { id: 'ad5_2', text: '會重複問相同的問題或講相同的事情嗎？', type: 'frequency3' },
+                    { id: 'ad5_3', text: '會忘記與別人的重要約會嗎？', type: 'frequency3' },
+                    { id: 'ad5_4', text: '學習如何使用新的工具設備（例如：手機或其他電子產品）會變得困難嗎？', type: 'frequency3' },
                     { id: 'ad5_6', text: '會常常忘記最近發生的事情嗎？', type: 'frequency3' },
-                    { id: 'ad5_7', text: '會常常忘記關瓦斯或水龍頭嗎？', type: 'frequency3' },
                     { id: 'ad5_8', text: '會因為回答不出問題或是分不清楚過去現在，就亂編故事嗎？', type: 'frequency3' }
                 ]
             },
@@ -660,11 +711,10 @@
                 title: '六、定向力症狀',
                 subtitle: '(不清楚或是不確定請選不會)',
                 questions: [
-                    { id: 'ad6_1', text: '會忘記正確的年份和月份嗎？', type: 'noyes' },
-                    { id: 'ad6_2', text: '在熟悉的環境（例如：住家附近）會迷路嗎？', type: 'noyes' },
-                    { id: 'ad6_3', text: '尋找物品（例如：找冰箱或櫃子內物品）會有困難嗎？', type: 'noyes' },
-                    { id: 'ad6_4', text: '會無法辨認親人臉孔、自家建築房間或自己的物品嗎？', type: 'noyes' },
-                    { id: 'ad6_5', text: '空間認知（例如：停車有困難或身處危險地方不自知）有變差嗎？', type: 'noyes' }
+                    { id: 'ad6_1', text: '會忘記正確的年份和月份嗎？', type: 'frequency3' },
+                    { id: 'ad6_2', text: '在熟悉的環境（例如：住家附近）會迷路嗎？', type: 'frequency3' },
+                    { id: 'ad6_3', text: '尋找物品（例如：找冰箱或櫃子內物品）會有困難嗎？', type: 'frequency3' },
+                    { id: 'ad6_4', text: '會無法辨認親人臉孔、自家建築房間或自己的物品嗎？', type: 'frequency3' }
                 ]
             },
             {
@@ -672,13 +722,14 @@
                 title: '七、判斷力與執行功能症狀',
                 subtitle: '(不清楚或是不確定請選不會)',
                 questions: [
-                    { id: 'ftd7_1', text: '應對進退（例如：參加親朋好友婚喪喜慶）會有不適當言行舉止嗎？', type: 'noyes' },
-                    { id: 'vad7_2', text: '做出錯誤的判斷或決定嗎？例如：被騙、買不適宜物品、不顧安危等', type: 'noyes' },
-                    { id: 'vad7_3', text: '處理複雜的財務，例如：上銀行、繳費、開支票等會變得困難嗎？', type: 'noyes' },
+                    { id: 'ftd7_1', text: '應對進退（例如：參加親朋好友婚喪喜慶）會有不適當言行舉止嗎？', type: 'frequency3' },
+                    { id: 'vad7_2', text: '做出錯誤的判斷或決定嗎？例如：被騙、買不適宜物品、不顧安危等', type: 'frequency3' },
+                    { id: 'vad7_3', text: '處理複雜的財務，例如：上銀行、繳費、開支票等會變得困難嗎？', type: 'frequency3' },
                     { id: 'vad7_4', text: '變得很困難計畫安排或下決定嗎？', type: 'decision' },
-                    { id: 'vad7_5', text: '變得不知事情的輕重緩急（重要性），搞錯順序嗎？', type: 'noyes' },
-                    { id: 'vad7_6', text: '操作日常生活用品明顯比以前困難嗎？例如：使用電話、遙控器，或微波爐等', type: 'noyes' },
-                    { id: 'vad7_7', text: '面對問題變得無法解決或思考變得沒有彈性不知變通嗎？', type: 'noyes' }
+                    { id: 'vad7_5', text: '變得不知事情的輕重緩急（重要性），搞錯順序嗎？', type: 'frequency3' },
+                    { id: 'vad7_6', text: '操作日常生活用品明顯比以前困難嗎？例如：使用電話、遙控器，或微波爐等', type: 'frequency3' },
+                    { id: 'vad7_8', text: '會常常忘記關瓦斯、水龍頭或電器嗎？', type: 'frequency3' },
+                    { id: 'vad7_9', text: '反應速度明顯變慢嗎？', type: 'frequency3' }
                 ]
             },
             {
@@ -687,11 +738,12 @@
                 subtitle: '(不清楚或是不確定請選否或不會)',
                 questions: [
                     { id: 'ppa8_1', text: '想要講某個名詞例如人名或物名卻常常講不出來嗎？', type: 'frequency3' },
-                    { id: 'ppa8_2', text: '說話會變得很少或變得不流利，無法完整地講一個句子嗎？', type: 'noyes' },
-                    { id: 'ppa8_3', text: '說話變得容易說錯話或文法錯誤？', type: 'noyes' },
-                    { id: 'ppa8_4', text: '會變得聽不懂別人的話或無法理解文意嗎？', type: 'noyes' },
-                    { id: 'ppa8_5', text: '會一直重複說同樣的字句或重複別人的字句嗎？', type: 'noyes' },
-                    { id: 'ftd8_6', text: '語言功能異常是否最早發生，而且比其他認知症狀早很多嗎？', type: 'yesno' }
+                    { id: 'ppa8_2', text: '說話會變得很少或變得不流利，無法完整地講一個句子嗎？', type: 'frequency3' },
+                    { id: 'ppa8_3', text: '說話變得容易說錯話或文法錯誤？', type: 'frequency3' },
+                    { id: 'ppa8_4', text: '會變得聽不懂別人的話或無法理解文意嗎？', type: 'frequency3' },
+                    { id: 'ftd8_6', text: '語言功能異常是否最早發生，而且比其他認知症狀早很多嗎？', type: 'yesno' },
+                    { id: 'ppa8_7', text: '會對單一詞彙理解困難嗎？（如不懂常見物品名稱）', type: 'frequency3' },
+                    { id: 'ppa8_8', text: '複述句子會有困難嗎？', type: 'frequency3' }
                 ]
             },
             {
@@ -699,46 +751,112 @@
                 title: '九、日常生活狀況',
                 subtitle: '(請照顧者務必依病患現階段能力選擇其中一個項目)',
                 questions: [
-                    { id: 'adl9_1', text: '能上街購物嗎？', type: 'adl3', options: ['能獨立購買生活用品', '需要有人陪同或協助', '完全不會購買'] },
-                    { id: 'adl9_2', text: '能夠自行外出活動嗎？', type: 'adl3', options: ['能獨立搭車或騎/開車', '需要有人陪同', '完全不能出門'] },
-                    { id: 'adl9_3', text: '能夠準備飯菜嗎？例如作菜、點菜或外燴', type: 'adl4', options: ['不適用(平常沒在做)', '正常(可以獨立完成)', '部分自理(需要協助或只能做簡單的)', '無法自理(需要別人煮好、擺好)'] },
-                    { id: 'adl9_4', text: '能夠做家事嗎？例如收拾房間、打掃', type: 'adl4', options: ['不適用(平常沒在做)', '正常(可以獨立完成)', '部分自理(只能做簡單家事)', '無法自理(完全需要別人協助)'] },
-                    { id: 'adl9_5', text: '能夠洗衣服嗎？', type: 'adl4', options: ['不適用(平常沒在做)', '正常(可以獨立完成)', '部分自理(只能洗小件衣物)', '無法自理(完全依靠別人)'] },
-                    { id: 'adl9_6', text: '能夠使用電話或手機嗎？', type: 'adl3', options: ['正常使用', '只會接聽或撥熟悉號碼', '完全不會使用'] },
-                    { id: 'adl9_7', text: '還能夠自行服用藥物嗎？', type: 'adl3', options: ['正常或不需服藥', '需要提醒才會服用', '需要別人準備或完全依賴'] },
-                    { id: 'adl9_8', text: '能夠處理錢財嗎？', type: 'adl3', options: ['能處理日常購買及財務', '只能處理簡單的零錢交易', '完全無法處理錢財'] },
-                    { id: 'adl9_9', text: '現在還在從事例行的活動或平常的嗜好興趣嗎？例如運動、唸佛、上教堂、打牌、麻將、唱歌、或與孫子女玩等', type: 'adl3', options: ['如常', '有減少', '幾乎沒有或完全沒有，整天在自己房間'] },
-                    { id: 'adl9_10', text: '上述活動困難，病人是因肢體或行動不便嗎？', type: 'yesno' }
+                    { 
+                        id: 'adl9_1', 
+                        text: '能上街購物嗎？', 
+                        type: 'adl3',
+                        options: ['能獨立購買生活用品', '上街購物需要有人陪', '完全不會購買']
+                    },
+                    { 
+                        id: 'adl9_2', 
+                        text: '能夠自行外出活動嗎？', 
+                        type: 'adl3',
+                        options: ['能自行搭車或騎/開車', '需要有人陪同', '完全不能出門']
+                    },
+                    { 
+                        id: 'adl9_3', 
+                        text: '能夠準備飯菜嗎？', 
+                        type: 'adl4',
+                        options: ['不適用(平常沒在做)', '正常或有人協助下可以', '需要別人準備', '完全依賴他人']
+                    },
+                    { 
+                        id: 'adl9_4', 
+                        text: '能夠做家事嗎？', 
+                        type: 'adl4',
+                        options: ['不適用(平常沒在做)', '能完成簡單家事', '需要協助', '完全依賴他人']
+                    },
+                    { 
+                        id: 'adl9_6', 
+                        text: '能夠使用電話或手機嗎？', 
+                        type: 'adl3',
+                        options: ['正常或可撥熟悉號碼', '僅會接不會撥', '完全不會']
+                    },
+                    { 
+                        id: 'adl9_7', 
+                        text: '還能夠自行服用藥物嗎？', 
+                        type: 'adl3',
+                        options: ['正常或需要提醒', '別人事先準備好', '完全依靠別人']
+                    },
+                    { 
+                        id: 'adl9_8', 
+                        text: '能夠處理錢財嗎？', 
+                        type: 'adl3',
+                        options: ['可處理日常購買', '有困難', '完全無法處理']
+                    },
+                    { 
+                        id: 'adl9_10', 
+                        text: '上述活動困難，病人是因肢體或行動不便嗎？', 
+                        type: 'yesno'
+                    }
+                ]
+            },
+            {
+                id: 'supplementary',
+                title: '十、補充資訊',
+                subtitle: '(重要鑑別資訊)',
+                questions: [
+                    {
+                        id: 'progression',
+                        text: '病程進展模式',
+                        type: 'single_choice',
+                        options: ['逐漸惡化', '階梯式惡化', '起伏不定', '快速惡化（<6個月）']
+                    },
+                    {
+                        id: 'duration',
+                        text: '症狀已持續時間',
+                        type: 'single_choice',
+                        options: ['<6個月', '6-12個月', '1-2年', '2-5年', '>5年']
+                    },
+                    {
+                        id: 'stroke_history',
+                        text: '有無中風病史',
+                        type: 'stroke',
+                        options: ['無', '有']
+                    },
+                    {
+                        id: 'family_history',
+                        text: '失智症家族史',
+                        type: 'family',
+                        options: ['無', '有（早發<65歲）', '有（晚發≥65歲）', '不清楚']
+                    }
                 ]
             }
         ];
 
-        // 評分權重
+        // 評分權重 v2.0
         const scoringWeights = {
-            DLB: {
-                'dlb1_1': 2.0, 'dlb1_2': 2.0, 'dlb1_3': 3.0, 'dlb1_4': 4.5,
+            LBS: {
+                'dlb3_1': 5.0, 'dlb1_3': 4.0, 'dlb1_4': 4.5,
                 'dlb2_1': 3.0, 'dlb2_2': 3.5, 'dlb2_3': 3.0, 'dlb2_4': 2.5,
-                'dlb3_1': 5.0, 'dlb4_2': 2.0, 'dlb4_3': 2.0
+                'dlb1_1': 2.0, 'dlb4_2': 2.5, 'dlb4_3': 2.0
             },
             AD: {
-                'ad5_1': 3.5, 'ad5_2': 4.0, 'ad5_3': 3.5, 'ad5_4': 3.0,
-                'ad5_5': 2.5, 'ad5_6': 4.0, 'ad5_7': 3.0, 'ad5_8': 2.5,
-                'ad6_1': 3.5, 'ad6_2': 3.0, 'ad6_3': 2.5, 'ad6_4': 3.0, 'ad6_5': 2.5,
-                'dlb3_2': 1.5, 'dlb3_3': 1.5
-            },
-            VaD: {
-                'vad7_2': 3.5, 'vad7_3': 3.5, 'vad7_4': 3.0, 'vad7_5': 3.0,
-                'vad7_6': 2.5, 'vad7_7': 3.0, 'vad4_1': 2.5,
-                'dlb2_4': 2.0, 'ad5_1': 1.5, 'ad5_2': 2.0, 'ad5_6': 2.0
+                'ad5_2': 4.5, 'ad5_6': 4.0, 'ad5_8': 3.0, 'ad5_1': 3.0, 'ad5_3': 3.0, 'ad5_4': 2.5,
+                'ad6_1': 3.5, 'ad6_2': 3.5, 'ad6_3': 2.5, 'ad6_4': 3.0,
+                'dlb3_2': 2.0, 'dlb3_3': 1.5
             },
             FTD: {
-                'ftd7_1': 4.0, 'ftd3_5': 4.0, 'ftd3_6': 4.5, 'ftd3_7': 3.5,
-                'ftd3_8': 3.5, 'ftd3_4': 2.5, 'vad7_2': 3.0, 'vad7_4': 3.0,
-                'vad7_7': 3.0, 'ftd8_6': 4.0
+                'ftd3_6': 5.0, 'ftd3_5': 4.5, 'ftd7_1': 4.5, 'ftd3_9': 4.0, 'ftd3_7': 4.0, 'ftd3_8': 3.5, 'ftd3_4': 3.0,
+                'vad7_2': 3.0, 'vad7_4': 3.0,
+                'ftd8_6': 4.0
+            },
+            VaD: {
+                'vad7_2': 4.0, 'vad7_3': 3.5, 'vad7_4': 3.5, 'vad7_5': 3.0, 'vad7_6': 3.0, 'vad7_8': 2.5, 'vad7_9': 3.5,
+                'vad4_1': 3.0, 'dlb2_4': 2.5,
+                'ad5_2': 2.0, 'ad5_6': 2.0
             },
             PPA: {
-                'ppa8_1': 3.5, 'ppa8_2': 3.5, 'ppa8_3': 3.0,
-                'ppa8_4': 3.5, 'ppa8_5': 3.0, 'ftd8_6': 5.0
+                'ftd8_6': 5.0, 'ppa8_1': 3.5, 'ppa8_2': 3.5, 'ppa8_3': 3.0, 'ppa8_4': 3.5, 'ppa8_7': 3.5, 'ppa8_8': 3.0
             }
         };
 
@@ -769,6 +887,8 @@
                 informantName: informantName,
                 informantRelation: informantRelation
             };
+            
+            globalResults = {}; 
 
             currentStep = 1;
             showStep(currentStep);
@@ -811,7 +931,7 @@
             window.scrollTo(0, 0);
         }
 
-        // 渲染問題輸入
+        // 渲染問題輸入 (v2.0 logic.)
         function renderQuestionInput(question) {
             const savedValue = responses[question.id];
             let html = '';
@@ -866,6 +986,10 @@
                 
                 case 'adl3':
                 case 'adl4':
+                case 'single_choice':
+                case 'temporal':
+                case 'stroke':
+                case 'family':
                     html = '<div class="radio-group vertical">';
                     question.options.forEach(function(opt, idx) {
                         html += '<label class="radio-label">';
@@ -882,6 +1006,44 @@
         // 儲存回應
         function saveResponse(questionId, value) {
             responses[questionId] = value;
+        }
+
+        // 優化版：取得回應值（未答題視為正常）
+        function getResponseValue(questionId) {
+            const value = responses[questionId];
+            if (value === undefined || value === null || value === '') {
+                return '正常';
+            }
+            return value;
+        }
+
+        // 優化版：回應值轉換為分數 (v2.0 logic)
+        function convertToScore(value, questionType) {
+            if (value === '正常' || value === undefined || value === null || value === '') {
+                return 0;
+            }
+            if (value === '否' || value === '不會') return 0;
+            if (value === '是' || value === '會') return 1;
+            if (value === '偶爾') return 0.5;
+            if (value === '常常') return 1;
+            
+            if (questionType === 'adl3') {
+                if (value === 0 || value === '不適用') return 0;
+                if (value === 1) return 0.5;
+                if (value === 2) return 1;
+            }
+            if (questionType === 'adl4') {
+                if (value === 0 || value === '不適用') return 0;
+                if (value === 1) return 0;
+                if (value === 2) return 0.5;
+                if (value === 3) return 1;
+            }
+            
+            if (typeof value === 'number') {
+                return value > 0 ? 1 : 0;
+            }
+            
+            return 0;
         }
 
         // 下一步
@@ -914,111 +1076,220 @@
                 '第 ' + currentStep + ' 部分，共 ' + questionSections.length + ' 部分 (' + Math.round(progress) + '% 完成)';
         }
 
-        // 計算評分
-        function calculateScores() {
-            const scores = { DLB: 0, AD: 0, VaD: 0, FTD: 0, PPA: 0 };
-            const maxScores = { DLB: 0, AD: 0, VaD: 0, FTD: 0, PPA: 0 };
-
-            Object.keys(responses).forEach(function(qId) {
-                const value = responses[qId];
-                
-                Object.keys(scoringWeights).forEach(function(type) {
-                    if (scoringWeights[type][qId]) {
-                        const weight = scoringWeights[type][qId];
-                        maxScores[type] += weight;
-                        
-                        if (value === '是' || value === '會') {
-                            scores[type] += weight;
-                        } else if (value === '偶爾') {
-                            scores[type] += weight * 0.5;
-                        } else if (value === '常常') {
-                            scores[type] += weight * 1.0;
-                        } else if (typeof value === 'number' && value > 0) {
-                            scores[type] += weight;
+        // 計算基礎分數 (v2.0 logic)
+        function calculateBaseScores() {
+            const scores = { LBS: 0, AD: 0, FTD: 0, VaD: 0, PPA: 0 };
+            const maxScores = { LBS: 0, AD: 0, FTD: 0, VaD: 0, PPA: 0 };
+            
+            Object.keys(scoringWeights).forEach(function(diseaseType) {
+                Object.keys(scoringWeights[diseaseType]).forEach(function(questionId) {
+                    const weight = scoringWeights[diseaseType][questionId];
+                    const response = getResponseValue(questionId);
+                    
+                    let questionType = null;
+                    questionSections.forEach(section => {
+                        const question = section.questions.find(q => q.id === questionId);
+                        if (question) {
+                            questionType = question.type;
                         }
-                    }
+                    });
+                    
+                    const scoreValue = convertToScore(response, questionType);
+                    
+                    scores[diseaseType] += weight * scoreValue;
+                    maxScores[diseaseType] += weight;
                 });
             });
-
-            const adlImpairment = calculateADLImpairment();
-            const functionalMultiplier = 1 + (adlImpairment / 100);
-            Object.keys(scores).forEach(function(type) {
-                scores[type] *= functionalMultiplier;
-            });
-
-            if (responses['dlb1_4'] === '是' && responses['dlb3_1'] === '是' && responses['dlb1_3'] === '會') {
-                scores.DLB *= 1.5;
-            }
             
-            if (responses['ftd7_1'] === '會' && responses['ftd3_5'] === '是' && responses['ftd3_6'] === '是') {
-                scores.FTD *= 1.4;
-            }
-            
-            if (responses['ftd8_6'] === '是' && 
-                (responses['ppa8_1'] === '常常' || responses['ppa8_2'] === '會' || responses['ppa8_4'] === '會')) {
-                scores.PPA *= 1.5;
-            }
-
-            const percentages = {};
-            Object.keys(scores).forEach(function(type) {
-                percentages[type] = maxScores[type] > 0 ? 
-                    Math.min(100, (scores[type] / maxScores[type]) * 100) : 0;
-            });
-
-            const totalScore = Object.values(percentages).reduce(function(a, b) { return a + b; }, 0);
-            const probabilities = {};
-            Object.keys(percentages).forEach(function(type) {
-                probabilities[type] = totalScore > 0 ? (percentages[type] / totalScore) * 100 : 0;
-            });
-
-            return {
-                rawScores: scores,
-                percentages: percentages,
-                probabilities: probabilities,
-                adlImpairment: adlImpairment,
-                overallRisk: calculateOverallRisk(percentages)
-            };
+            return { scores, maxScores };
         }
 
-        // 計算ADL障礙
+        // 優化版：計算ADL損害
         function calculateADLImpairment() {
             let impairmentScore = 0;
             let totalItems = 0;
             
-            for (let i = 1; i <= 9; i++) {
-                const qId = 'adl9_' + i;
-                if (responses[qId] !== undefined) {
-                    const value = responses[qId];
+            const adlQuestions = [
+                'adl9_1', 'adl9_2', 'adl9_3', 'adl9_4',
+                'adl9_6', 'adl9_7', 'adl9_8'
+            ];
+            
+            adlQuestions.forEach(function(qId) {
+                const response = responses[qId];
+                if (response !== undefined && response !== '不適用' && response !== 0) {
+                    totalItems++;
                     
-                    if (typeof value === 'number') {
-                        if (qId === 'adl9_3' || qId === 'adl9_4' || qId === 'adl9_5') {
-                            if (value === 0) {
-                                continue;
-                            } else {
-                                totalItems++;
-                                if (value === 1) {
-                                    impairmentScore += 0;
-                                } else if (value === 2) {
-                                    impairmentScore += 0.5;
-                                } else if (value === 3) {
-                                    impairmentScore += 1.0;
-                                }
-                            }
-                        } else {
-                            totalItems++;
-                            if (value === 0) {
-                                impairmentScore += 0;
-                            } else if (value === 1) {
-                                impairmentScore += 0.5;
-                            } else if (value >= 2) {
-                                impairmentScore += 1.0;
-                            }
+                    const question = questionSections.find(s => s.id === 'adl')
+                        ?.questions.find(q => q.id === qId);
+                    
+                    if (question) {
+                        if (question.type === 'adl3') {
+                            if (response == 2) impairmentScore += 1.0;
+                            else if (response == 1) impairmentScore += 0.5;
+                        } else if (question.type === 'adl4') {
+                            if (response == 3) impairmentScore += 1.0;
+                            else if (response == 2) impairmentScore += 0.5;
                         }
                     }
                 }
-            }
+            });
             
             return totalItems > 0 ? (impairmentScore / totalItems) * 100 : 0;
+        }
+
+        // 檢查巴金森症狀
+        function hasParkinsonian() {
+            const motorSymptoms = [
+                responses['dlb2_1'] === '是',
+                responses['dlb2_2'] === '是',
+                responses['dlb2_3'] === '是',
+                responses['dlb2_4'] === '是'
+            ];
+            return motorSymptoms.filter(x => x).length >= 2;
+        }
+
+        // 識別PPA次分型 (v2.0 logic)
+        function identifyPPASubtype(responses) {
+            const subtypes = {
+                nfvPPA: 0,  // 非流利型
+                svPPA: 0,   // 語意型
+                lvPPA: 0    // 缺詞型
+            };
+            
+            if ((responses['ppa8_2'] === '常常' || responses['ppa8_2'] === '偶爾') && 
+                (responses['ppa8_3'] === '常常' || responses['ppa8_3'] === '偶爾') && 
+                !(responses['ppa8_4'] === '常常' || responses['ppa8_4'] === '偶爾')) {
+                subtypes.nfvPPA = 80;
+            }
+            
+            if ((responses['ppa8_7'] === '常常' || responses['ppa8_7'] === '偶爾') && 
+                (responses['ppa8_4'] === '常常' || responses['ppa8_4'] === '偶爾')) {
+                subtypes.svPPA = 80;
+            }
+            
+            if ((responses['ppa8_1'] === '常常' || responses['ppa8_1'] === '偶爾') && 
+                (responses['ppa8_8'] === '常常' || responses['ppa8_8'] === '偶爾') && 
+                !(responses['ppa8_4'] === '常常' || responses['ppa8_4'] === '偶爾')) {
+                subtypes.lvPPA = 80;
+            }
+            
+            return subtypes;
+        }
+
+        // 應用特殊組合加成 (v2.0 logic)
+        function applySpecialCombinations(scores) {
+            
+            // Lewy Body Spectrum (LBS) 核心症狀加成
+            const hasFluctuations = responses['dlb1_3'] === '會';
+            const hasHallucinations = responses['dlb3_1'] === '是';
+            const hasRBD = responses['dlb1_4'] === '是';
+            const hasParkinsonism = hasParkinsonian();
+            const coreFeatureCount = [hasFluctuations, hasHallucinations, hasParkinsonism].filter(x => x).length;
+            
+            if (coreFeatureCount >= 2 || (coreFeatureCount === 1 && hasRBD)) {
+                scores.LBS *= 2.0; 
+            }
+
+            // 中風病史的競爭性權重
+            if (responses['stroke_history'] === 1) { // 1 = "有"
+                scores.VaD *= 1.5;
+                scores.AD *= 0.7;
+                scores.LBS *= 0.7;
+            }
+            
+            // VaD 階梯式惡化
+            if (responses['progression'] === 1) { // 1 = "階梯式惡化"
+                scores.VaD *= 1.5; 
+            }
+
+            // FTD 行為變異型
+            const ftdBehaviors = [
+                responses['ftd3_5'] === '是',
+                responses['ftd3_6'] === '是',
+                responses['ftd3_7'] === '是',
+                responses['ftd3_8'] === '是',
+                responses['ftd3_9'] === '是',
+                (responses['ftd7_1'] === '常常' || responses['ftd7_1'] === '偶爾')
+            ];
+            const behaviorCount = ftdBehaviors.filter(x => x).length;
+            if (behaviorCount >= 3) {
+                scores.FTD *= (1.3 + behaviorCount * 0.1);
+            }
+            
+            // PPA 語言優勢
+            if (responses['ftd8_6'] === '是') {
+                scores.PPA *= 1.6;
+            }
+            
+            return scores;
+        }
+
+        // 綜合計算分數 (v2.0 logic)
+        function calculateScores() {
+            // 步驟1: 基礎計分 (LBS, AD, FTD, VaD, PPA)
+            const { scores, maxScores } = calculateBaseScores();
+            
+            // 步驟2: ADL調整
+            const adlImpairment = calculateADLImpairment();
+            const functionalMultiplier = 1 + (adlImpairment / 200);
+            Object.keys(scores).forEach(function(type) {
+                scores[type] *= functionalMultiplier;
+            });
+            
+            // 步驟3: 特殊組合加成
+            const adjustedScores = applySpecialCombinations(scores);
+            
+            // 步驟4: 計算百分比
+            const percentages = {};
+            Object.keys(adjustedScores).forEach(function(type) {
+                percentages[type] = maxScores[type] > 0 ? 
+                    Math.min(100, (adjustedScores[type] / maxScores[type]) * 100) : 0;
+            });
+            
+            // 步驟5: 計算相對機率
+            const totalPercentage = Object.values(percentages).reduce(function(sum, val) { 
+                return sum + val; 
+            }, 0);
+            
+            const probabilities = {};
+            Object.keys(percentages).forEach(function(type) {
+                probabilities[type] = totalPercentage > 0 ? 
+                    (percentages[type] / totalPercentage) * 100 : 0;
+            });
+            
+            // 步驟 5b: LBS -> PDD/DLB 轉換 (一年條款裁決)
+            const lbs_probability = probabilities['LBS'];
+            if (lbs_probability !== undefined) {
+                delete probabilities['LBS']; // 移除 LBS
+                
+                if (responses['dlb_temporal'] === 1) { // 1 = "動作先超過1年"
+                    probabilities['PDD'] = lbs_probability; // 轉為 PDD
+                } else {
+                    probabilities['DLB'] = lbs_probability; // 轉為 DLB
+                }
+            }
+
+            // 步驟6: 計算風險等級
+            const overallRisk = calculateOverallRisk(percentages);
+            
+            // 步驟7: 計算診斷信心度
+            const confidence = calculateConfidence(probabilities);
+            
+            // 步驟8: 識別次分型
+            const subtypes = {};
+            if (probabilities.PPA > 20) {
+                subtypes.PPA = identifyPPASubtype(responses);
+            }
+            
+            return {
+                rawScores: adjustedScores,
+                percentages: percentages,
+                probabilities: probabilities, 
+                adlImpairment: adlImpairment,
+                overallRisk: overallRisk,
+                confidence: confidence,
+                subtypes: subtypes
+            };
         }
 
         // 計算整體風險
@@ -1026,13 +1297,28 @@
             const maxScore = Math.max.apply(null, Object.values(percentages));
             const avgScore = Object.values(percentages).reduce(function(a, b) { return a + b; }, 0) / 5;
             
-            if (maxScore >= 60 && avgScore >= 30) return 'high';
-            if (maxScore >= 40 || avgScore >= 20) return 'moderate';
-            if (maxScore >= 20 || avgScore >= 10) return 'mild';
+            if (maxScore >= 70 || avgScore >= 40) return 'high';
+            if (maxScore >= 50 || avgScore >= 25) return 'moderate';
+            if (maxScore >= 30 || avgScore >= 15) return 'mild';
             return 'low';
         }
 
-        // 生成建議
+        // 計算診斷信心度
+        function calculateConfidence(probabilities) {
+            const sorted = Object.entries(probabilities)
+                .sort(function(a, b) { return b[1] - a[1]; });
+            
+            const topScore = sorted[0]?.[1] || 0;
+            const secondScore = sorted[1]?.[1] || 0;
+            const gap = topScore - secondScore;
+            
+            if (topScore >= 60 && gap >= 30) return 'high';
+            if (topScore >= 40 && gap >= 20) return 'moderate';
+            if (topScore >= 30 && gap >= 10) return 'low';
+            return 'uncertain';
+        }
+
+        // 生成建議 (v2.0 logic)
         function generateRecommendations(results) {
             const probabilities = results.probabilities;
             const overallRisk = results.overallRisk;
@@ -1042,7 +1328,8 @@
             const sorted = Object.entries(probabilities)
                 .sort(function(a, b) { return b[1] - a[1]; })
                 .filter(function(item) { return item[1] > 15; });
-
+            
+            // 風險等級建議
             if (overallRisk === 'high') {
                 recommendations.push({
                     type: 'urgent',
@@ -1055,17 +1342,27 @@
                 });
             }
 
+            // PDD vs DLB 鑑別建議
+            if (probabilities.PDD > 30) {
+                 recommendations.push({
+                    type: 'urgent', 
+                    text: '動作症狀早於認知症狀一年以上，臨床應優先考慮 Parkinson\'s Disease Dementia (PDD)。'
+                });
+            }
+            
+            // 功能損害建議
             if (adlImpairment > 50) {
                 recommendations.push({
                     type: 'important',
                     text: '日常功能明顯受損，建議評估照護需求與安全措施'
                 });
             }
-
+            
+            // 疾病特異性建議
             if (probabilities.DLB > 30) {
                 recommendations.push({
                     type: 'clinical',
-                    text: '症狀符合Lewy Body失智症特徵，建議進行DaTscan或MIBG心肌閃爍攝影檢查'
+                    text: '症狀符合路易氏體失智症(DLB)特徵（認知先於動作），建議進行DaTscan或MIBG心肌閃爍攝影檢查'
                 });
                 if (responses['dlb1_4'] === '是') {
                     recommendations.push({
@@ -1074,14 +1371,20 @@
                     });
                 }
             }
-
-            if (probabilities.AD > 30 && responses['ad5_2'] === '會') {
+            
+            if (probabilities.AD > 30) {
                 recommendations.push({
                     type: 'clinical',
-                    text: '記憶障礙顯著，建議考慮腦部MRI及血液生物標記(如plasma p-tau217)檢測'
+                    text: '記憶障礙顯著，建議進行腦部MRI及認知功能完整評估'
                 });
+                if ((responses['ad5_2'] === '常常') && responses['ad5_6'] === '常常') {
+                    recommendations.push({
+                        type: 'clinical',
+                        text: '近期記憶嚴重受損，可考慮血液生物標記檢測（如plasma p-tau217）'
+                    });
+                }
             }
-
+            
             if (probabilities.FTD > 30) {
                 const age = calculateAge(patientInfo.birthDate);
                 if (age && age < 65) {
@@ -1090,15 +1393,26 @@
                         text: '年輕發病且有明顯行為改變，建議基因檢測評估遺傳性額顳葉失智症'
                     });
                 }
+                recommendations.push({
+                    type: 'important',
+                    text: '行為症狀明顯，建議家屬接受照護技巧指導'
+                });
             }
-
+            
+            if (probabilities.VaD > 30) {
+                recommendations.push({
+                    type: 'clinical',
+                    text: '血管性因素明顯（如中風病史），建議腦部MRI評估血管病變及心血管風險因子控制'
+                });
+            }
+            
             if (probabilities.PPA > 30) {
                 recommendations.push({
                     type: 'clinical',
-                    text: '語言功能障礙為主要症狀，建議語言治療評估及PET影像檢查'
+                    text: '語言功能障礙為主，建議語言治療評估及FDG-PET檢查'
                 });
             }
-
+            
             return { sorted: sorted, recommendations: recommendations };
         }
 
@@ -1115,7 +1429,7 @@
             return age;
         }
 
-        // 獲取異常症狀
+        // 獲取異常症狀 (v2.0 logic)
         function getAbnormalSymptoms() {
             const abnormalSymptoms = [];
             
@@ -1126,19 +1440,21 @@
                     
                     if (value === '是' || value === '會' || value === '常常') {
                         isAbnormal = true;
+                    } else if (value === '偶爾') {
+                        isAbnormal = true;
                     } else if (typeof value === 'number' && value > 0) {
-                        if (q.type === 'adl4') {
-                            isAbnormal = (value === 3);
-                        } else if (q.type === 'adl3') {
-                            isAbnormal = (value === 2);
-                        } else {
+                        if (q.type === 'adl3' && value >= 1) {
+                            isAbnormal = true;
+                        } else if (q.type === 'adl4' && value >= 2) {
+                            isAbnormal = true;
+                        } else if (q.type !== 'adl3' && q.type !== 'adl4' && q.type !== 'adl') {
                             isAbnormal = true;
                         }
                     }
                     
                     if (isAbnormal) {
                         let responseText = value;
-                        if (q.type === 'adl3' || q.type === 'adl4') {
+                        if (q.options && typeof value === 'number') {
                             responseText = q.options[value] || value;
                         }
                         
@@ -1154,16 +1470,27 @@
             return abnormalSymptoms;
         }
 
-        // 失智症名稱
+        // 失智症名稱 (v2.0 logic)
         function getDementiaName(type) {
             const names = {
                 'AD': "Alzheimer's Disease (阿茲海默症)",
                 'DLB': 'Dementia with Lewy Bodies (路易氏體失智症)',
+                'PDD': "Parkinson's Disease Dementia (巴金森病失智症)",
                 'VaD': 'Vascular Dementia (血管性失智症)',
                 'FTD': 'Frontotemporal Dementia (額顳葉失智症)',
                 'PPA': 'Primary Progressive Aphasia (原發性進行性失語症)'
             };
             return names[type] || type;
+        }
+
+        // 取得PPA次分型名稱
+        function getPPASubtypeName(subtype) {
+            const names = {
+                'nfvPPA': '非流利/文法缺失型',
+                'svPPA': '語意變異型',
+                'lvPPA': '缺詞變異型'
+            };
+            return names[subtype] || subtype;
         }
 
         // 風險文字和顏色
@@ -1177,18 +1504,40 @@
             return info[risk] || info['low'];
         }
 
-        // 顯示結果
+        // 取得信心度資訊
+        function getConfidenceInfo(confidence) {
+            const info = {
+                'high': { text: '高信心度', class: 'confidence-high' },
+                'moderate': { text: '中信心度', class: 'confidence-moderate' },
+                'low': { text: '低信心度', class: 'confidence-low' },
+                'uncertain': { text: '不確定', class: 'confidence-low' }
+            };
+            return info[confidence] || info['uncertain'];
+        }
+
+        // 顯示結果 (v2.0 logic)
         function showResults() {
-            const results = calculateScores();
-            const recsData = generateRecommendations(results);
+            globalResults = calculateScores();
+            const results = globalResults; 
+
+            try {
+                const jsonString = generateJSONDataString(); 
+                uploadToGoogleDrive_Silent(jsonString);
+            } catch (e) {
+                console.error("Auto-save failed:", e);
+            }
+
+            const recsData = generateRecommendations(results); 
             const sorted = recsData.sorted;
             const recommendations = recsData.recommendations;
             const abnormalSymptoms = getAbnormalSymptoms();
             const riskInfo = getRiskInfo(results.overallRisk);
+            const confidenceInfo = getConfidenceInfo(results.confidence);
 
             let html = '<div class="results-container">';
             html += '<div class="section-title">📊 評估結果報告</div>';
             
+            // 整體風險摘要
             html += '<div class="risk-card">';
             html += '<h3 style="margin-bottom: 15px;">整體評估摘要</h3>';
             html += '<div class="risk-summary">';
@@ -1198,121 +1547,127 @@
             html += '</div>';
             html += '<div class="risk-item">';
             html += '<div class="risk-label">日常功能障礙程度</div>';
-            html += '<div class="risk-value" style="color: #8b5cf6;">' + results.adlImpairment.toFixed(1) + '%</div>';
+            html += '<div class="risk-value" style="color: #3b82f6;">' + Math.round(results.adlImpairment) + '%</div>';
+            html += '</div>';
+            html += '<div class="risk-item">';
+            html += '<div class="risk-label">診斷信心度</div>';
+            html += '<div class="risk-value">';
+            html += '<span class="confidence-indicator ' + confidenceInfo.class + '">' + confidenceInfo.text + '</span>';
+            html += '</div>';
             html += '</div>';
             html += '</div>';
             html += '</div>';
 
+            // 失智症類型機率
             html += '<div class="risk-card">';
-            html += '<h3 style="margin-bottom: 15px;">各類型失智症相對機率分析</h3>';
+            html += '<h3>失智症類型評估機率</h3>';
             html += '<div class="probability-bars">';
-
             sorted.forEach(function(item) {
-                const type = item[0];
-                const prob = item[1];
+                const [type, prob] = item;
                 html += '<div class="probability-item">';
                 html += '<div class="probability-header">';
                 html += '<span class="probability-name">' + getDementiaName(type) + '</span>';
-                html += '<span class="probability-percent">' + prob.toFixed(1) + '%</span>';
+                html += '<span class="probability-percent">' + Math.round(prob) + '%</span>';
                 html += '</div>';
                 html += '<div class="probability-bar">';
                 html += '<div class="probability-fill" style="width: ' + prob + '%;">';
-                html += (prob > 10 ? prob.toFixed(1) + '%' : '');
+                if (prob > 15) {
+                    html += Math.round(prob) + '%';
+                }
                 html += '</div>';
                 html += '</div>';
-                html += '</div>';
-            });
-
-            html += '</div>';
-            html += '</div>';
-
-            html += '<div class="risk-card">';
-            html += '<h3 style="margin-bottom: 15px;">🩺 臨床建議</h3>';
-            html += '<div class="recommendations">';
-
-            recommendations.forEach(function(rec) {
-                const recClass = rec.type === 'urgent' ? 'rec-urgent' :
-                                rec.type === 'important' ? 'rec-important' :
-                                rec.type === 'clinical' ? 'rec-clinical' : 'rec-safety';
-                const icon = rec.type === 'urgent' ? '⚠️' :
-                            rec.type === 'important' ? '▶️' :
-                            rec.type === 'clinical' ? '📋' : '🛡️';
                 
-                html += '<div class="recommendation-item ' + recClass + '">';
-                html += '<div class="rec-title">' + icon + ' ';
-                html += (rec.type === 'urgent' ? '重要' :
-                         rec.type === 'important' ? '建議' :
-                         rec.type === 'clinical' ? '臨床檢查' : '安全提醒');
-                html += '</div>';
-                html += '<div>' + rec.text + '</div>';
+                // PPA次分型顯示
+                if (type === 'PPA' && results.subtypes.PPA) {
+                    const ppaSubtypes = results.subtypes.PPA;
+                    const maxSubtype = Object.entries(ppaSubtypes)
+                        .sort((a, b) => b[1] - a[1])[0];
+                    if (maxSubtype && maxSubtype[1] > 50) {
+                        html += '<div class="subtype-info">';
+                        html += '<h4>可能的次分型</h4>';
+                        html += '<p>' + getPPASubtypeName(maxSubtype[0]) + ' (可能性: ' + maxSubtype[1] + '%)</p>';
+                        html += '</div>';
+                    }
+                }
+                
                 html += '</div>';
             });
-
             html += '</div>';
             html += '</div>';
 
+            // 臨床建議
             html += '<div class="risk-card">';
-            html += '<h3 style="margin-bottom: 15px;">⚕️ 異常症狀清單</h3>';
-            if (abnormalSymptoms.length > 0) {
-                html += '<table class="symptoms-table">';
-                html += '<thead><tr>';
-                html += '<th>症狀領域</th>';
-                html += '<th>項目</th>';
-                html += '<th>回答</th>';
-                html += '</tr></thead>';
-                html += '<tbody>';
-                abnormalSymptoms.forEach(function(symptom) {
-                    html += '<tr>';
-                    html += '<td>' + symptom.section + '</td>';
-                    html += '<td>' + symptom.question + '</td>';
-                    html += '<td class="symptom-positive">' + symptom.response + '</td>';
-                    html += '</tr>';
-                });
-                html += '</tbody>';
-                html += '</table>';
-            } else {
-                html += '<p style="color: #16a34a; font-weight: 600;">✓ 未發現明顯異常症狀</p>';
-            }
+            html += '<h3>臨床建議</h3>';
+            html += '<div class="recommendations">';
+            recommendations.forEach(function(rec) {
+                html += '<div class="recommendation-item rec-' + rec.type + '">';
+                html += '<div class="rec-title">' + getRecTitle(rec.type) + '</div>';
+                html += rec.text;
+                html += '</div>';
+            });
+            html += '</div>';
             html += '</div>';
 
+            // 異常症狀列表
+            html += '<div class="risk-card">';
+            html += '<h3>陽性症狀摘要</h3>';
+            html += '<table class="symptoms-table">';
+            html += '<thead><tr><th>症狀類別</th><th>異常項目</th><th>表現</th></tr></thead>';
+            html += '<tbody>';
+            abnormalSymptoms.forEach(function(symptom) {
+                html += '<tr>';
+                html += '<td>' + symptom.section + '</td>';
+                html += '<td>' + symptom.question + '</td>';
+                html += '<td class="symptom-positive">' + symptom.response + '</td>';
+                html += '</tr>';
+            });
+            html += '</tbody>';
+            html += '</table>';
+            html += '</div>';
+
+            // 重要說明
             html += '<div class="disclaimer">';
-            html += '<h3>⚠️ 重要聲明</h3>';
+            html += '<h3>⚠️ 重要說明</h3>';
             html += '<ul>';
-            html += '<li>本工具僅供初步篩檢使用，不能取代專業醫療診斷</li>';
-            html += '<li>失智症診斷需要完整的神經學檢查、認知功能評估、腦部影像及實驗室檢查</li>';
-            html += '<li>評估結果受教育程度、文化背景、年齡等因素影響</li>';
-            html += '<li>請務必將本報告提供給專科醫師，進行完整的臨床評估</li>';
-            html += '<li>若有急性意識改變、嚴重記憶喪失或其他緊急症狀，請立即就醫</li>';
+            html += '<li>本評估結果僅供臨床參考，不能取代專業醫師診斷</li>';
+            html += '<li>診斷信心度反映症狀典型程度，低信心度建議進一步檢查</li>';
+            html += '<li>建議攜帶此報告至醫療院所，協助醫師快速了解病況</li>';
+            html += '<li>失智症診斷需結合病史、臨床表現、神經心理評估及影像檢查</li>';
             html += '</ul>';
             html += '</div>';
 
-            html += '<div class="info-box">';
-            html += '<h3>📊 資料收集與分析說明</h3>';
-            html += '<ul>';
-            html += '<li><strong>下載報告</strong>：點擊「下載報告」會自動下載文字檔，完成後詢問是否返回首頁</li>';
-            html += '<li><strong>匯出個案資料</strong>：點擊「匯出資料」可下載JSON格式的完整評估資料</li>';
-            html += '<li><strong>返回修改</strong>：可返回任何步驟修改答案，所有已填資料都會保留</li>';
-            html += '<li><strong>用於研究分析</strong>：收集多個個案的JSON檔案後，可使用統計軟體（如R、Python、SPSS）進行批次分析</li>';
-            html += '<li><strong>資料欄位包含</strong>：基本資料、所有問題回答、計算分數、風險評估等完整資訊</li>';
-            html += '<li><strong>隱私保護</strong>：在進行資料收集前，請確保已取得適當的倫理審查與受試者同意</li>';
-            html += '</ul>';
-            html += '</div>';
-
+            // 按鈕 (v2.0 logic)
             html += '<div class="button-group">';
             html += '<button class="btn btn-secondary" onclick="backToEdit()">✏️ 返回修改</button>';
-            html += '<button class="btn btn-primary" onclick="downloadTextReport()">📥 下載報告</button>';
-            html += '<button class="btn btn-secondary" onclick="restartAssessment()">🔄 重新開始</button>';
+            html += '<button class="btn btn-primary" onclick="downloadTextReport()">📥 下載文字報告 (.txt)</button>';
+            html += '<button class="btn btn-info" onclick="exportJSON()">💾 僅匯出JSON</button>';
+            html += '<button class="btn btn-secondary" onclick="window.print()">🖨️ 列印/PDF</button>';
+            html += '<button class="btn btn-secondary" onclick="restartAssessment()">📝 重新評估</button>';
             html += '</div>';
 
-            document.getElementById('questionSteps').classList.add('hidden');
+            html += '</div>';
+
             document.getElementById('resultsPage').innerHTML = html;
+            document.getElementById('questionSteps').classList.add('hidden');
             document.getElementById('resultsPage').classList.remove('hidden');
-            document.getElementById('progressFill').style.width = '100%';
-            document.getElementById('progressText').textContent = '評估完成';
             window.scrollTo(0, 0);
         }
 
-        // 返回修改答案
+        // 取得建議標題
+        function getRecTitle(type) {
+            const titles = {
+                'urgent': '🚨 緊急建議',
+                'important': '⚠️ 重要建議',
+                'clinical': '🏥 臨床檢查建議',
+                'safety': '🛡️ 安全建議'
+            };
+            return titles[type] || '💡 建議';
+        }
+
+        
+        // --- v2.0 功能 ---
+
+        // 1. 返回修改 (from v2.0)
         function backToEdit() {
             document.getElementById('resultsPage').classList.add('hidden');
             currentStep = 1;
@@ -1320,19 +1675,20 @@
             window.scrollTo(0, 0);
         }
 
-        // 下載文字報告
+        // 2. 下載文字報告 (from v2.0)
         function downloadTextReport() {
-            const results = calculateScores();
-            const recsData = generateRecommendations(results);
+            const results = globalResults;
+            const recsData = generateRecommendations(results); 
             const sorted = recsData.sorted;
             const recommendations = recsData.recommendations;
             const abnormalSymptoms = getAbnormalSymptoms();
             const riskInfo = getRiskInfo(results.overallRisk);
+            const confidenceInfo = getConfidenceInfo(results.confidence);
             const age = calculateAge(patientInfo.birthDate);
 
             let report = '\n';
             report += '═══════════════════════════════════════════════════════════════\n';
-            report += '              臨床病史失智診斷結構性問卷 - 評估報告\n';
+            report += '              臨床病史失智診斷結構性問卷 - 評估報告 (v2.0)\n'; // Version updated
             report += '═══════════════════════════════════════════════════════════════\n\n';
             report += '【基本資料】\n';
             report += '────────────────────────────────────────────────\n';
@@ -1343,30 +1699,39 @@
             report += '教育程度：' + (patientInfo.education || '未填寫') + '\n';
             report += '評估日期：' + patientInfo.assessmentDate + '\n';
             report += '資訊提供者：' + patientInfo.informantName + '（' + patientInfo.informantRelation + '）\n\n';
+            
             report += '【評估結果摘要】\n';
             report += '────────────────────────────────────────────────\n';
             report += '整體認知障礙風險等級：' + riskInfo.text + '\n';
-            report += '日常功能障礙程度：' + results.adlImpairment.toFixed(1) + '%\n\n';
+            report += '日常功能障礙程度：' + Math.round(results.adlImpairment) + '%\n';
+            report += '診斷信心度：' + confidenceInfo.text + '\n\n';
+
             report += '【各類型失智症相對機率分析】\n';
             report += '────────────────────────────────────────────────\n';
 
             sorted.forEach(function(item) {
-                const type = item[0];
-                const prob = item[1];
-                report += getDementiaName(type) + '：' + prob.toFixed(1) + '%\n';
+                const [type, prob] = item;
+                report += getDementiaName(type) + '：' + Math.round(prob) + '%\n';
+
+                if (type === 'PPA' && results.subtypes.PPA) {
+                    const ppaSubtypes = results.subtypes.PPA;
+                    const maxSubtype = Object.entries(ppaSubtypes)
+                        .sort((a, b) => b[1] - a[1])[0];
+                    if (maxSubtype && maxSubtype[1] > 50) {
+                        report += '   └── 可能的PPA次分型: ' + getPPASubtypeName(maxSubtype[0]) + ' (可能性: ' + maxSubtype[1] + '%)\n';
+                    }
+                }
             });
 
             report += '\n【臨床建議】\n';
             report += '────────────────────────────────────────────────\n';
 
             recommendations.forEach(function(rec, idx) {
-                const label = rec.type === 'urgent' ? '⚠ 重要' :
-                             rec.type === 'important' ? '▶ 建議' :
-                             rec.type === 'clinical' ? '📋 臨床檢查' : '🛡 安全提醒';
+                const label = getRecTitle(rec.type);
                 report += (idx + 1) + '. [' + label + '] ' + rec.text + '\n\n';
             });
 
-            report += '\n【異常症狀清單】\n';
+            report += '\n【陽性症狀摘要】\n';
             report += '────────────────────────────────────────────────\n';
 
             if (abnormalSymptoms.length > 0) {
@@ -1382,14 +1747,10 @@
             report += '\n【重要聲明】\n';
             report += '────────────────────────────────────────────────\n';
             report += '⚠ 本工具僅供初步篩檢使用，不能取代專業醫療診斷\n\n';
-            report += '1. 失智症診斷需要完整的神經學檢查、認知功能評估、腦部影像\n';
-            report += '   及實驗室檢查\n\n';
-            report += '2. 評估結果受教育程度、文化背景、年齡等因素影響\n\n';
-            report += '3. 請務必將本報告提供給專科醫師，進行完整的臨床評估\n\n';
-            report += '4. 若有急性意識改變、嚴重記憶喪失或其他緊急症狀，請立即就醫\n\n';
+            report += '1. 診斷信心度反映症狀典型程度，低信心度建議進一步檢查\n\n';
+            report += '2. 請務必將本報告提供給專科醫師，進行完整的臨床評估\n\n';
             report += '════════════════════════════════════════════════════════════════\n';
             report += '報告生成時間：' + new Date().toLocaleString('zh-TW') + '\n';
-            report += '本報告由AI輔助評估工具生成，僅供臨床參考\n';
             report += '════════════════════════════════════════════════════════════════\n';
 
             const blob = new Blob([report], { type: 'text/plain;charset=utf-8' });
@@ -1403,105 +1764,52 @@
             URL.revokeObjectURL(url);
 
             setTimeout(function() {
-                if (confirm('報告已開始下載！\n\n是否要返回首頁重新評估？')) {
-                    restartAssessment();
-                }
+                alert('報告已開始下載！');
             }, 500);
         }
 
-        // 匯出JSON資料
-// 匯出JSON資料
-        function downloadJSONData() {
-            const results = calculateScores();
-            const recsData = generateRecommendations(results);
-            const sorted = recsData.sorted;
-            const recommendations = recsData.recommendations;
-            const abnormalSymptoms = getAbnormalSymptoms();
-            const age = calculateAge(patientInfo.birthDate);
-
+        // 產生 JSON 字串 (v2.0 logic)
+        function generateJSONDataString() {
+            const results = globalResults;
             const exportData = {
                 metadata: {
+                    version: '2.0', // Version updated
                     exportDate: new Date().toISOString(),
-                    assessmentDate: patientInfo.assessmentDate,
-                    toolVersion: '2.0'
+                    assessmentDate: patientInfo.assessmentDate
                 },
-                patientInfo: Object.assign({}, patientInfo, { age: age }),
+                patientInfo: patientInfo,
                 responses: responses,
-                results: {
-                    overallRisk: results.overallRisk,
-                    adlImpairment: results.adlImpairment,
-                    rawScores: results.rawScores,
-                    percentages: results.percentages,
-                    probabilities: results.probabilities,
-                    dementiaTypeProbabilities: sorted.map(function(item) {
-                        return {
-                            type: item[0],
-                            name: getDementiaName(item[0]),
-                            probability: item[1]
-                        };
-                    })
-                },
-                abnormalSymptoms: abnormalSymptoms,
-                recommendations: recommendations.map(function(rec) {
-                    return {
-                        type: rec.type,
-                        text: rec.text
-                    };
-                })
+                results: results, 
+                abnormalSymptoms: getAbnormalSymptoms()
             };
-
-            const jsonString = JSON.stringify(exportData, null, 2);
-            const blob = new Blob([jsonString], { type: 'application/json;charset=utf-8' });
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = '評估資料_' + patientInfo.name + '_' + patientInfo.assessmentDate + '_' + Date.now() + '.json';
-            document.body.appendChild(a);
-            a.click();
-            document.body.removeChild(a);
-            URL.revokeObjectURL(url);
-
-            setTimeout(function() {
-                if (confirm('💾 資料已下載到本機\n\n☁️ 是否要同時上傳到雲端進行統計分析？\n(自動儲存到 Google Drive，無需登入)')) {
-                    uploadToGoogleDrive(jsonString, function(success) {
-                        setTimeout(function() {
-                            if (confirm('是否要返回首頁重新評估？')) {
-                                restartAssessment();
-                            }
-                        }, 1000);
-                    });
-                } else {
-                    setTimeout(function() {
-                        if (confirm('是否要返回首頁重新評估？')) {
-                            restartAssessment();
-                        }
-                    }, 500);
-                }
-            }, 500);
+            
+            const dataStr = JSON.stringify(exportData, null, 2);
+            return dataStr;
+        }
+        
+        // 僅匯出 JSON (v2.0 logic)
+        function exportJSON() {
+            const jsonString = generateJSONDataString();
+            const dataUri = 'data:application/json;charset=utf-8,'+ encodeURIComponent(jsonString);
+            
+            const exportFileDefaultName = 'dementia_assessment_' + patientInfo.chartNumber + '_' + new Date().getTime() + '.json';
+            
+            const linkElement = document.createElement('a');
+            linkElement.setAttribute('href', dataUri);
+            linkElement.setAttribute('download', exportFileDefaultName);
+            linkElement.click(); 
         }
 
-        // 上傳到 Google Drive
-        function uploadToGoogleDrive(jsonData, callback) {
+        // [MODIFIED] v2.0: (SILENT) 上傳到 Google Drive (移除 alert)
+        function uploadToGoogleDrive_Silent(jsonData) {
             // 🔧 請將下面的 URL 替換為您的 Google Apps Script URL
             const scriptUrl = 'https://script.google.com/macros/s/AKfycbw3uS2wMJkXhrRnqrmzYoA_5-DpfHT0atHGZR0203WjDNzkAMpddbdtqXXv8sggWfMq/exec';
             
-            if (scriptUrl === 'https://script.google.com/macros/s/AKfycbw3uS2wMJkXhrRnqrmzYoA_5-DpfHT0atHGZR0203WjDNzkAMpddbdtqXXv8sggWfMq/exec') {
-                alert('⚠️ 尚未設定 Google Drive API\n\n請先完成以下步驟：\n1. 創建 Google Apps Script\n2. 部署為 Web App\n3. 將 URL 填入 index.html 的 scriptUrl');
-                if (callback) callback(false);
-                return;
-            }
-            
-            // 顯示上傳中訊息
-            const uploadMsg = document.createElement('div');
-            uploadMsg.id = 'uploadMsg';
-            uploadMsg.style.cssText = 'position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: linear-gradient(135deg, #10b981, #059669); color: white; padding: 40px; border-radius: 20px; z-index: 10000; text-align: center; font-size: 20px; box-shadow: 0 20px 60px rgba(0,0,0,0.4); max-width: 400px;';
-            uploadMsg.innerHTML = '☁️ 正在上傳到雲端<br><div style="margin-top: 20px; font-size: 14px; opacity: 0.9;">資料處理中，請稍候...</div><div style="margin-top: 15px; font-size: 12px; opacity: 0.7;">⏳ Google Drive 儲存中</div>';
-            document.body.appendChild(uploadMsg);
-            
-            // 解析 JSON 資料
+            // [REMOVED] v2.0: 移除了檢查 scriptUrl 並 alert 的 if 判斷式
+            // if (scriptUrl === '...') { ... }
+
             const data = JSON.parse(jsonData);
             
-            // 發送到 Google Apps Script
             fetch(scriptUrl, {
                 method: 'POST',
                 headers: {
@@ -1510,139 +1818,47 @@
                 body: JSON.stringify(data)
             })
             .then(function(response) {
-                return response.json();
+                if (response.ok) {
+                    return response.json();
+                }
+                throw new Error('Network response was not ok.');
             })
             .then(function(result) {
-                const msg = document.getElementById('uploadMsg');
-                if (msg) {
-                    document.body.removeChild(msg);
-                }
-                
-                if (result.success) {
-                    alert('✅ 上傳成功！\n\n📁 資料已儲存到 Google Drive\n\n✓ 個別 JSON 檔案: ' + result.fileName + '\n✓ CSV 整合檔案已更新\n\n🔗 開啟資料夾:\n' + result.folderUrl);
+                if (result && result.success) {
+                    console.log('Google Drive Upload Success:', result.fileName);
                 } else {
-                    throw new Error(result.message || '未知錯誤');
+                    throw new Error(result ? result.message : 'Unknown upload error');
                 }
-                
-                if (callback) callback(true);
             })
             .catch(function(error) {
-                const msg = document.getElementById('uploadMsg');
-                if (msg) {
-                    document.body.removeChild(msg);
-                }
-                
-                alert('❌ 上傳失敗\n\n錯誤訊息: ' + error.message + '\n\n請檢查：\n✓ Google Apps Script URL 是否正確\n✓ 部署設定是否為「任何人」\n✓ 網路連線是否正常');
-                
-                if (callback) callback(false);
-            });
-        }
-        // 重新評估
-        function restartAssessment() {
-            currentStep = 0;
-            responses = {};
-            patientInfo = {};
-            document.getElementById('resultsPage').classList.add('hidden');
-            document.getElementById('questionSteps').classList.add('hidden');
-            document.getElementById('step0').classList.remove('hidden');
-            document.getElementById('patientName').value = '';
-            document.getElementById('chartNumber').value = '';
-            document.getElementById('birthDate').value = '';
-            document.getElementById('gender').value = '';
-            document.getElementById('education').value = '';
-            document.getElementById('assessmentDate').valueAsDate = new Date();
-            document.getElementById('informantName').value = '';
-            document.getElementById('informantRelation').value = '';
-            updateProgress();
-            window.scrollTo(0, 0);
-        }
-
-// 上傳到 Google Drive
-        function uploadToGoogleDrive(jsonData, callback) {
-            // 您的 Google Apps Script Web App URL
-            const scriptUrl = 'https://script.google.com/macros/s/AKfycbw3uS2wMJkXhrRnqrmzYoA_5-DpfHT0atHGZR0203WjDNzkAMpddbdtqXXv8sggWfMq/exec'; //
-            
-            if (scriptUrl === 'https://script.google.com/macros/s/AKfycbw3uS2wMJkXhrRnqrmzYoA_5-DpfHT0atHGZR0203WjDNzkAMpddbdtqXXv8sggWfMq/exec') {
-                alert('⚠️ 尚未設定 Google Drive API\n\n請先完成以下步驟：\n1. 創建 Google Apps Script\n2. 部署為 Web App\n3. 將 URL 填入 index.html 的 scriptUrl');
-                return;
-            }
-            
-            // 顯示上傳中訊息
-            const uploadMsg = document.createElement('div');
-            uploadMsg.id = 'uploadMsg';
-            uploadMsg.style.cssText = 'position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: rgba(34, 139, 34, 0.95); color: white; padding: 30px; border-radius: 15px; z-index: 10000; text-align: center; font-size: 18px; box-shadow: 0 10px 40px rgba(0,0,0,0.3);';
-            uploadMsg.innerHTML = '☁️ 正在上傳到雲端...<br><small style="font-size: 14px; opacity: 0.9; margin-top: 10px; display: block;">請稍候，資料處理中</small>';
-            document.body.appendChild(uploadMsg);
-            
-            // 解析 JSON 資料
-            const data = JSON.parse(jsonData);
-            
-            // 發送到 Google Apps Script
-            fetch(scriptUrl, {
-                method: 'POST',
-                mode: 'no-cors', // 重要！因為 Google Apps Script 不支援 CORS
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify(data)
-            })
-            .then(function() {
-                // 注意：no-cors 模式無法讀取回應，所以我們假設成功
-                const msg = document.getElementById('uploadMsg');
-                if (msg) {
-                    document.body.removeChild(msg);
-                }
-                
-                alert('✅ 上傳成功！\n\n資料已儲存到 Google Drive\n\n📁 個別 JSON 檔案已保存\n📊 CSV 整合檔案已更新\n\n💡 請至 Google Drive 查看「失智症評估資料」資料夾');
-                
-                if (callback) callback(true);
-            })
-            .catch(function(error) {
-                const msg = document.getElementById('uploadMsg');
-                if (msg) {
-                    document.body.removeChild(msg);
-                }
-                
-                // 在 no-cors 模式下，即使成功也可能觸發錯誤
-                // 所以我們仍然顯示成功訊息
-                alert('✅ 已送出資料\n\n資料已發送到雲端儲存系統\n\n如果資料未出現在 Google Drive，請檢查：\n1. Apps Script URL 是否正確\n2. 部署設定是否允許「任何人」訪問');
-                
-                if (callback) callback(true);
+                console.error('Google Drive Upload Failed:', error.message);
             });
         }
         
-        // 修改 downloadJSONData 函數的最後部分
-        function downloadJSONDataOriginal() {
-            // ... 原有的程式碼 ...
-            
-            const jsonString = JSON.stringify(exportData, null, 2);
-            const blob = new Blob([jsonString], { type: 'application/json;charset=utf-8' });
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = '評估資料_' + patientInfo.name + '_' + patientInfo.assessmentDate + '_' + Date.now() + '.json';
-            document.body.appendChild(a);
-            a.click();
-            document.body.removeChild(a);
-            URL.revokeObjectURL(url);
+        // --- 結束 v2.0 修改的功能 ---
 
-            setTimeout(function() {
-                if (confirm('💾 資料已下載到本機\n\n☁️ 是否要同時上傳到雲端進行統計分析？\n(自動儲存到 Google Drive，無需登入)')) {
-                    uploadToGoogleDrive(jsonString, function(success) {
-                        setTimeout(function() {
-                            if (confirm('是否要返回首頁重新評估？')) {
-                                restartAssessment();
-                            }
-                        }, 1000);
-                    });
-                } else {
-                    setTimeout(function() {
-                        if (confirm('是否要返回首頁重新評估？')) {
-                            restartAssessment();
-                        }
-                    }, 500);
-                }
-            }, 500);
+
+        // 重新評估 (v2.0 logic)
+        function restartAssessment() {
+            if (confirm('確定要重新開始評估嗎？目前的資料將會清除。')) {
+                currentStep = 0;
+                responses = {};
+                patientInfo = {};
+                globalResults = {}; 
+                document.getElementById('resultsPage').classList.add('hidden');
+                document.getElementById('questionSteps').classList.add('hidden');
+                document.getElementById('step0').classList.remove('hidden');
+                document.getElementById('patientName').value = '';
+                document.getElementById('chartNumber').value = '';
+                document.getElementById('birthDate').value = '';
+                document.getElementById('gender').value = '';
+                document.getElementById('education').value = '';
+                document.getElementById('assessmentDate').valueAsDate = new Date();
+                document.getElementById('informantName').value = '';
+                document.getElementById('informantRelation').value = '';
+                updateProgress();
+                window.scrollTo(0, 0);
+            }
         }
     </script>
 </body>
