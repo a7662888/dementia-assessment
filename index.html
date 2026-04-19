@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>臨床病史失智診斷結構性問卷  v2.0</title>
+    <title>臨床病史失智診斷結構性問卷  v3.0</title>
     <style>
         * {
             margin: 0;
@@ -533,7 +533,7 @@
         <div class="header">
             <h1>📋 臨床病史失智診斷結構性問卷</h1>
             <p>Interactive Assessment Tool - 互動式評估工具</p>
-            <span class="version-badge">整合版 v2.0</span>
+            <span class="version-badge">criteria-based v3.0</span>
         </div>
 
         <div class="progress-bar" id="progressBar">
@@ -555,12 +555,15 @@
             </div>
 
             <div class="info-box" style="background: #fee2e2; border-left-color: #dc2626;">
-                <h3>🆕 v2.0 版本更新</h3>
+                <h3>🆕 v3.0 版本更新（criteria-based 診斷引擎）</h3>
                 <ul>
-                    <li>(v2.0) 新增 PDD 為獨立診斷，並依「一年條款」自動區分 PDD/DLB</li>
-                    <li>(v2.0) 強化 Lewy 體光譜症狀權重 (x2.0)，提升鑑別度</li>
-                    <li>(v2.0) 新增中風病史對 AD/PDD/DLB 的診斷排斥權重</li>
-                    </li>
+                    <li>DLB 依 McKeith 2017 核心特徵判定 probable / possible</li>
+                    <li>bvFTD 加入 Rascovsky 2011 功能退化 gate（ADL ≥25%）</li>
+                    <li>PPA 加入 Gorno-Tempini 2011 「語言最早」硬 gate</li>
+                    <li>VaD 依 NINDS-AIREN 時序條件（中風史 + 階梯式）</li>
+                    <li>新增 informant-derived CDR 嚴重度（含個人照料 2 題）</li>
+                    <li>新增混合型失智（mixed dementia）提示</li>
+                    <li>新增填答 sanity checks（年齡、全陽性、病程過短）</li>
                 </ul>
             </div>
 
@@ -793,9 +796,21 @@
                         type: 'adl3',
                         options: ['可處理日常購買', '有困難', '完全無法處理']
                     },
-                    { 
-                        id: 'adl9_10', 
-                        text: '上述活動困難，病人是因肢體或行動不便嗎？', 
+                    {
+                        id: 'adl9_11',
+                        text: '能夠自行穿脫衣物嗎？',
+                        type: 'adl3',
+                        options: ['能自行完成', '需要提醒或部分協助', '完全依賴他人']
+                    },
+                    {
+                        id: 'adl9_12',
+                        text: '能夠自行如廁與盥洗（洗臉、刷牙、如廁）嗎？',
+                        type: 'adl3',
+                        options: ['能自行完成', '需要提醒或部分協助', '完全依賴他人']
+                    },
+                    {
+                        id: 'adl9_10',
+                        text: '上述活動困難，病人是因肢體或行動不便嗎？',
                         type: 'yesno'
                     }
                 ]
@@ -1111,7 +1126,7 @@
             
             const adlQuestions = [
                 'adl9_1', 'adl9_2', 'adl9_3', 'adl9_4',
-                'adl9_6', 'adl9_7', 'adl9_8'
+                'adl9_6', 'adl9_7', 'adl9_8', 'adl9_11', 'adl9_12'
             ];
             
             adlQuestions.forEach(function(qId) {
@@ -1176,120 +1191,231 @@
             return subtypes;
         }
 
-        // 應用特殊組合加成 (v2.0 logic)
-        function applySpecialCombinations(scores) {
-            
-            // Lewy Body Spectrum (LBS) 核心症狀加成
+        // 應用特殊組合加成與診斷標準 gate (v3.0 logic)
+        // 回傳 { scores, criteriaLevels, criteriaEvidence }
+        function applySpecialCombinations(scores, adlImpairment) {
+            const evidence = { DLB: [], PDD: [], AD: [], FTD: [], VaD: [], PPA: [] };
+            const levels = { DLB: 'not-met', AD: 'not-met', FTD: 'not-met', VaD: 'not-met', PPA: 'not-met' };
+
+            // ===== DLB / LBS：McKeith 2017 =====
             const hasFluctuations = responses['dlb1_3'] === '會';
             const hasHallucinations = responses['dlb3_1'] === '是';
             const hasRBD = responses['dlb1_4'] === '是';
             const hasParkinsonism = hasParkinsonian();
-            const coreFeatureCount = [hasFluctuations, hasHallucinations, hasParkinsonism].filter(x => x).length;
-            
-            if (coreFeatureCount >= 2 || (coreFeatureCount === 1 && hasRBD)) {
-                scores.LBS *= 2.0; 
-            }
+            const dlbCore = [hasFluctuations, hasHallucinations, hasParkinsonism, hasRBD].filter(x => x).length;
+            if (hasFluctuations) evidence.DLB.push('認知波動');
+            if (hasHallucinations) evidence.DLB.push('清晰視幻覺');
+            if (hasParkinsonism) evidence.DLB.push('巴金森症狀（≥2 項動作特徵）');
+            if (hasRBD) evidence.DLB.push('REM 睡眠行為障礙');
+            if (dlbCore >= 2) { scores.LBS *= 2.0; levels.DLB = 'probable'; }
+            else if (dlbCore === 1) { scores.LBS *= 1.3; levels.DLB = 'possible'; }
 
-            // 中風病史的競爭性權重
-            if (responses['stroke_history'] === 1) { // 1 = "有"
-                scores.VaD *= 1.5;
-                scores.AD *= 0.7;
-                scores.LBS *= 0.7;
-            }
-            
-            // VaD 階梯式惡化
-            if (responses['progression'] === 1) { // 1 = "階梯式惡化"
-                scores.VaD *= 1.5; 
-            }
-
-            // FTD 行為變異型
-            const ftdBehaviors = [
-                responses['ftd3_5'] === '是',
-                responses['ftd3_6'] === '是',
-                responses['ftd3_7'] === '是',
-                responses['ftd3_8'] === '是',
-                responses['ftd3_9'] === '是',
-                (responses['ftd7_1'] === '常常' || responses['ftd7_1'] === '偶爾')
+            // ===== FTD bvFTD：Rascovsky 2011 =====
+            // 六項行為/認知特徵（去抑制、冷漠、同理心缺失、強迫重複、飲食改變、執行缺損）
+            const ftdFeatures = [
+                responses['ftd3_9'] === '是',                              // 去抑制（社交不適切）
+                responses['ftd3_5'] === '是',                              // 冷漠
+                responses['ftd3_6'] === '是',                              // 同理心缺失
+                responses['ftd3_7'] === '是',                              // 強迫/重複行為
+                responses['ftd3_8'] === '是',                              // 飲食改變
+                (responses['vad7_2'] === '常常' || responses['vad7_4'] === '會' || responses['vad7_7'] === '會')  // 執行功能缺損
             ];
-            const behaviorCount = ftdBehaviors.filter(x => x).length;
-            if (behaviorCount >= 3) {
-                scores.FTD *= (1.3 + behaviorCount * 0.1);
+            const ftdLabels = ['去抑制/社交不適切', '冷漠', '同理心缺失', '強迫或重複行為', '飲食或口腔嗜好改變', '執行功能缺損'];
+            const ftdCount = ftdFeatures.filter(x => x).length;
+            ftdFeatures.forEach((v, i) => { if (v) evidence.FTD.push(ftdLabels[i]); });
+
+            const FTD_FUNCTIONAL_GATE = 25;  // ADL 閾值
+            if (ftdCount >= 3) {
+                scores.FTD *= (1.3 + ftdCount * 0.1);
+                if (adlImpairment >= FTD_FUNCTIONAL_GATE) {
+                    levels.FTD = 'probable';
+                    evidence.FTD.push('功能退化 (ADL 受損 ≥ ' + FTD_FUNCTIONAL_GATE + '%)');
+                } else {
+                    levels.FTD = 'possible';
+                    evidence.FTD.push('功能尚保留 → 僅達 possible bvFTD（需臨床追蹤確認功能退化）');
+                }
+            } else if (ftdCount >= 1) {
+                // 特徵不足，降低 FTD 分數避免過度診斷
+                scores.FTD *= 0.6;
+            } else {
+                scores.FTD *= 0.3;
             }
-            
-            // PPA 語言優勢
-            if (responses['ftd8_6'] === '是') {
+
+            // ===== PPA：Gorno-Tempini 2011 — 強制 language-first gate =====
+            const languageFirst = responses['ftd8_6'] === '是';
+            if (languageFirst) {
                 scores.PPA *= 1.6;
+                evidence.PPA.push('語言障礙最早出現且遠早於其他認知症狀（PPA 核心 gate）');
+                // 亞型存在再判 probable
+                levels.PPA = 'possible';
+            } else {
+                // 未達 gate，封頂 PPA（作為鑑別診斷而非主診斷）
+                scores.PPA *= 0.3;
+                if (scores.PPA > 0) evidence.PPA.push('未符合語言最早 gate；PPA 僅列入鑑別');
             }
-            
-            return scores;
+
+            // ===== VaD：NINDS-AIREN — 時序 gate =====
+            const hasStroke = responses['stroke_history'] === 1;
+            const stepwise = responses['progression'] === 1;
+            if (hasStroke) { scores.VaD *= 1.5; scores.AD *= 0.7; scores.LBS *= 0.7; evidence.VaD.push('中風病史'); }
+            if (stepwise) { scores.VaD *= 1.5; evidence.VaD.push('階梯式惡化病程'); }
+
+            // VaD 時序硬 gate：無中風且非階梯 → 降權
+            if (!hasStroke && !stepwise) {
+                scores.VaD *= 0.5;
+            }
+
+            // 認知/執行症狀分數納入
+            const vadCognitive = [
+                responses['vad7_3'] === '常常' || responses['vad7_3'] === '會',
+                responses['vad7_9'] === '常常' || responses['vad7_9'] === '會',
+                responses['vad4_1'] === '是',
+                responses['dlb2_4'] === '是'
+            ].filter(x => x).length;
+            if (hasStroke && (stepwise || vadCognitive >= 2)) {
+                levels.VaD = 'probable';
+            } else if (hasStroke || stepwise || vadCognitive >= 2) {
+                levels.VaD = 'possible';
+            }
+
+            // ===== AD：NIA-AA clinical core（amnestic + insidious + gradual）=====
+            const amnesticCore = [
+                responses['ad5_2'] === '常常',                             // 重複問題（核心）
+                responses['ad5_6'] === '常常' || responses['ad5_6'] === '偶爾',  // 近期記憶
+                responses['ad5_3'] === '常常' || responses['ad5_3'] === '偶爾',  // 忘記約會
+                responses['ad6_1'] === '常常' || responses['ad6_1'] === '偶爾'   // 定向力（年月）
+            ].filter(x => x).length;
+            const gradualOnset = responses['progression'] === 0;  // "逐漸惡化"
+            if (amnesticCore >= 2) evidence.AD.push('amnestic 症狀核心（≥2 項記憶/定向特徵）');
+            if (gradualOnset) evidence.AD.push('逐漸惡化病程');
+
+            if (amnesticCore >= 2 && gradualOnset && adlImpairment >= 15) {
+                levels.AD = 'probable';
+                evidence.AD.push('功能退化');
+            } else if (amnesticCore >= 1 && (gradualOnset || adlImpairment >= 15)) {
+                levels.AD = 'possible';
+            }
+
+            return { scores, criteriaLevels: levels, criteriaEvidence: evidence };
         }
 
-        // 綜合計算分數 (v2.0 logic)
+        // 綜合計算分數 (v3.0 logic — criteria-based)
         function calculateScores() {
-            // 步驟1: 基礎計分 (LBS, AD, FTD, VaD, PPA)
+            // ===== 保留 legacy 計算供後續驗證比對 =====
+            const legacyResult = calculateLegacyScores();
+
+            // 步驟1: 基礎計分
             const { scores, maxScores } = calculateBaseScores();
-            
-            // 步驟2: ADL調整
+
+            // 步驟2: ADL 先計算
             const adlImpairment = calculateADLImpairment();
-            const functionalMultiplier = 1 + (adlImpairment / 200);
-            Object.keys(scores).forEach(function(type) {
-                scores[type] *= functionalMultiplier;
+
+            // 步驟3: 套用 criteria-based gates & 組合加成
+            const gated = applySpecialCombinations(scores, adlImpairment);
+            const adjustedScores = gated.scores;
+            const criteriaLevels = gated.criteriaLevels;
+            const criteriaEvidence = gated.criteriaEvidence;
+
+            // 步驟4: ADL 輔助調整（降低 multiplier 效應，避免稀釋 criteria）
+            const functionalMultiplier = 1 + (adlImpairment / 300);
+            Object.keys(adjustedScores).forEach(function(type) {
+                adjustedScores[type] *= functionalMultiplier;
             });
-            
-            // 步驟3: 特殊組合加成
-            const adjustedScores = applySpecialCombinations(scores);
-            
-            // 步驟4: 計算百分比
+
+            // 步驟5: 計算百分比
             const percentages = {};
             Object.keys(adjustedScores).forEach(function(type) {
-                percentages[type] = maxScores[type] > 0 ? 
+                percentages[type] = maxScores[type] > 0 ?
                     Math.min(100, (adjustedScores[type] / maxScores[type]) * 100) : 0;
             });
-            
-            // 步驟5: 計算相對機率
-            const totalPercentage = Object.values(percentages).reduce(function(sum, val) { 
-                return sum + val; 
+
+            // 步驟6: 計算相對機率
+            const totalPercentage = Object.values(percentages).reduce(function(sum, val) {
+                return sum + val;
             }, 0);
-            
             const probabilities = {};
             Object.keys(percentages).forEach(function(type) {
-                probabilities[type] = totalPercentage > 0 ? 
+                probabilities[type] = totalPercentage > 0 ?
                     (percentages[type] / totalPercentage) * 100 : 0;
             });
-            
-            // 步驟 5b: LBS -> PDD/DLB 轉換 (一年條款裁決)
+
+            // 步驟 6b: LBS -> PDD/DLB 轉換（一年條款）
             const lbs_probability = probabilities['LBS'];
             if (lbs_probability !== undefined) {
-                delete probabilities['LBS']; // 移除 LBS
-                
-                if (responses['dlb_temporal'] === 1) { // 1 = "動作先超過1年"
-                    probabilities['PDD'] = lbs_probability; // 轉為 PDD
+                delete probabilities['LBS'];
+                if (responses['dlb_temporal'] === 1) {
+                    probabilities['PDD'] = lbs_probability;
+                    criteriaLevels.PDD = criteriaLevels.DLB;
+                    criteriaEvidence.PDD = criteriaEvidence.DLB.slice();
+                    criteriaEvidence.PDD.push('動作症狀早於認知症狀 > 1 年 (PDD)');
+                    delete criteriaLevels.DLB;
+                    delete criteriaEvidence.DLB;
                 } else {
-                    probabilities['DLB'] = lbs_probability; // 轉為 DLB
+                    probabilities['DLB'] = lbs_probability;
                 }
             }
 
-            // 步驟6: 計算風險等級
-            const overallRisk = calculateOverallRisk(percentages);
-            
-            // 步驟7: 計算診斷信心度
-            const confidence = calculateConfidence(probabilities);
-            
-            // 步驟8: 識別次分型
+            // 步驟7: 機率硬封頂（未達 gate 時）
+            if (criteriaLevels.PPA === 'not-met' && probabilities.PPA > 15) {
+                probabilities.PPA = 15;
+            }
+            if (criteriaLevels.VaD === 'not-met' && probabilities.VaD > 20) {
+                probabilities.VaD = 20;
+            }
+
+            // 步驟8: 失智嚴重度 (informant-derived CDR)
+            const cdr = deriveCDR();
+
+            // 步驟9: 信心度（以 criteria 等級為主）
+            const confidence = calculateConfidenceV3(probabilities, criteriaLevels);
+
+            // 步驟10: 混合型偵測
+            const mixedDementia = detectMixedDementia(criteriaLevels, probabilities);
+
+            // 步驟11: PPA 亞型（僅在達 gate 時判）
             const subtypes = {};
-            if (probabilities.PPA > 20) {
+            if (criteriaLevels.PPA !== 'not-met' && probabilities.PPA > 15) {
                 subtypes.PPA = identifyPPASubtype(responses);
             }
-            
+
+            // 步驟12: Sanity checks
+            const warnings = runSanityChecks(adlImpairment);
+
+            // 步驟13: 整體風險（維持 legacy 欄位）
+            const overallRisk = calculateOverallRisk(percentages);
+
             return {
                 rawScores: adjustedScores,
                 percentages: percentages,
-                probabilities: probabilities, 
+                probabilities: probabilities,
+                criteriaLevels: criteriaLevels,
+                criteriaEvidence: criteriaEvidence,
                 adlImpairment: adlImpairment,
+                cdr: cdr,
                 overallRisk: overallRisk,
                 confidence: confidence,
-                subtypes: subtypes
+                mixedDementia: mixedDementia,
+                subtypes: subtypes,
+                warnings: warnings,
+                legacy: legacyResult
             };
+        }
+
+        // 保留舊版 scoring 以供資料欄位回寫（UI 不顯示）
+        function calculateLegacyScores() {
+            const base = calculateBaseScores();
+            const adl = calculateADLImpairment();
+            const mul = 1 + (adl / 200);
+            const sc = {};
+            Object.keys(base.scores).forEach(t => sc[t] = base.scores[t] * mul);
+            const pct = {};
+            Object.keys(sc).forEach(t => {
+                pct[t] = base.maxScores[t] > 0 ? Math.min(100, (sc[t] / base.maxScores[t]) * 100) : 0;
+            });
+            const total = Object.values(pct).reduce((a, b) => a + b, 0);
+            const prob = {};
+            Object.keys(pct).forEach(t => { prob[t] = total > 0 ? (pct[t] / total) * 100 : 0; });
+            return { rawScores: sc, percentages: pct, probabilities: prob };
         }
 
         // 計算整體風險
@@ -1303,116 +1429,320 @@
             return 'low';
         }
 
-        // 計算診斷信心度
+        // 計算診斷信心度 (v2, legacy — 仍供舊流程呼叫)
         function calculateConfidence(probabilities) {
             const sorted = Object.entries(probabilities)
                 .sort(function(a, b) { return b[1] - a[1]; });
-            
+
             const topScore = sorted[0]?.[1] || 0;
             const secondScore = sorted[1]?.[1] || 0;
             const gap = topScore - secondScore;
-            
+
             if (topScore >= 60 && gap >= 30) return 'high';
             if (topScore >= 40 && gap >= 20) return 'moderate';
             if (topScore >= 30 && gap >= 10) return 'low';
             return 'uncertain';
         }
 
-        // 生成建議 (v2.0 logic)
+        // 計算診斷信心度 v3 — 以 criteria 等級主導
+        function calculateConfidenceV3(probabilities, criteriaLevels) {
+            const sorted = Object.entries(probabilities)
+                .sort(function(a, b) { return b[1] - a[1]; });
+            const topType = sorted[0]?.[0];
+            const topProb = sorted[0]?.[1] || 0;
+            const secondProb = sorted[1]?.[1] || 0;
+
+            // DLB/PDD 屬於 LBS 家族，用同一 key 查
+            const topLevel = criteriaLevels[topType] ||
+                             (topType === 'PDD' || topType === 'DLB' ? (criteriaLevels.DLB || criteriaLevels.PDD) : 'not-met');
+
+            // high: 首型 probable 且機率差距大
+            if (topLevel === 'probable' && topProb - secondProb >= 15) return 'high';
+            // moderate: 首型 probable 但其他型也 possible（→ 混合型）
+            if (topLevel === 'probable') return 'moderate';
+            // low: 首型僅 possible
+            if (topLevel === 'possible') return 'low';
+            // uncertain: 無型達 possible
+            return 'uncertain';
+        }
+
+        // ===== 問卷導出 CDR (informant-derived, Morris proxy) =====
+        function deriveCDR() {
+            // 將 frequency3 / yesno 轉 0–1 嚴重度
+            function fs(v) {
+                if (v === '常常' || v === '是' || v === '會') return 1;
+                if (v === '偶爾') return 0.5;
+                return 0;
+            }
+            function adlScore(qid, type) {
+                const v = responses[qid];
+                if (v === undefined || v === 0) return 0;  // 正常 or 不適用
+                if (type === 'adl3') return (v == 2 ? 1 : (v == 1 ? 0.5 : 0));
+                if (type === 'adl4') return (v == 3 ? 1 : (v == 2 ? 0.5 : 0));
+                return 0;
+            }
+            function mapSeverityToCDR(s) {
+                if (s <= 0.02) return 0;
+                if (s <= 0.25) return 0.5;
+                if (s <= 0.6)  return 1;
+                if (s <= 0.85) return 2;
+                return 3;
+            }
+            function boxAvg(arr) {
+                if (arr.length === 0) return 0;
+                return arr.reduce((a, b) => a + b, 0) / arr.length;
+            }
+
+            // M：記憶
+            const memArr = ['ad5_1','ad5_2','ad5_3','ad5_6','ad5_8'].map(q => fs(responses[q]));
+            const memory = mapSeverityToCDR(boxAvg(memArr));
+
+            // O：定向力
+            const orArr = ['ad6_1','ad6_2','ad6_3','ad6_4'].map(q => fs(responses[q]));
+            const orientation = mapSeverityToCDR(boxAvg(orArr));
+
+            // J：判斷力與解決問題
+            const jArr = ['vad7_2','vad7_3','vad7_5','vad7_6','vad7_9'].map(q => fs(responses[q]));
+            const judgment = mapSeverityToCDR(boxAvg(jArr));
+
+            // C：社區活動
+            const cArr = [
+                adlScore('adl9_1','adl3'), adlScore('adl9_2','adl3'),
+                adlScore('adl9_6','adl3'), adlScore('adl9_8','adl3')
+            ];
+            const community = mapSeverityToCDR(boxAvg(cArr));
+
+            // H：家務嗜好
+            const hArr = [
+                adlScore('adl9_3','adl4'), adlScore('adl9_4','adl4')
+            ];
+            const homeHobbies = mapSeverityToCDR(boxAvg(hArr));
+
+            // P：個人照料
+            const pArr = [
+                adlScore('adl9_7','adl3'), adlScore('adl9_11','adl3'), adlScore('adl9_12','adl3')
+            ];
+            const personalCare = mapSeverityToCDR(boxAvg(pArr));
+
+            // Global CDR — Morris 簡化演算法：memory 為 anchor
+            const boxes = { memory, orientation, judgment, community, homeHobbies, personalCare };
+            const secondaries = [orientation, judgment, community, homeHobbies, personalCare];
+            let globalCDR;
+            const sameAsMemory = secondaries.filter(s => s === memory).length;
+            if (sameAsMemory >= 3) {
+                globalCDR = memory;
+            } else {
+                // 若 memory 與多數次要盒差 → 取次要盒中位數與 memory 中較接近之值
+                const sorted = secondaries.slice().sort((a, b) => a - b);
+                const median = sorted[2];
+                globalCDR = memory;
+                // 當次要明顯低於 memory，降半階；明顯高，升半階（保守）
+                if (median < memory) globalCDR = Math.max(memory - 0.5, median);
+                if (median > memory) globalCDR = Math.min(memory + 0.5, median);
+            }
+
+            const sumOfBoxes = memory + orientation + judgment + community + homeHobbies + personalCare;
+
+            return {
+                boxes: boxes,
+                sumOfBoxes: sumOfBoxes,
+                global: globalCDR,
+                note: 'informant-derived（非 gold-standard，僅供參考）'
+            };
+        }
+
+        // ===== 混合型失智偵測 =====
+        function detectMixedDementia(levels, probabilities) {
+            const possibleTypes = Object.keys(levels)
+                .filter(t => levels[t] === 'probable' || levels[t] === 'possible');
+            if (possibleTypes.length < 2) return { isMixed: false, types: [], pattern: null };
+
+            // 常見組合 pattern 判讀
+            const hasAD = possibleTypes.includes('AD');
+            const hasVaD = possibleTypes.includes('VaD');
+            const hasDLB = possibleTypes.includes('DLB') || possibleTypes.includes('PDD');
+            const hasFTD = possibleTypes.includes('FTD');
+
+            let pattern = null;
+            if (hasAD && hasVaD) pattern = 'AD + VaD（血管性共病）';
+            else if (hasAD && hasDLB) pattern = 'AD + Lewy body 共病';
+            else if (hasVaD && hasDLB) pattern = 'VaD + Lewy body 共病';
+            else if (hasFTD && hasAD) pattern = 'FTD + AD 共病（少見，需排除年輕型 AD）';
+            else pattern = possibleTypes.join(' + ');
+
+            return { isMixed: true, types: possibleTypes, pattern: pattern };
+        }
+
+        // ===== Sanity checks =====
+        function runSanityChecks(adlImpairment) {
+            const warnings = [];
+            const age = calculateAge(patientInfo.birthDate);
+
+            if (age !== null && age < 40) {
+                warnings.push({ level: 'warn', text: '年齡 < 40 歲。失智症在此年齡少見，請優先排除神經發炎、代謝性、毒物、精神或遺傳性病因。' });
+            }
+            if (age !== null && age > 100) {
+                warnings.push({ level: 'warn', text: '年齡 > 100 歲，請確認出生日期是否正確。' });
+            }
+            if (patientInfo.birthDate && patientInfo.assessmentDate &&
+                new Date(patientInfo.birthDate) > new Date(patientInfo.assessmentDate)) {
+                warnings.push({ level: 'error', text: '出生日期晚於評估日期，請修正基本資料。' });
+            }
+
+            // 全陽性檢查
+            let total = 0, positive = 0;
+            questionSections.forEach(sec => {
+                sec.questions.forEach(q => {
+                    const v = responses[q.id];
+                    if (v === undefined) return;
+                    total++;
+                    if (v === '是' || v === '會' || v === '常常') positive++;
+                    else if (q.type === 'adl3' && v == 2) positive++;
+                    else if (q.type === 'adl4' && v == 3) positive++;
+                });
+            });
+            if (total > 0 && (positive / total) > 0.9) {
+                warnings.push({ level: 'warn', text: '超過 90% 題目皆填最嚴重選項，請家屬再次確認填答是否符合患者實際狀況。' });
+            }
+
+            // 症狀過少但病程很短 — 可能 delirium 或 MCI
+            const duration = responses['duration'];
+            if (positive < 3 && (duration === 0 || duration === undefined)) {
+                warnings.push({ level: 'info', text: '陽性症狀少且病程 < 6 個月，臨床應排除急性混亂狀態（delirium）、憂鬱或 MCI。' });
+            }
+
+            // 0 歲或未來日期阻擋
+            if (age === 0) {
+                warnings.push({ level: 'error', text: '計算出年齡為 0 歲，請確認出生日期。' });
+            }
+
+            return warnings;
+        }
+
+        // 生成建議 (v3.0 logic — 依 CDR 分層 + criteria-based)
         function generateRecommendations(results) {
             const probabilities = results.probabilities;
             const overallRisk = results.overallRisk;
             const adlImpairment = results.adlImpairment;
+            const cdr = results.cdr;
+            const mixed = results.mixedDementia;
+            const levels = results.criteriaLevels || {};
             const recommendations = [];
-            
+
             const sorted = Object.entries(probabilities)
                 .sort(function(a, b) { return b[1] - a[1]; })
                 .filter(function(item) { return item[1] > 15; });
-            
-            // 風險等級建議
+
+            // ===== 依 CDR 分層處置（台灣臨床情境） =====
+            if (cdr) {
+                if (cdr.global >= 2) {
+                    recommendations.push({ type: 'urgent', text: 'CDR ≈ ' + cdr.global + '（中重度以上）：建議與主治醫師討論照護計畫、安全環境評估（遊走、跌倒、吞嚥），以及長照 3.0 與失智共照網資源；可考慮討論預立醫療決定（ACP）。' });
+                } else if (cdr.global >= 1) {
+                    recommendations.push({ type: 'important', text: 'CDR ≈ 1（輕度失智）：可由神經科或精神科醫師評估是否適合失智症藥物（膽鹼酯酶抑制劑等）、安排非藥物介入與照顧者衛教；建議連結失智共照網與長照 3.0 資源；注意駕車安全與金融決策能力。' });
+                } else if (cdr.global === 0.5) {
+                    recommendations.push({ type: 'important', text: 'CDR ≈ 0.5（疑似輕度認知障礙 MCI）：建議 3–6 個月後於神經內科或記憶門診追蹤，並安排神經心理測驗與腦部結構性影像檢查；可由醫師評估是否適合啟動失智症藥物（膽鹼酯酶抑制劑等）；若臨床有需要可討論自費檢查（amyloid PET、FDG-PET 或 CSF biomarker）；可連結失智共照網與長照 3.0 資源。' });
+                } else {
+                    recommendations.push({ type: 'clinical', text: 'CDR ≈ 0：目前尚未達失智程度，若有疑慮可定期追蹤。' });
+                }
+            }
+
+            // ===== 混合型提示 =====
+            if (mixed && mixed.isMixed) {
+                recommendations.push({ type: 'clinical', text: '結果提示可能為混合型失智（' + mixed.pattern + '）：臨床可能需同時處理兩種病理機轉，例如血管風險因子控制合併 Lewy body 或 AD 症狀管理，請由主治醫師綜合判斷。' });
+            }
+
+            // ===== 整體風險建議 =====
             if (overallRisk === 'high') {
                 recommendations.push({
                     type: 'urgent',
-                    text: '建議盡快（2週內）安排神經內科或老年精神科專科醫師評估'
+                    text: '建議儘速（2 週內）由神經內科或老年精神科醫師完整評估'
                 });
             } else if (overallRisk === 'moderate') {
                 recommendations.push({
                     type: 'important',
-                    text: '建議於1個月內至記憶門診或神經科接受完整評估'
+                    text: '建議於 1 個月內至記憶門診或神經科接受完整評估'
                 });
             }
 
             // PDD vs DLB 鑑別建議
             if (probabilities.PDD > 30) {
-                 recommendations.push({
-                    type: 'urgent', 
-                    text: '動作症狀早於認知症狀一年以上，臨床應優先考慮 Parkinson\'s Disease Dementia (PDD)。'
+                recommendations.push({
+                    type: 'urgent',
+                    text: '動作症狀早於認知症狀超過一年，臨床應優先考慮 Parkinson\'s Disease Dementia (PDD)；可由神經科安排相關檢查與用藥評估。'
                 });
             }
-            
+
             // 功能損害建議
             if (adlImpairment > 50) {
                 recommendations.push({
                     type: 'important',
-                    text: '日常功能明顯受損，建議評估照護需求與安全措施'
+                    text: '日常功能明顯受損，建議評估照護需求、安全措施及長照資源申請'
                 });
             }
-            
-            // 疾病特異性建議
+
+            // ===== 疾病特異性建議（依台灣可得檢查） =====
             if (probabilities.DLB > 30) {
                 recommendations.push({
                     type: 'clinical',
-                    text: '症狀符合路易氏體失智症(DLB)特徵（認知先於動作），建議進行DaTscan或MIBG心肌閃爍攝影檢查'
+                    text: 'Lewy body 失智（DLB）特徵明顯：臨床可考慮安排腦部結構性影像檢查與 TRODAT-1 SPECT（健保給付於疑似巴金森症候群）；若仍有鑑別需求，可討論自費 FDG-PET。'
                 });
                 if (responses['dlb1_4'] === '是') {
                     recommendations.push({
+                        type: 'clinical',
+                        text: '疑似 REM 睡眠行為障礙（RBD）：可與神經科或睡眠門診討論安排 polysomnography (PSG) 以確認診斷。'
+                    });
+                    recommendations.push({
                         type: 'safety',
-                        text: '有REM睡眠行為障礙，注意睡眠安全，避免床邊放置危險物品'
+                        text: '夢境動作行為可能造成傷害：建議注意睡眠環境安全（床邊避免放置尖銳或堅硬物品、與同床者分床以避免誤傷）。'
                     });
                 }
             }
-            
+
             if (probabilities.AD > 30) {
                 recommendations.push({
                     type: 'clinical',
-                    text: '記憶障礙顯著，建議進行腦部MRI及認知功能完整評估'
+                    text: 'amnestic 記憶障礙顯著：建議安排腦部結構性影像檢查以排除結構性病變，並接受完整神經心理評估。'
                 });
                 if ((responses['ad5_2'] === '常常') && responses['ad5_6'] === '常常') {
                     recommendations.push({
                         type: 'clinical',
-                        text: '近期記憶嚴重受損，可考慮血液生物標記檢測（如plasma p-tau217）'
+                        text: '近期記憶明顯退化：若臨床鑑別有困難或影響治療決策，可與主治醫師討論自費 amyloid PET、FDG-PET 或 CSF biomarker 檢測（台灣目前 plasma p-tau217 等血液生物標記尚未普及為常規可得項目）。'
                     });
                 }
             }
-            
+
             if (probabilities.FTD > 30) {
                 const age = calculateAge(patientInfo.birthDate);
+                recommendations.push({
+                    type: 'clinical',
+                    text: '行為變異型特徵明顯：建議安排腦部結構性影像檢查（評估額顳葉萎縮）；若鑑別困難可與主治醫師討論自費 FDG-PET。'
+                });
                 if (age && age < 65) {
                     recommendations.push({
                         type: 'clinical',
-                        text: '年輕發病且有明顯行為改變，建議基因檢測評估遺傳性額顳葉失智症'
+                        text: '發病年齡 < 65 歲：若家族史陽性或臨床高度懷疑遺傳性額顳葉退化，可在神經科門診討論是否進行基因檢測（MAPT/GRN/C9orf72 等，多為自費）。'
                     });
                 }
                 recommendations.push({
                     type: 'important',
-                    text: '行為症狀明顯，建議家屬接受照護技巧指導'
+                    text: '行為症狀明顯：建議家屬接受照護技巧指導，並可透過失智共照網或失智症協會取得支持資源。'
                 });
             }
-            
+
             if (probabilities.VaD > 30) {
                 recommendations.push({
                     type: 'clinical',
-                    text: '血管性因素明顯（如中風病史），建議腦部MRI評估血管病變及心血管風險因子控制'
+                    text: '血管性因素明顯：建議安排腦部結構性影像檢查（MRI 可進一步評估白質病變與微出血），並強化血壓、血糖、血脂與抗血小板治療等心血管風險因子控制。'
                 });
             }
-            
+
             if (probabilities.PPA > 30) {
                 recommendations.push({
                     type: 'clinical',
-                    text: '語言功能障礙為主，建議語言治療評估及FDG-PET檢查'
+                    text: '語言功能障礙為主：建議安排腦部結構性影像檢查（評估特定萎縮分布）與語言治療評估；若鑑別亞型有困難，可與主治醫師討論自費 FDG-PET 或 amyloid PET。'
                 });
             }
-            
+
             return { sorted: sorted, recommendations: recommendations };
         }
 
@@ -1536,14 +1866,26 @@
 
             let html = '<div class="results-container">';
             html += '<div class="section-title">📊 評估結果報告</div>';
-            
-            // 整體風險摘要
+
+            // ===== Sanity warnings =====
+            if (results.warnings && results.warnings.length > 0) {
+                html += '<div class="risk-card" style="border-left: 5px solid #f59e0b; background: #fffbeb;">';
+                html += '<h3 style="margin-bottom: 10px; color: #92400e;">⚠️ 填答 / 資料檢核提示</h3>';
+                results.warnings.forEach(function(w) {
+                    const prefix = w.level === 'error' ? '❌ ' : (w.level === 'warn' ? '⚠️ ' : 'ℹ️ ');
+                    html += '<div style="padding: 8px 0; color: #78350f;">' + prefix + w.text + '</div>';
+                });
+                html += '</div>';
+            }
+
+            // ===== 整體風險摘要 =====
             html += '<div class="risk-card">';
             html += '<h3 style="margin-bottom: 15px;">整體評估摘要</h3>';
             html += '<div class="risk-summary">';
             html += '<div class="risk-item">';
-            html += '<div class="risk-label">整體認知障礙風險等級</div>';
-            html += '<div class="risk-value ' + riskInfo.color + '">' + riskInfo.text + '</div>';
+            html += '<div class="risk-label">Informant-derived CDR</div>';
+            html += '<div class="risk-value" style="color: #1e40af;">' + (results.cdr ? results.cdr.global : 'N/A') + '</div>';
+            html += '<div style="font-size:12px;color:#6b7280;">Sum of Boxes: ' + (results.cdr ? results.cdr.sumOfBoxes.toFixed(1) : 'N/A') + '</div>';
             html += '</div>';
             html += '<div class="risk-item">';
             html += '<div class="risk-label">日常功能障礙程度</div>';
@@ -1555,8 +1897,34 @@
             html += '<span class="confidence-indicator ' + confidenceInfo.class + '">' + confidenceInfo.text + '</span>';
             html += '</div>';
             html += '</div>';
+            html += '<div class="risk-item">';
+            html += '<div class="risk-label">整體認知障礙風險</div>';
+            html += '<div class="risk-value ' + riskInfo.color + '" style="font-size:20px;">' + riskInfo.text + '</div>';
             html += '</div>';
             html += '</div>';
+            html += '<div style="margin-top:10px;font-size:12px;color:#6b7280;">* CDR 由家屬問卷推估，非由訓練施測者執行之正式 CDR，僅供參考。</div>';
+            html += '</div>';
+
+            // ===== CDR 各盒明細 =====
+            if (results.cdr) {
+                html += '<div class="risk-card">';
+                html += '<h3 style="margin-bottom:10px;">CDR 分項（informant-derived）</h3>';
+                html += '<table class="symptoms-table"><thead><tr><th>領域</th><th>分數</th></tr></thead><tbody>';
+                const boxNames = { memory: '記憶', orientation: '定向力', judgment: '判斷與解決問題', community: '社區活動', homeHobbies: '家務嗜好', personalCare: '個人照料' };
+                Object.keys(boxNames).forEach(function(k) {
+                    html += '<tr><td>' + boxNames[k] + '</td><td>' + results.cdr.boxes[k] + '</td></tr>';
+                });
+                html += '</tbody></table></div>';
+            }
+
+            // ===== 混合型提示 =====
+            if (results.mixedDementia && results.mixedDementia.isMixed) {
+                html += '<div class="risk-card" style="border-left: 5px solid #8b5cf6; background: #f5f3ff;">';
+                html += '<h3 style="margin-bottom:10px; color: #5b21b6;">🔀 混合型失智提示</h3>';
+                html += '<div style="color:#4c1d95;">' + results.mixedDementia.pattern + '</div>';
+                html += '<div style="font-size:13px;margin-top:8px;color:#6b21a8;">（兩種或以上類型達 possible 或 probable 診斷標準）</div>';
+                html += '</div>';
+            }
 
             // 失智症類型機率
             html += '<div class="risk-card">';
@@ -1564,9 +1932,22 @@
             html += '<div class="probability-bars">';
             sorted.forEach(function(item) {
                 const [type, prob] = item;
+                const levels = results.criteriaLevels || {};
+                const evidence = results.criteriaEvidence || {};
+                // DLB/PDD 皆查 DLB key
+                const levelKey = (type === 'PDD') ? 'PDD' : type;
+                const level = levels[levelKey] || levels.DLB || 'not-met';
+                const evList = evidence[levelKey] || evidence.DLB || [];
+
+                const badgeStyle = level === 'probable' ? 'background:#dc2626;color:white;' :
+                                   level === 'possible' ? 'background:#f59e0b;color:white;' :
+                                   'background:#9ca3af;color:white;';
+                const badgeText = level === 'probable' ? 'Probable' :
+                                  level === 'possible' ? 'Possible' : 'Not met';
+
                 html += '<div class="probability-item">';
                 html += '<div class="probability-header">';
-                html += '<span class="probability-name">' + getDementiaName(type) + '</span>';
+                html += '<span class="probability-name">' + getDementiaName(type) + ' <span style="padding:2px 8px;border-radius:12px;font-size:11px;margin-left:6px;' + badgeStyle + '">' + badgeText + '</span></span>';
                 html += '<span class="probability-percent">' + Math.round(prob) + '%</span>';
                 html += '</div>';
                 html += '<div class="probability-bar">';
@@ -1576,9 +1957,17 @@
                 }
                 html += '</div>';
                 html += '</div>';
-                
-                // PPA次分型顯示
-                if (type === 'PPA' && results.subtypes.PPA) {
+
+                // 顯示符合的診斷證據
+                if (evList.length > 0) {
+                    html += '<div style="margin-top:8px;font-size:13px;color:#374151;">';
+                    html += '<strong>符合之診斷特徵：</strong><ul style="margin:4px 0 0 20px;">';
+                    evList.forEach(function(e) { html += '<li>' + e + '</li>'; });
+                    html += '</ul></div>';
+                }
+
+                // PPA 次分型
+                if (type === 'PPA' && results.subtypes && results.subtypes.PPA) {
                     const ppaSubtypes = results.subtypes.PPA;
                     const maxSubtype = Object.entries(ppaSubtypes)
                         .sort((a, b) => b[1] - a[1])[0];
@@ -1589,7 +1978,7 @@
                         html += '</div>';
                     }
                 }
-                
+
                 html += '</div>';
             });
             html += '</div>';
@@ -1688,7 +2077,7 @@
 
             let report = '\n';
             report += '═══════════════════════════════════════════════════════════════\n';
-            report += '              臨床病史失智診斷結構性問卷 - 評估報告 (v2.0)\n'; // Version updated
+            report += '              臨床病史失智診斷結構性問卷 - 評估報告 (v3.0 criteria-based)\n';
             report += '═══════════════════════════════════════════════════════════════\n\n';
             report += '【基本資料】\n';
             report += '────────────────────────────────────────────────\n';
@@ -1702,18 +2091,50 @@
             
             report += '【評估結果摘要】\n';
             report += '────────────────────────────────────────────────\n';
+            if (results.cdr) {
+                report += 'Informant-derived CDR：' + results.cdr.global + '\n';
+                report += 'CDR Sum of Boxes：' + results.cdr.sumOfBoxes.toFixed(1) + '\n';
+                report += '  記憶：' + results.cdr.boxes.memory + '\n';
+                report += '  定向力：' + results.cdr.boxes.orientation + '\n';
+                report += '  判斷力：' + results.cdr.boxes.judgment + '\n';
+                report += '  社區活動：' + results.cdr.boxes.community + '\n';
+                report += '  家務嗜好：' + results.cdr.boxes.homeHobbies + '\n';
+                report += '  個人照料：' + results.cdr.boxes.personalCare + '\n';
+                report += '  (註：由家屬問卷推估，非正式 CDR)\n';
+            }
             report += '整體認知障礙風險等級：' + riskInfo.text + '\n';
             report += '日常功能障礙程度：' + Math.round(results.adlImpairment) + '%\n';
-            report += '診斷信心度：' + confidenceInfo.text + '\n\n';
+            report += '診斷信心度：' + confidenceInfo.text + '\n';
+            if (results.mixedDementia && results.mixedDementia.isMixed) {
+                report += '混合型提示：' + results.mixedDementia.pattern + '\n';
+            }
+            report += '\n';
 
-            report += '【各類型失智症相對機率分析】\n';
+            if (results.warnings && results.warnings.length > 0) {
+                report += '【填答 / 資料檢核提示】\n';
+                report += '────────────────────────────────────────────────\n';
+                results.warnings.forEach(function(w) {
+                    const prefix = w.level === 'error' ? '[錯誤] ' : (w.level === 'warn' ? '[警示] ' : '[提示] ');
+                    report += prefix + w.text + '\n';
+                });
+                report += '\n';
+            }
+
+            report += '【各類型失智症相對機率分析（含 criteria 符合度）】\n';
             report += '────────────────────────────────────────────────\n';
 
             sorted.forEach(function(item) {
                 const [type, prob] = item;
-                report += getDementiaName(type) + '：' + Math.round(prob) + '%\n';
+                const levels = results.criteriaLevels || {};
+                const evidence = results.criteriaEvidence || {};
+                const levelKey = (type === 'PDD') ? 'PDD' : type;
+                const level = levels[levelKey] || levels.DLB || 'not-met';
+                const levelText = level === 'probable' ? 'Probable' : (level === 'possible' ? 'Possible' : 'Not met');
+                report += getDementiaName(type) + '：' + Math.round(prob) + '%  [' + levelText + ']\n';
+                const evList = evidence[levelKey] || evidence.DLB || [];
+                evList.forEach(function(e) { report += '   ‧ ' + e + '\n'; });
 
-                if (type === 'PPA' && results.subtypes.PPA) {
+                if (type === 'PPA' && results.subtypes && results.subtypes.PPA) {
                     const ppaSubtypes = results.subtypes.PPA;
                     const maxSubtype = Object.entries(ppaSubtypes)
                         .sort((a, b) => b[1] - a[1])[0];
@@ -1768,23 +2189,28 @@
             }, 500);
         }
 
-        // 產生 JSON 字串 (v2.0 logic)
+        // 產生 JSON 字串 (v3.0 logic — 保留 legacy 欄位供驗證)
         function generateJSONDataString() {
             const results = globalResults;
+            // 分離 legacy 欄位，UI 不顯示但 JSON 保留以便後續新舊模型一致性驗證
+            const legacyBlock = results.legacy || {};
+            const resultsWithoutLegacy = Object.assign({}, results);
+            delete resultsWithoutLegacy.legacy;
+
             const exportData = {
                 metadata: {
-                    version: '2.0', // Version updated
+                    version: '3.0',
+                    engine: 'criteria-based (McKeith 2017 / Rascovsky 2011 / Gorno-Tempini 2011 / NINDS-AIREN / NIA-AA clinical)',
                     exportDate: new Date().toISOString(),
                     assessmentDate: patientInfo.assessmentDate
                 },
                 patientInfo: patientInfo,
                 responses: responses,
-                results: results, 
+                results: resultsWithoutLegacy,
+                legacyScores: legacyBlock,
                 abnormalSymptoms: getAbnormalSymptoms()
             };
-            
-            const dataStr = JSON.stringify(exportData, null, 2);
-            return dataStr;
+            return JSON.stringify(exportData, null, 2);
         }
         
         // 僅匯出 JSON (v2.0 logic)
