@@ -1,0 +1,939 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>失智症抗精神病藥物減量流程圖動畫</title>
+  <style>
+    :root {
+      --paper: #fffdf7;
+      --canvas: #f4f1e8;
+      --ink: #1f2937;
+      --muted: #64748b;
+      --line: #d8d3c6;
+      --teal: #0f766e;
+      --teal-soft: #d9f3ef;
+      --amber: #b45309;
+      --amber-soft: #fff0c2;
+      --red: #b42318;
+      --red-soft: #ffe2df;
+      --blue: #1d4ed8;
+      --blue-soft: #dbeafe;
+      --green: #15803d;
+      --green-soft: #dcfce7;
+      --shadow: 0 18px 45px rgba(31, 41, 55, 0.14);
+      --ease: cubic-bezier(0.23, 1, 0.32, 1);
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    h1,
+    h2,
+    h3,
+    p,
+    span,
+    strong,
+    button,
+    .caption,
+    .note {
+      overflow-wrap: anywhere;
+      word-break: break-word;
+    }
+
+    html,
+    body {
+      margin: 0;
+      min-height: 100%;
+      background: var(--canvas);
+      color: var(--ink);
+      font-family: "Microsoft JhengHei", "Noto Sans TC", system-ui, sans-serif;
+    }
+
+    body {
+      display: grid;
+      place-items: center;
+      padding: 20px;
+      overflow-x: hidden;
+    }
+
+    .app {
+      width: min(1280px, 100%);
+      overflow-x: hidden;
+    }
+
+    .stage {
+      position: relative;
+      width: 100%;
+      aspect-ratio: 16 / 9;
+      min-height: 620px;
+      overflow: hidden;
+      background:
+        linear-gradient(90deg, rgba(15, 118, 110, 0.08), transparent 24%),
+        linear-gradient(180deg, #fffef9, #f9f7ee);
+      border: 1px solid var(--line);
+      box-shadow: var(--shadow);
+    }
+
+    .topbar {
+      position: absolute;
+      inset: 0 0 auto;
+      height: 68px;
+      display: grid;
+      grid-template-columns: 1fr auto;
+      align-items: center;
+      gap: 18px;
+      padding: 14px 28px 10px;
+      border-bottom: 1px solid rgba(216, 211, 198, 0.75);
+      background: rgba(255, 253, 247, 0.82);
+      backdrop-filter: blur(10px);
+      z-index: 8;
+    }
+
+    h1 {
+      margin: 0;
+      font-size: clamp(22px, 2.3vw, 34px);
+      line-height: 1.15;
+      letter-spacing: 0;
+    }
+
+    .subtitle {
+      margin-top: 4px;
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .timer {
+      display: grid;
+      grid-auto-flow: column;
+      align-items: center;
+      gap: 10px;
+      font-variant-numeric: tabular-nums;
+      color: var(--muted);
+      font-weight: 700;
+    }
+
+    .time-chip {
+      min-width: 64px;
+      padding: 8px 10px;
+      border: 1px solid var(--line);
+      background: white;
+      text-align: center;
+    }
+
+    .content {
+      position: absolute;
+      inset: 68px 0 54px;
+      display: grid;
+      grid-template-columns: minmax(300px, 0.92fr) minmax(520px, 1.3fr);
+      gap: 22px;
+      padding: 18px 28px;
+    }
+
+    .narrative {
+      display: grid;
+      grid-template-rows: auto auto auto;
+      align-content: start;
+      gap: 16px;
+      min-width: 0;
+    }
+
+    .caption-card,
+    .metric-card,
+    .legend {
+      border: 1px solid var(--line);
+      background: rgba(255, 255, 255, 0.78);
+      box-shadow: 0 10px 30px rgba(31, 41, 55, 0.07);
+    }
+
+    .caption-card {
+      padding: 22px;
+      min-height: 168px;
+    }
+
+    .phase-label {
+      display: inline-flex;
+      align-items: center;
+      min-height: 28px;
+      padding: 4px 10px;
+      margin-bottom: 12px;
+      color: white;
+      background: var(--teal);
+      font-size: 13px;
+      font-weight: 800;
+    }
+
+    .caption {
+      margin: 0;
+      font-size: clamp(20px, 2.2vw, 30px);
+      line-height: 1.35;
+      font-weight: 800;
+    }
+
+    .note {
+      margin: 12px 0 0;
+      color: var(--muted);
+      font-size: 15px;
+      line-height: 1.55;
+    }
+
+    .metric-card {
+      padding: 16px;
+    }
+
+    .metric-title {
+      margin: 0 0 12px;
+      font-size: 14px;
+      color: var(--muted);
+      font-weight: 800;
+    }
+
+    .risk-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 10px;
+    }
+
+    .risk {
+      min-height: 82px;
+      padding: 12px;
+      border: 1px solid var(--line);
+      background: white;
+      transition: transform 220ms var(--ease), border-color 220ms var(--ease), background 220ms var(--ease);
+    }
+
+    .risk strong {
+      display: block;
+      margin-bottom: 5px;
+      font-size: 15px;
+    }
+
+    .risk span {
+      display: block;
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.35;
+    }
+
+    .risk.active {
+      transform: translateY(-3px);
+      border-color: var(--teal);
+      background: var(--teal-soft);
+    }
+
+    .legend {
+      padding: 14px 16px;
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.45;
+    }
+
+    .flow {
+      min-width: 0;
+      display: grid;
+      grid-template-rows: auto 1fr auto;
+      gap: 16px;
+    }
+
+    .steps {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 12px;
+    }
+
+    .step {
+      position: relative;
+      min-height: 96px;
+      padding: 12px 10px;
+      border: 1px solid var(--line);
+      background: rgba(255, 255, 255, 0.78);
+      transform: translateY(14px);
+      opacity: 0;
+      transition: opacity 420ms var(--ease), transform 420ms var(--ease), border-color 260ms var(--ease), background 260ms var(--ease);
+    }
+
+    .step.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    .step.active {
+      border-color: var(--teal);
+      background: #ffffff;
+      box-shadow: 0 12px 30px rgba(15, 118, 110, 0.16);
+    }
+
+    .step-num {
+      display: inline-grid;
+      place-items: center;
+      width: 28px;
+      height: 28px;
+      margin-bottom: 8px;
+      color: white;
+      background: var(--teal);
+      font-size: 13px;
+      font-weight: 900;
+    }
+
+    .step h2 {
+      margin: 0 0 7px;
+      font-size: clamp(16px, 1.25vw, 20px);
+      line-height: 1.2;
+      letter-spacing: 0;
+    }
+
+    .step p {
+      margin: 0;
+      color: var(--muted);
+      font-size: 11px;
+      line-height: 1.35;
+    }
+
+    .diagram {
+      position: relative;
+      display: grid;
+      grid-template-columns: 0.95fr 1.05fr;
+      gap: 16px;
+      min-height: 0;
+    }
+
+    .decision-board,
+    .taper-board {
+      position: relative;
+      overflow: hidden;
+      border: 1px solid var(--line);
+      background: rgba(255, 255, 255, 0.82);
+      padding: 14px;
+    }
+
+    .board-title {
+      margin: 0 0 10px;
+      color: var(--muted);
+      font-size: 14px;
+      font-weight: 900;
+    }
+
+    .decision-paths {
+      display: grid;
+      gap: 12px;
+    }
+
+    .path {
+      display: grid;
+      grid-template-columns: 72px 1fr;
+      gap: 12px;
+      align-items: center;
+      min-height: 72px;
+      padding: 10px;
+      border: 1px solid var(--line);
+      background: white;
+      opacity: 0.52;
+      transition: opacity 260ms var(--ease), transform 260ms var(--ease), border-color 260ms var(--ease), background 260ms var(--ease);
+    }
+
+    .path.active {
+      opacity: 1;
+      transform: translateX(4px);
+      border-color: currentColor;
+    }
+
+    .path.deprescribe {
+      color: var(--green);
+    }
+
+    .path.caution {
+      color: var(--amber);
+    }
+
+    .path.hold {
+      color: var(--red);
+    }
+
+    .path-icon {
+      display: grid;
+      place-items: center;
+      width: 52px;
+      height: 52px;
+      color: white;
+      background: currentColor;
+      font-size: 24px;
+      font-weight: 900;
+    }
+
+    .path h3 {
+      margin: 0 0 5px;
+      color: var(--ink);
+      font-size: 17px;
+      line-height: 1.2;
+    }
+
+    .path p {
+      margin: 0;
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.38;
+    }
+
+    .dose-track {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 6px;
+      margin-top: 16px;
+    }
+
+    .dose {
+      position: relative;
+      min-height: 78px;
+      padding: 10px 6px;
+      border: 1px solid var(--line);
+      background: white;
+      color: var(--muted);
+      text-align: center;
+      transition: background 260ms var(--ease), color 260ms var(--ease), transform 260ms var(--ease), border-color 260ms var(--ease);
+    }
+
+    .dose strong {
+      display: block;
+      margin-bottom: 4px;
+      color: var(--ink);
+      font-size: 18px;
+    }
+
+    .dose span {
+      display: block;
+      font-size: 11px;
+      line-height: 1.25;
+    }
+
+    .dose.active {
+      transform: translateY(-4px);
+      border-color: var(--blue);
+      background: var(--blue-soft);
+      color: var(--blue);
+    }
+
+    .monitor {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 10px;
+      margin-top: 18px;
+    }
+
+    .monitor-item {
+      min-height: 82px;
+      padding: 10px;
+      border: 1px solid var(--line);
+      background: white;
+      opacity: 0.58;
+      transition: opacity 260ms var(--ease), border-color 260ms var(--ease), background 260ms var(--ease);
+    }
+
+    .monitor-item.active {
+      opacity: 1;
+      border-color: var(--teal);
+      background: var(--teal-soft);
+    }
+
+    .monitor-item strong {
+      display: block;
+      margin-bottom: 6px;
+      font-size: 15px;
+    }
+
+    .monitor-item span {
+      display: block;
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.35;
+    }
+
+    .footer {
+      position: absolute;
+      inset: auto 0 0;
+      height: 54px;
+      display: grid;
+      grid-template-columns: 1fr auto;
+      align-items: center;
+      gap: 16px;
+      padding: 9px 28px 12px;
+      background: rgba(255, 253, 247, 0.88);
+      border-top: 1px solid rgba(216, 211, 198, 0.75);
+      z-index: 8;
+    }
+
+    .progress-wrap {
+      min-width: 0;
+    }
+
+    .progress {
+      height: 8px;
+      overflow: hidden;
+      background: #e7e0d1;
+    }
+
+    .progress-bar {
+      width: 0%;
+      height: 100%;
+      background: linear-gradient(90deg, var(--teal), var(--blue), var(--amber));
+      transition: width 100ms linear;
+    }
+
+    .controls {
+      display: grid;
+      grid-auto-flow: column;
+      gap: 8px;
+    }
+
+    button {
+      min-width: 74px;
+      border: 1px solid var(--line);
+      background: white;
+      color: var(--ink);
+      padding: 9px 12px;
+      font: inherit;
+      font-size: 13px;
+      font-weight: 800;
+      cursor: pointer;
+    }
+
+    button:hover {
+      border-color: var(--teal);
+    }
+
+    .sources {
+      margin-top: 12px;
+      color: #475569;
+      font-size: 12px;
+      line-height: 1.5;
+    }
+
+    .sources a {
+      color: #0f766e;
+    }
+
+    @media (max-width: 980px) {
+      body {
+        display: block;
+        padding: 0;
+        width: 100%;
+      }
+
+      .app,
+      .stage,
+      .content,
+      .narrative,
+      .flow,
+      .diagram,
+      .caption-card,
+      .metric-card,
+      .legend,
+      .decision-board,
+      .taper-board {
+        width: 100%;
+        max-width: 100%;
+        min-width: 0;
+      }
+
+      .stage {
+        min-height: 1080px;
+        aspect-ratio: auto;
+        border: 0;
+      }
+
+      .topbar,
+      .footer {
+        position: relative;
+        inset: auto;
+        height: auto;
+      }
+
+      .topbar {
+        grid-template-columns: 1fr;
+        gap: 10px;
+      }
+
+      .timer {
+        justify-self: start;
+      }
+
+      .content {
+        position: relative;
+        inset: auto;
+        grid-template-columns: 1fr;
+        padding: 18px;
+      }
+
+      .diagram {
+        grid-template-columns: 1fr;
+      }
+
+      .steps {
+        grid-template-columns: 1fr;
+      }
+
+      .risk-grid,
+      .monitor {
+        grid-template-columns: 1fr;
+      }
+
+      .dose-track {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+
+      .dose:last-child {
+        grid-column: 1 / -1;
+      }
+
+      .footer {
+        grid-template-columns: 1fr;
+      }
+
+      h1,
+      h2,
+      h3,
+      p,
+      span,
+      strong,
+      .caption,
+      .note {
+        word-break: break-all;
+        line-break: anywhere;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <main class="stage" aria-label="失智症抗精神病藥物減量流程圖動畫">
+      <header class="topbar">
+        <div>
+          <h1>失智症抗精神病藥物減量流程圖</h1>
+          <div class="subtitle">60 秒臨床轉譯動畫，教育用途，需由醫療團隊個別化判斷</div>
+        </div>
+        <div class="timer" aria-label="動畫時間">
+          <span id="phaseTime" class="time-chip">00:00</span>
+          <span>/ 01:00</span>
+        </div>
+      </header>
+
+      <section class="content">
+        <aside class="narrative" aria-live="polite">
+          <div class="caption-card">
+            <div id="phaseLabel" class="phase-label">開場</div>
+            <p id="caption" class="caption">確認：此藥是否仍有明確適應症？</p>
+            <p id="note" class="note">目標不是「立刻停藥」，而是把用藥必要性、風險與照護目標放回同一張決策圖。</p>
+          </div>
+
+          <div class="metric-card">
+            <p class="metric-title">決策訊號</p>
+            <div class="risk-grid">
+              <div class="risk" data-risk="symptom">
+                <strong>NPI / 症狀</strong>
+                <span>穩定、改善、復發或危險行為</span>
+              </div>
+              <div class="risk" data-risk="function">
+                <strong>CDR / 功能</strong>
+                <span>病程、日常功能與照護負荷</span>
+              </div>
+              <div class="risk" data-risk="harm">
+                <strong>副作用風險</strong>
+                <span>跌倒、錐體外症狀、代謝、腦中風</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="legend">
+            本動畫整理為流程圖，不是個別病人的醫囑。若有急性譫妄、疼痛、感染、便祕、照護環境改變或安全風險，需先評估處理。
+          </div>
+        </aside>
+
+        <section class="flow">
+          <div class="steps">
+            <article class="step" data-step="screen">
+              <span class="step-num">1</span>
+              <h2>篩選 Screen</h2>
+              <p>盤點抗精神病藥、適應症、起始原因、療效與副作用。</p>
+            </article>
+            <article class="step" data-step="assess">
+              <span class="step-num">2</span>
+              <h2>評估 Assess</h2>
+              <p>使用 NPI、CDR、照顧者負荷與安全風險分層。</p>
+            </article>
+            <article class="step" data-step="decide">
+              <span class="step-num">3</span>
+              <h2>決策 Decide</h2>
+              <p>分成可減量、謹慎減量、暫緩減量三條路徑。</p>
+            </article>
+            <article class="step" data-step="intervene">
+              <span class="step-num">4</span>
+              <h2>介入 Intervene</h2>
+              <p>非藥物策略並行，通常每 1 至 2 週降 25% 至 50%。</p>
+            </article>
+            <article class="step" data-step="monitor">
+              <span class="step-num">5</span>
+              <h2>監測 Monitor</h2>
+              <p>追蹤復發、戒斷、副作用、功能與生活品質。</p>
+            </article>
+          </div>
+
+          <div class="diagram">
+            <div class="decision-board">
+              <p class="board-title">三路徑決策</p>
+              <div class="decision-paths">
+                <article class="path deprescribe" data-path="deprescribe">
+                  <div class="path-icon">✓</div>
+                  <div>
+                    <h3>可減量</h3>
+                    <p>症狀穩定、無明顯安全威脅，或效益有限、副作用負擔高。</p>
+                  </div>
+                </article>
+                <article class="path caution" data-path="caution">
+                  <div class="path-icon">!</div>
+                  <div>
+                    <h3>謹慎減量</h3>
+                    <p>曾有中重度症狀、照護壓力高，需較慢速度與更密集追蹤。</p>
+                  </div>
+                </article>
+                <article class="path hold" data-path="hold">
+                  <div class="path-icon">×</div>
+                  <div>
+                    <h3>暫緩減量</h3>
+                    <p>目前有嚴重攻擊、精神病症狀、急性危險或未處理誘因。</p>
+                  </div>
+                </article>
+              </div>
+            </div>
+
+            <div class="taper-board">
+              <p class="board-title">範例減量節奏</p>
+              <div class="dose-track">
+                <div class="dose" data-dose="100"><strong>100%</strong><span>原劑量</span></div>
+                <div class="dose" data-dose="75"><strong>75%</strong><span>第 1 步</span></div>
+                <div class="dose" data-dose="50"><strong>50%</strong><span>第 2 步</span></div>
+                <div class="dose" data-dose="25"><strong>25%</strong><span>第 3 步</span></div>
+                <div class="dose" data-dose="0"><strong>0%</strong><span>停用</span></div>
+              </div>
+
+              <div class="monitor">
+                <div class="monitor-item" data-monitor="withdrawal">
+                  <strong>戒斷 / 反彈</strong>
+                  <span>焦慮、失眠、幻覺、激動、異動症</span>
+                </div>
+                <div class="monitor-item" data-monitor="relapse">
+                  <strong>症狀復發</strong>
+                  <span>回到前一有效劑量或暫停，先補強非藥物策略</span>
+                </div>
+                <div class="monitor-item" data-monitor="review">
+                  <strong>持續回顧</strong>
+                  <span>停藥後至少 4 週密切追蹤，之後定期評估</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+      </section>
+
+      <footer class="footer">
+        <div class="progress-wrap">
+          <div class="progress" aria-label="播放進度">
+            <div id="progressBar" class="progress-bar"></div>
+          </div>
+        </div>
+        <div class="controls">
+          <button id="playPause" type="button">暫停</button>
+          <button id="restart" type="button">重播</button>
+        </div>
+      </footer>
+    </main>
+
+    <div class="sources">
+      參考：Deprescribing.com Antipsychotics recommendations；NICE NG97 antipsychotic decision aid supporting information；Deprescribing antipsychotics guideline for BPSD and insomnia.
+    </div>
+  </div>
+
+  <script>
+    const duration = 60;
+    const scenes = [
+      {
+        start: 0,
+        end: 8,
+        label: "0-8 秒｜用藥盤點",
+        caption: "確認：此藥是否仍有明確適應症？",
+        note: "盤點藥名、劑量、開始時間、原始目標症狀、近期效益與副作用。不是自動停藥，是建立共同決策基線。",
+        step: "screen",
+        risks: ["harm"],
+        path: null,
+        dose: "100",
+        monitor: null
+      },
+      {
+        start: 8,
+        end: 20,
+        label: "8-20 秒｜風險與症狀分層",
+        caption: "依 NPI、CDR、照顧者負荷與安全風險分層。",
+        note: "同時找可逆誘因：疼痛、感染、便祕、譫妄、睡眠、環境壓力與照護互動。",
+        step: "assess",
+        risks: ["symptom", "function", "harm"],
+        path: null,
+        dose: "100",
+        monitor: null
+      },
+      {
+        start: 20,
+        end: 32,
+        label: "20-32 秒｜三路徑決策",
+        caption: "分成三路徑：可減量、謹慎減量、暫緩減量。",
+        note: "症狀穩定且安全風險低時，可進入減量；若有嚴重危險、急性精神病或未處理誘因，先暫緩。",
+        step: "decide",
+        risks: ["symptom", "harm"],
+        path: "deprescribe",
+        dose: "100",
+        monitor: null
+      },
+      {
+        start: 32,
+        end: 44,
+        label: "32-44 秒｜個別化減量",
+        caption: "常見節奏：每 1 至 2 週降 25% 至 50%。",
+        note: "長期、高劑量、曾減量失敗或低劑量尾端，可採更小幅度與更長間隔。",
+        step: "intervene",
+        risks: ["harm"],
+        path: "deprescribe",
+        dose: null,
+        monitor: "withdrawal"
+      },
+      {
+        start: 44,
+        end: 54,
+        label: "44-54 秒｜復發處理",
+        caption: "若復發，先補強非藥物策略，再放慢或暫停。",
+        note: "避免把所有行為變化都歸因於減藥；重新檢查疼痛、譫妄、環境刺激與照護壓力。",
+        step: "monitor",
+        risks: ["symptom", "function"],
+        path: "caution",
+        dose: "25",
+        monitor: "relapse"
+      },
+      {
+        start: 54,
+        end: 60,
+        label: "54-60 秒｜回到共同決策",
+        caption: "停用後仍要追蹤，之後定期回顧用藥必要。",
+        note: "若多次減量失敗，可維持最低有效劑量，但需明確記錄效益大於風險，並定期再評估。",
+        step: "monitor",
+        risks: ["symptom", "function", "harm"],
+        path: "hold",
+        dose: "0",
+        monitor: "review"
+      }
+    ];
+
+    const $ = (selector) => document.querySelector(selector);
+    const $$ = (selector) => Array.from(document.querySelectorAll(selector));
+
+    const phaseTime = $("#phaseTime");
+    const phaseLabel = $("#phaseLabel");
+    const caption = $("#caption");
+    const note = $("#note");
+    const progressBar = $("#progressBar");
+    const playPause = $("#playPause");
+    const restart = $("#restart");
+
+    let startTime = performance.now();
+    let pausedAt = 0;
+    let playing = true;
+
+    function sceneAt(t) {
+      return scenes.find((scene) => t >= scene.start && t < scene.end) || scenes[scenes.length - 1];
+    }
+
+    function formatTime(t) {
+      const seconds = Math.max(0, Math.min(duration, Math.floor(t)));
+      return `00:${String(seconds).padStart(2, "0")}`;
+    }
+
+    function setActive(items, activeValues, attribute) {
+      const set = new Set(Array.isArray(activeValues) ? activeValues : activeValues ? [activeValues] : []);
+      items.forEach((item) => {
+        const value = item.dataset[attribute];
+        item.classList.toggle("active", set.has(value));
+      });
+    }
+
+    function updateDose(t, scene) {
+      let activeDose = scene.dose;
+      if (scene.step === "intervene") {
+        const segment = (t - scene.start) / (scene.end - scene.start);
+        if (segment < 0.22) activeDose = "100";
+        else if (segment < 0.44) activeDose = "75";
+        else if (segment < 0.66) activeDose = "50";
+        else if (segment < 0.86) activeDose = "25";
+        else activeDose = "0";
+      }
+      setActive($$(".dose"), activeDose, "dose");
+    }
+
+    function render(t) {
+      const clamped = Math.max(0, Math.min(duration, t));
+      const scene = sceneAt(clamped);
+      phaseTime.textContent = formatTime(clamped);
+      phaseLabel.textContent = scene.label;
+      caption.textContent = scene.caption;
+      note.textContent = scene.note;
+      progressBar.style.width = `${(clamped / duration) * 100}%`;
+
+      $$(".step").forEach((step) => {
+        const order = ["screen", "assess", "decide", "intervene", "monitor"];
+        const activeIndex = order.indexOf(scene.step);
+        const stepIndex = order.indexOf(step.dataset.step);
+        step.classList.toggle("visible", stepIndex <= activeIndex);
+        step.classList.toggle("active", step.dataset.step === scene.step);
+      });
+
+      setActive($$(".risk"), scene.risks, "risk");
+      setActive($$(".path"), scene.path, "path");
+      setActive($$(".monitor-item"), scene.monitor, "monitor");
+      updateDose(clamped, scene);
+    }
+
+    function tick(now) {
+      if (playing) {
+        const elapsed = (now - startTime) / 1000;
+        if (elapsed >= duration) {
+          render(duration);
+          playing = false;
+          pausedAt = duration;
+          playPause.textContent = "播放";
+        } else {
+          render(elapsed);
+        }
+      }
+      requestAnimationFrame(tick);
+    }
+
+    playPause.addEventListener("click", () => {
+      if (playing) {
+        pausedAt = (performance.now() - startTime) / 1000;
+        playing = false;
+        playPause.textContent = "播放";
+      } else {
+        startTime = performance.now() - pausedAt * 1000;
+        playing = true;
+        playPause.textContent = "暫停";
+      }
+    });
+
+    restart.addEventListener("click", () => {
+      startTime = performance.now();
+      pausedAt = 0;
+      playing = true;
+      playPause.textContent = "暫停";
+      render(0);
+    });
+
+    render(0);
+    requestAnimationFrame(tick);
+  </script>
+</body>
+</html>
