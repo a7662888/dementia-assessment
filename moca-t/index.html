@@ -175,15 +175,15 @@ page("cover", `
   <p class="pts">台語施測教學＋計分＋2025 台灣常模自動換算｜一題一頁，可用手機/平板操作</p>
   <div class="form">
     <div class="row">
-      <div><label>姓名／代號（選填）</label><input id="fName" value="${S.demo.name||""}"></div>
-      <div><label>病歷號（選填）</label><input id="fChart" value="${S.demo.chartNumber||""}"></div>
+      <div><label>姓名／代號（選填）</label><input id="fName" autocomplete="off" value="${S.demo.name||""}"></div>
+      <div><label>病歷號（選填）</label><input id="fChart" autocomplete="off" value="${S.demo.chartNumber||""}"></div>
     </div>
     <div class="row">
-      <div><label>年齡（16–90）＊</label><input id="fAge" type="number" min="16" max="90" inputmode="numeric" value="${S.demo.age||""}"></div>
-      <div><label>教育年數（0–19）＊</label><input id="fEdu" type="number" min="0" max="19" inputmode="numeric" value="${S.demo.edu??""}"></div>
+      <div><label>年齡（16–90）＊</label><input id="fAge" type="number" min="16" max="90" inputmode="numeric" autocomplete="off" value="${S.demo.age||""}"></div>
+      <div><label>教育年數（0–19）＊</label><input id="fEdu" type="number" min="0" max="19" inputmode="numeric" autocomplete="off" value="${S.demo.edu??""}"></div>
     </div>
     <label>性別＊</label>
-    <select id="fSex"><option value="">請選擇</option>
+    <select id="fSex" autocomplete="off"><option value="">請選擇</option>
       <option value="1" ${S.demo.sex==="1"?"selected":""}>男</option>
       <option value="0" ${S.demo.sex==="0"?"selected":""}>女</option></select>
   </div>
@@ -631,18 +631,24 @@ function render(){
     }
   });
 
-  // [ADDED] v3.0: 還原封面基本資料
+  // [ADDED] v3.0: 還原封面基本資料 (雙重保險延遲執行，防止瀏覽器非同步 Autofill 自動填入舊個案資料)
   if (cur === 0) {
-    const nameEl = document.getElementById("fName");
-    const chartEl = document.getElementById("fChart");
-    const ageEl = document.getElementById("fAge");
-    const eduEl = document.getElementById("fEdu");
-    const sexEl = document.getElementById("fSex");
-    if (nameEl) nameEl.value = S.demo.name || "";
-    if (chartEl) chartEl.value = S.demo.chartNumber || "";
-    if (ageEl) ageEl.value = S.demo.age || "";
-    if (eduEl) eduEl.value = S.demo.edu || "";
-    if (sexEl) sexEl.value = S.demo.sex || "";
+    const clearForm = () => {
+      const nameEl = document.getElementById("fName");
+      const chartEl = document.getElementById("fChart");
+      const ageEl = document.getElementById("fAge");
+      const eduEl = document.getElementById("fEdu");
+      const sexEl = document.getElementById("fSex");
+      if (nameEl) nameEl.value = S.demo.name || "";
+      if (chartEl) chartEl.value = S.demo.chartNumber || "";
+      if (ageEl) ageEl.value = S.demo.age || "";
+      if (eduEl) eduEl.value = S.demo.edu || "";
+      if (sexEl) sexEl.value = S.demo.sex || "";
+    };
+    clearForm();
+    setTimeout(clearForm, 50);
+    setTimeout(clearForm, 150);
+    setTimeout(clearForm, 300);
   }
 
   // [ADDED] v3.0: 還原並綁定教學模式勾選框
