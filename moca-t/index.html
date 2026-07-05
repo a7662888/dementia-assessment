@@ -619,13 +619,48 @@ function render(){
   if (p.init) p.init();
   document.getElementById("pbar").style.width = (cur/(PAGES.length-1)*100) + "%";
   document.getElementById("pnum").textContent = cur === 0 ? "" : `${cur} / ${PAGES.length-1}`;
+
+  // [ADDED] v3.0: 自動還原所有 checkbox 狀態
+  stage.querySelectorAll("input[type=checkbox]").forEach(input => {
+    const onchangeStr = input.getAttribute("onchange") || "";
+    const match = onchangeStr.match(/setScore\('([^']+)'/);
+    if (match) {
+      const scoreId = match[1];
+      input.checked = !!S.scores[scoreId];
+    }
+  });
+
+  // [ADDED] v3.0: 還原封面基本資料
+  if (cur === 0) {
+    const nameEl = document.getElementById("fName");
+    const chartEl = document.getElementById("fChart");
+    const ageEl = document.getElementById("fAge");
+    const eduEl = document.getElementById("fEdu");
+    const sexEl = document.getElementById("fSex");
+    if (nameEl) nameEl.value = S.demo.name || "";
+    if (chartEl) chartEl.value = S.demo.chartNumber || "";
+    if (ageEl) ageEl.value = S.demo.age || "";
+    if (eduEl) eduEl.value = S.demo.edu || "";
+    if (sexEl) sexEl.value = S.demo.sex || "";
+  }
+
+  // [ADDED] v3.0: 還原並綁定教學模式勾選框
+  const hintEl = document.getElementById("trailHint");
+  if (hintEl) {
+    hintEl.checked = !!S.trailHint;
+    hintEl.addEventListener("change", () => {
+      S.trailHint = hintEl.checked;
+      save();
+    });
+  }
+
   updateNav();
 }
 function updateNav(){
   document.getElementById("btnPrev").disabled = cur === 0;
   const nx = document.getElementById("btnNext");
   nx.textContent = cur === PAGES.length-1 ? "完成" : (cur === PAGES.length-2 ? "看結果 ›" : "下一題 ›");
-  nx.disabled = cur === PAGES.length-1;
+  nx.disabled = false; // [MODIFIED] v3.0: 完成按鈕永不被禁用
 }
 function go(n){
   if (n < 0 || n >= PAGES.length) return;
@@ -642,9 +677,18 @@ function readDemo(){
 }
 function startTest(){ go(1); }
 document.getElementById("btnPrev").onclick = () => go(cur-1);
-document.getElementById("btnNext").onclick = () => go(cur+1);
+document.getElementById("btnNext").onclick = () => {
+  if (cur === PAGES.length - 1) {
+    go(0); // [MODIFIED] v3.0: 結果頁按「完成」回到第一頁
+  } else {
+    go(cur+1);
+  }
+};
 document.addEventListener("keydown", e => {
-  if (e.key === "ArrowRight") go(cur+1);
+  if (e.key === "ArrowRight") {
+    if (cur === PAGES.length - 1) go(0);
+    else go(cur+1);
+  }
   if (e.key === "ArrowLeft") go(cur-1);
 });
 let tx = null;
