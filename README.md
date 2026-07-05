@@ -52,3 +52,20 @@
 ---
 
 *請注意：自動上傳至 Google Drive 的功能需要使用者自行創建並部署一個 Google Apps Script Web App，並將其 URL 填入 `index.html` 檔案中的 `scriptUrl` 變數。*
+
+
+---
+
+## 🗣️ MoCA-T 台語施測教學網頁（moca-t/）
+
+**網址**：[https://a7662888.github.io/dementia-assessment/moca-t/](https://a7662888.github.io/dementia-assessment/moca-t/)
+
+蒙特利爾認知評估台灣版（MoCA-T）之台語施測輔助工具，一題一頁、支援手機/平板：
+
+* 台語指導語三層並列（官方原文／教育部用字／臺羅 KIP）＋合成語音（可 0.75× 慢速）
+* 刺激材料語音：記憶五詞、數字串（每秒一拍，台灣版原串）
+* 交替轉換互動連線、立方體/時鐘平板手繪（canvas）、結構化計分
+* 期末自動計算 **2025 台灣常模**（Cheng et al., *J Chin Med Assoc* 2025;88(8):617-623）：校正分數、PR、z
+* PDF 報告輸出（含受測者手繪圖）
+
+⚠️ MoCA © Z. Nasreddine MD（www.mocatest.org）；台灣版譯者蔡佳芬、傅中玲。本工具供**院內施測人員教學訓練**使用；台語語音為 AI 合成（意傳科技媠聲），正式對外使用前須經母語者審聽。
