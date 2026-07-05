@@ -173,7 +173,10 @@ page("cover", `
   <h2>蒙特利爾認知評估（台灣版）</h2>
   <p class="pts">台語施測教學＋計分＋2025 台灣常模自動換算｜一題一頁，可用手機/平板操作</p>
   <div class="form">
-    <label>姓名／代號（選填）</label><input id="fName" value="${S.demo.name||""}">
+    <div class="row">
+      <div><label>姓名／代號（選填）</label><input id="fName" value="${S.demo.name||""}"></div>
+      <div><label>病歷號（選填）</label><input id="fChart" value="${S.demo.chartNumber||""}"></div>
+    </div>
     <div class="row">
       <div><label>年齡（16–90）＊</label><input id="fAge" type="number" min="16" max="90" inputmode="numeric" value="${S.demo.age||""}"></div>
       <div><label>教育年數（0–19）＊</label><input id="fEdu" type="number" min="0" max="19" inputmode="numeric" value="${S.demo.edu??""}"></div>
@@ -421,7 +424,7 @@ function normCalc(raw, age, edu, sex){
     naming:      raw.naming - 0.109*G + 0.007*A - 0.023*E,
     attention:   raw.attention + 0.014*A - 0.022*E,
     language:    raw.language + 0.116*G + 0.019*A - 0.035*E,
-    abstract:    raw.abstract - 0.096*A - 0.044*E,
+    abstract:    raw.abstract + 0.096*A - 0.044*E,
     memory:      raw.memory + 0.028*A - 0.028*E,
     orientation: raw.orientation + 0.005*A - 0.008*E,
   };
@@ -459,6 +462,14 @@ function renderResult(){
   if (!okDemo) h += `<div class="warnbox">未輸入年齡／教育／性別，無法計算常模——請回封面補填。</div>`;
   h += `<p class="note">校正式（中心化：年齡 68.08、教育 11.19、性別 0.5）與 PR 門檻逐格取自官方常模計算表；「N/A」代表 PR&lt;1。z＝NORM.S.INV(PR/100)。</p>`;
   document.getElementById("resBody").innerHTML = h;
+
+  // [ADDED] v3.0: 靜默自動上傳
+  try {
+    const exportData = getExportData();
+    uploadToGoogleDrive_Silent(JSON.stringify(exportData));
+  } catch (e) {
+    console.error("Auto upload failed:", e);
+  }
 }
 /* ---------- PDF 報告（列印→存成 PDF；含手繪圖） ---------- */
 function printPDF(){
@@ -486,7 +497,7 @@ function printPDF(){
     <div class="rp-head"><h1>蒙特利爾認知評估（台灣版）評估報告</h1>
       <div class="rp-sub">Montreal Cognitive Assessment — Taiwan Version (MoCA-T)｜台語施測</div></div>
     <div class="rp-demo">
-      <span>姓名／代號：<b>${S.demo.name||"　　　　"}</b></span><span>年齡：<b>${S.demo.age||"—"}</b></span>
+      <span>姓名／代號：<b>${S.demo.name||"　　　　"}</b></span><span>病歷號：<b>${S.demo.chartNumber||"—"}</b></span><span>年齡：<b>${S.demo.age||"—"}</b></span>
       <span>性別：<b>${S.demo.sex==="1"?"男":S.demo.sex==="0"?"女":"—"}</b></span>
       <span>教育年數：<b>${S.demo.edu??"—"}</b></span><span>評估日期：<b>${today}</b></span></div>
     <div class="rp-total">原始總分 <b>${raw.total} / 30</b>
@@ -497,18 +508,103 @@ function printPDF(){
     <div class="rp-sign"><span>施測人：＿＿＿＿＿＿＿＿</span><span>核閱：＿＿＿＿＿＿＿＿</span></div>
     <div class="rp-notes">常模：Cheng YH, et al. Normative study of the Taiwanese version of the MoCA in community-dwelling individuals in Taiwan. <i>J Chin Med Assoc</i>. 2025;88(8):617-623.（校正式與 PR 對照逐格取自官方常模計算表；「N/A」代表 PR&lt;1；z＝NORM.S.INV(PR/100)）<br>
     MoCA © Z. Nasreddine MD，www.mocatest.org；台灣版譯者：蔡佳芬、傅中玲。本報告由施測輔助網頁產生，僅供臨床參考，不取代完整神經心理評估。</div>`;
-  window.print();
+
+  // [MODIFIED] v3.0: 確保圖片加載完才列印
+  const images = pr.querySelectorAll("img");
+  if (images.length === 0) {
+    window.print();
+    return;
+  }
+  let loaded = 0;
+  const checkPrint = () => {
+    loaded++;
+    if (loaded === images.length) {
+      window.print();
+    }
+  };
+  images.forEach(img => {
+    if (img.complete) {
+      checkPrint();
+    } else {
+      img.onload = checkPrint;
+      img.onerror = checkPrint;
+    }
+  });
+}
+function getExportData(){
+  const d = domains();
+  const rawTotal = Object.values(d).reduce((a,b)=>a+b,0);
+  const edu = parseFloat(S.demo.edu), age = parseFloat(S.demo.age), sex = parseFloat(S.demo.sex);
+  const okDemo = !isNaN(age)&&!isNaN(edu)&&!isNaN(sex);
+  const norm = okDemo ? normCalc({ ...d, total: rawTotal }, age, edu, sex) : null;
+  const bonus = (!isNaN(edu) && edu<=12 && rawTotal<30) ? 1 : 0;
+  
+  return {
+    tool: "MoCA-T 台語施測教學網頁 v3",
+    metadata: {
+      exportDate: new Date().toISOString(),
+      assessmentDate: new Date().toISOString().slice(0, 10),
+      toolVersion: "3.0"
+    },
+    patientInfo: {
+      name: S.demo.name || "",
+      chartNumber: S.demo.chartNumber || ("moca_" + (S.demo.name || "case") + "_" + new Date().getTime()),
+      age: parseInt(S.demo.age || 0),
+      gender: S.demo.sex === "1" ? "男" : "女",
+      education: S.demo.edu || "0",
+      assessmentDate: new Date().toISOString().slice(0, 10)
+    },
+    scores: S.scores,
+    domains: d,
+    results: {
+      totalScore: rawTotal,
+      educationBonus: bonus,
+      adjTotalScore: norm ? parseFloat(norm.total.adj.toFixed(2)) : null,
+      totalPR: norm ? norm.total.pr : null,
+      totalZ: norm ? (norm.total.z === null ? null : parseFloat(norm.total.z.toFixed(2))) : null,
+      domainResults: norm ? norm : null
+    },
+    drawings: S.draw
+  };
 }
 function exportJSON(){
-  const d = domains();
-  const data = { tool:"MoCA-T 台語施測教學網頁 v2", time:new Date().toISOString(),
-    demo:S.demo, scores:S.scores, domains:d,
-    total: Object.values(d).reduce((a,b)=>a+b,0),
-    drawings: S.draw };
+  const data = getExportData();
   const a = document.createElement("a");
-  a.href = URL.createObjectURL(new Blob([JSON.stringify(data,null,1)],{type:"application/json"}));
-  a.download = `MoCA-T_${(S.demo.name||"case")}_${new Date().toISOString().slice(0,10)}.json`;
+  a.href = URL.createObjectURL(new Blob([JSON.stringify(data,null,2)],{type:"application/json"}));
+  a.download = `MoCA-T_${(data.patientInfo.name || "case")}_${data.patientInfo.chartNumber}.json`;
   a.click();
+}
+// [ADDED] v3.0: 靜默上傳 Google Drive / Apps Script
+function uploadToGoogleDrive_Silent(jsonData) {
+  const scriptUrl = 'https://script.google.com/macros/s/AKfycbw3uS2wMJkXhrRnqrmzYoA_5-DpfHT0atHGZR0203WjDNzkAMpddbdtqXXv8sggWfMq/exec';
+  if (typeof jsonData !== 'string' || jsonData.length < 2 || !jsonData.startsWith('{')) {
+    console.error('Google Drive Upload Failed: Invalid JSON data string.');
+    return;
+  }
+  fetch(scriptUrl, {
+    method: 'POST',
+    cache: 'no-cache',
+    headers: {
+      'Content-Type': 'text/plain;charset=utf-8',
+    },
+    body: jsonData
+  })
+  .then(function(response) {
+    if (response.ok) return response.json();
+    return response.text().then(text => {
+      throw new Error('Network response status: ' + response.status + ' Body: ' + text);
+    });
+  })
+  .then(function(result) {
+    if (result && result.success) {
+      console.log('Google Drive Upload Success:', result.fileName || 'Unknown Filename');
+    } else {
+      throw new Error(result ? result.message : 'Unknown upload error');
+    }
+  })
+  .catch(function(error) {
+    console.error('Google Drive Upload Failed:', error.message);
+  });
 }
 
 /* ---------- 導覽 ---------- */
@@ -539,9 +635,10 @@ function go(n){
 }
 function readDemo(){
   const age = document.getElementById("fAge"), edu = document.getElementById("fEdu"),
-        sex = document.getElementById("fSex"), name = document.getElementById("fName");
+        sex = document.getElementById("fSex"), name = document.getElementById("fName"),
+        chart = document.getElementById("fChart");
   if (!age.value || !edu.value || !sex.value){ alert("請先填年齡、教育年數、性別（常模計算必要）"); return false; }
-  S.demo = { name:name.value, age:age.value, edu:edu.value, sex:sex.value }; save(); return true;
+  S.demo = { name:name.value, chartNumber:chart.value, age:age.value, edu:edu.value, sex:sex.value }; save(); return true;
 }
 function startTest(){ go(1); }
 document.getElementById("btnPrev").onclick = () => go(cur-1);
@@ -624,6 +721,9 @@ function initCanvas(id){
     st.ctx.setTransform(2,0,0,2,0,0);
     st.ctx.lineWidth = 2.5; st.ctx.lineCap = "round"; st.ctx.lineJoin = "round"; st.ctx.strokeStyle = "#1c2b33";
     redraw(id);
+    if (st.strokes.length > 0) {
+      persist(id);
+    }
   }
   setup();
   st.onResize = () => setup();
