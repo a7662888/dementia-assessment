@@ -468,9 +468,10 @@ function renderResult(){
   h += `<p class="note">校正式（中心化：年齡 68.08、教育 11.19、性別 0.5）與 PR 門檻逐格取自官方常模計算表；「N/A」代表 PR&lt;1。z＝NORM.S.INV(PR/100)。</p>`;
   document.getElementById("resBody").innerHTML = h;
 
-  // [ADDED] v3.0: 靜默自動上傳
+  // [ADDED] v3.0: 靜默自動上傳 (排除圖片以減輕 payload，且雲端試算表/JSON無須存圖片)
   try {
     const exportData = getExportData();
+    exportData.drawings = {}; 
     uploadToGoogleDrive_Silent(JSON.stringify(exportData));
   } catch (e) {
     console.error("Auto upload failed:", e);
