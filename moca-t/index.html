@@ -356,7 +356,7 @@ page("result", `<h2>結果與 2025 台灣常模</h2><div id="resBody"></div>
   <div class="canvbar" style="margin-top:14px">
   <button style="background:var(--accent);color:#fff;border-color:var(--accent);font-weight:700" onclick="printPDF()">下載 PDF 報告（含手繪圖）</button>
   <button onclick="exportJSON()">下載紀錄（JSON）</button>
-  <button onclick="if(confirm('清除本次所有作答？')){localStorage.removeItem('mocaT_v2');location.reload();}">重新開始</button></div>
+  <button onclick="go(0)">回第一頁</button></div>
   <footer>常模：Cheng YH, Lee SC, Chen YC, et al. Normative study of the Taiwanese version of the MoCA in community-dwelling individuals in Taiwan. <i>J Chin Med Assoc</i>. 2025;88(8):617-623.（校正式與 PR 對照表逐格取自 MoCA-T Norm 2025.xlsx）<br>
   MoCA © Z. Nasreddine MD，www.mocatest.org；台灣版譯者：蔡佳芬、傅中玲。台語語音：意傳科技「媠聲」合成（教學示範用）；正式對外使用前須母語者審聽。本工具不取代臨床判斷。</footer>`,
   renderResult);
@@ -659,8 +659,16 @@ function render(){
 function updateNav(){
   document.getElementById("btnPrev").disabled = cur === 0;
   const nx = document.getElementById("btnNext");
-  nx.textContent = cur === PAGES.length-1 ? "完成" : (cur === PAGES.length-2 ? "看結果 ›" : "下一題 ›");
-  nx.disabled = false; // [MODIFIED] v3.0: 完成按鈕永不被禁用
+  nx.textContent = cur === PAGES.length-1 ? "結束" : (cur === PAGES.length-2 ? "看結果 ›" : "下一題 ›");
+  nx.disabled = false; // [MODIFIED] v3.0: 結束按鈕永不被禁用
+}
+function endAndClearTest() {
+  if (confirm("確認清除所有資料回到第一頁？")) {
+    localStorage.removeItem("mocaT_v2");
+    S = { demo:{}, scores:{}, draw:{} };
+    cur = 0;
+    render();
+  }
 }
 function go(n){
   if (n < 0 || n >= PAGES.length) return;
@@ -679,14 +687,14 @@ function startTest(){ go(1); }
 document.getElementById("btnPrev").onclick = () => go(cur-1);
 document.getElementById("btnNext").onclick = () => {
   if (cur === PAGES.length - 1) {
-    go(0); // [MODIFIED] v3.0: 結果頁按「完成」回到第一頁
+    endAndClearTest(); // [MODIFIED] v3.0: 結果頁按「結束」確認後清空回到第一頁
   } else {
     go(cur+1);
   }
 };
 document.addEventListener("keydown", e => {
   if (e.key === "ArrowRight") {
-    if (cur === PAGES.length - 1) go(0);
+    if (cur === PAGES.length - 1) endAndClearTest();
     else go(cur+1);
   }
   if (e.key === "ArrowLeft") go(cur-1);
