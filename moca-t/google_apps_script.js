@@ -101,7 +101,7 @@ function appendMocaRow(data, chartNumber, patientName) {
     cleanCsvCell(d.orientation !== undefined ? d.orientation : "")
   ].join(",") + "\n";
 
-  csvFile.setContent(csvFile.getContent() + row);
+  csvFile.setContent(csvFile.getBlob().getDataAsString("UTF-8") + row);
 }
 
 // ====== 原結構問卷母表（欄位完全維持原樣，不影響既有問卷）======
@@ -128,7 +128,7 @@ function appendQuestionnaireRow(data, chartNumber, patientName) {
     cleanCsvCell(pc.FTD !== undefined ? pc.FTD : ""),
     cleanCsvCell(pc.PPA !== undefined ? pc.PPA : "")
   ].join(",") + "\n";
-  csvFile.setContent(csvFile.getContent() + row);
+  csvFile.setContent(csvFile.getBlob().getDataAsString("UTF-8") + row);
 }
 
 // 輔助：清洗儲存格（半形逗號→全形、去換行）
