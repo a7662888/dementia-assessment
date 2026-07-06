@@ -1,0 +1,762 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<title>MoCA 台灣版｜受測者自助施測</title>
+<style>
+  :root{--ink:#1c2b33;--paper:#faf9f6;--card:#fff;--line:#e3ded4;--accent:#0f766e;
+        --accent-soft:#e6f2f0;--muted:#6b7280;--warn:#b45309;--err:#c0392b;--rec:#d92d20;}
+  *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
+  html,body{height:100%;}
+  body{font-family:"Noto Sans TC","Microsoft JhengHei",sans-serif;background:var(--paper);color:var(--ink);
+       display:flex;flex-direction:column;overflow:hidden;}
+  .top{background:var(--ink);color:#e8e4da;padding:10px 16px;display:flex;align-items:center;gap:12px;flex-shrink:0;}
+  .top .t{font-weight:700;font-size:.95rem;}
+  .top .bar{flex:1;height:6px;background:#3a4c55;border-radius:3px;overflow:hidden;}
+  .top .bar i{display:block;height:100%;background:var(--accent);width:0;transition:width .3s;}
+  #stage{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;}
+  .page{max-width:720px;margin:0 auto;padding:26px 18px 40px;animation:fade .25s;}
+  @keyframes fade{from{opacity:0;}to{opacity:1;}}
+  h2{font-size:1.5rem;color:var(--accent);margin-bottom:10px;}
+  .bigtext{font-size:1.35rem;line-height:2;margin:14px 0;}
+  .note{font-size:.95rem;color:var(--muted);margin:10px 0;}
+  .bigbtn{display:block;width:100%;margin:20px 0 0;padding:20px;font-size:1.5rem;font-weight:700;
+          background:var(--accent);color:#fff;border:none;border-radius:12px;cursor:pointer;font-family:inherit;}
+  .bigbtn.gray{background:#8a938f;}
+  .bigbtn:disabled{opacity:.45;}
+  .bigbtn.rec{background:var(--rec);}
+  .langbtn{display:block;width:100%;margin:14px 0;padding:26px;font-size:1.7rem;font-weight:700;
+           background:#fff;color:var(--accent);border:3px solid var(--accent);border-radius:14px;cursor:pointer;font-family:inherit;}
+  .statusbox{display:flex;flex-direction:column;align-items:center;gap:14px;margin:30px 0;}
+  .bigicon{font-size:4.5rem;}
+  .pulse{animation:pulse 1s infinite;}
+  @keyframes pulse{0%,100%{opacity:1;}50%{opacity:.35;}}
+  .recdot{width:22px;height:22px;border-radius:50%;background:var(--rec);display:inline-block;margin-right:8px;}
+  .countdown{font-size:3.2rem;font-weight:700;color:var(--accent);font-variant-numeric:tabular-nums;}
+  .form label{display:block;margin:14px 0 4px;font-weight:700;font-size:1.05rem;}
+  .form input,.form select{width:100%;padding:14px;font-size:1.15rem;border:1px solid var(--line);border-radius:8px;font-family:inherit;background:#fff;}
+  .form .row{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+  .canv{border:2px solid var(--line);border-radius:8px;background:#fff;touch-action:none;display:block;width:100%;}
+  .canvbar{display:flex;gap:10px;margin:10px 0;}
+  .canvbar button{border:1px solid var(--muted);background:#fff;border-radius:8px;padding:12px 20px;font-size:1.05rem;cursor:pointer;font-family:inherit;}
+  .refimg{text-align:center;margin:8px 0;}
+  .animalimg{display:block;max-width:78%;max-height:34vh;margin:10px auto;border:1px solid var(--line);border-radius:8px;background:#fff;padding:8px;}
+  /* trail */
+  #trailSvg{width:100%;max-width:560px;display:block;margin:8px auto;touch-action:manipulation;}
+  #trailSvg circle{fill:#fff;stroke:var(--ink);stroke-width:3;cursor:pointer;}
+  #trailSvg g.done circle{fill:var(--accent-soft);stroke:var(--accent);}
+  #trailSvg g.err circle{stroke:var(--err);fill:#fdeceb;}
+  #trailSvg text{font-size:24px;font-weight:700;text-anchor:middle;dominant-baseline:central;pointer-events:none;}
+  #trailSvg .lbl{font-size:14px;fill:var(--muted);font-weight:400;}
+  #trailSvg line{stroke:var(--accent);stroke-width:3;stroke-dasharray:6 5;}
+  /* vigilance */
+  .vigbtn{display:block;width:82%;margin:26px auto;padding:60px 20px;font-size:2.2rem;font-weight:700;
+          background:#fff;color:var(--accent);border:5px solid var(--accent);border-radius:20px;cursor:pointer;font-family:inherit;}
+  .vigbtn:active{background:var(--accent-soft);}
+  /* staff */
+  table.simple{border-collapse:collapse;width:100%;margin:10px 0;font-size:.9rem;background:#fff;}
+  table.simple th,table.simple td{border:1px solid var(--line);padding:6px 8px;text-align:center;}
+  table.simple th{background:var(--accent-soft);color:var(--accent);}
+  table.simple td.name{text-align:left;font-weight:700;}
+  .sitem{background:var(--card);border:1px solid var(--line);border-radius:8px;padding:12px 14px;margin:10px 0;}
+  .sitem h4{color:var(--accent);margin-bottom:6px;font-size:1rem;}
+  .sitem audio{width:100%;margin:4px 0;}
+  .sitem label{display:flex;align-items:center;gap:8px;padding:5px 2px;font-size:.95rem;cursor:pointer;}
+  .sitem input[type=checkbox]{width:20px;height:20px;accent-color:var(--accent);}
+  .sitem input[type=number]{width:6em;padding:6px;font-size:1rem;border:1px solid var(--line);border-radius:6px;}
+  .drawimg{max-width:300px;border:1px solid var(--line);border-radius:6px;background:#fff;}
+  .warnbox{background:#fdf6ec;border:1px solid #ecd9b0;border-radius:8px;padding:10px 14px;font-size:.85rem;color:var(--warn);margin:12px 0;}
+  .got{font-weight:700;color:var(--accent);}
+  /* 列印報告（沿用施測者版樣式） */
+  #printReport{display:none;}
+  @media print{
+    body > *:not(#printReport){display:none !important;}
+    body{overflow:visible;display:block;background:#fff;}
+    #printReport{display:block !important;font-size:11pt;color:#1c2b33;}
+  }
+  #printReport .rp-head{border-bottom:3px solid var(--accent);padding-bottom:8px;margin-bottom:12px;}
+  #printReport h1{font-size:16pt;color:var(--accent);}
+  #printReport table{border-collapse:collapse;width:100%;margin:8px 0;font-size:10pt;}
+  #printReport th,#printReport td{border:1px solid #bbb;padding:4px 8px;text-align:center;}
+  #printReport th{background:#e6f2f0;color:#0f766e;}
+  #printReport td.name{text-align:left;font-weight:700;}
+  #printReport .rp-draws{display:flex;gap:14px;flex-wrap:wrap;margin:10px 0;}
+  #printReport .rp-draws img{width:250px;background:#fff;border:1px solid #bbb;}
+  #printReport .rp-notes{font-size:9pt;color:#555;margin-top:10px;border-top:1px solid #bbb;padding-top:6px;line-height:1.7;}
+</style>
+</head>
+<body>
+<div class="top"><span class="t">MoCA-T 自助施測</span><div class="bar"><i id="pbar"></i></div></div>
+<div id="stage"></div>
+<audio id="speaker" preload="auto"></audio>
+
+<script>
+"use strict";
+const NORM = {"percentile": [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63, 64, 65, 66, 67, 68, 69, 70, 71, 72, 73, 74, 75, 76, 77, 78, 79, 80, 81, 82, 83, 84, 85, 86, 87, 88, 89, 90, 91, 92, 93, 94, 95, 96, 97, 98, 99], "thresholds": {"total": [17.12298, 18.66938, 19.25138, 19.93538, 20.389780000000002, 20.747780000000002, 21.18498, 21.54658, 21.84178, 22.10778, 22.29498, 22.48218, 22.66698, 22.872980000000002, 23.03978, 23.17978, 23.36378, 23.52498, 23.66178, 23.849780000000003, 23.96898, 24.140980000000003, 24.215780000000002, 24.33738, 24.47978, 24.59058, 24.68538, 24.81178, 24.94978, 25.089779999999998, 25.144579999999998, 25.21978, 25.27818, 25.36978, 25.42778, 25.50898, 25.58978, 25.66978, 25.759780000000003, 25.843780000000002, 25.88578, 25.946180000000002, 26.014979999999998, 26.09978, 26.15778, 26.22138, 26.32378, 26.39538, 26.48698, 26.54178, 26.60858, 26.697779999999998, 26.79778, 26.85378, 26.915779999999998, 27.018980000000003, 27.057779999999998, 27.139780000000002, 27.21778, 27.28378, 27.33778, 27.40458, 27.47978, 27.51378, 27.58778, 27.66978, 27.759780000000003, 27.82578, 27.877779999999998, 27.94978, 28.013779999999997, 28.06338, 28.12578, 28.14378, 28.22778, 28.30978, 28.39978, 28.473779999999998, 28.51778, 28.59378, 28.66978, 28.74378, 28.77778, 28.877779999999998, 28.967779999999998, 29.054579999999998, 29.119780000000002, 29.193779999999997, 29.24778, 29.32778, 29.42778, 29.51178, 29.59778, 29.71378, 29.877779999999998, 30.03058, 30.15978, 30.46218, 30.747780000000002], "vs": [1.15404, 1.82704, 2.06104, 2.14644, 2.29144, 2.5294399999999997, 2.78344, 2.87104, 2.9304399999999995, 2.98444, 3.05204, 3.08744, 3.1394400000000005, 3.19264, 3.23444, 3.29144, 3.3730400000000005, 3.5116400000000003, 3.6338399999999997, 3.7264399999999998, 3.7716399999999997, 3.7994399999999997, 3.82684, 3.84704, 3.856439999999999, 3.8704399999999994, 3.8876399999999998, 3.90444, 3.9268399999999994, 3.9354400000000003, 3.9544399999999995, 3.97044, 3.98544, 4.0030399999999995, 4.01844, 4.03044, 4.04984, 4.07004, 4.094239999999999, 4.11344, 4.13784, 4.1554400000000005, 4.18124, 4.20664, 4.234439999999999, 4.27244, 4.3140399999999985, 4.384440000000001, 4.465440000000001, 4.555440000000001, 4.61884, 4.64744, 4.69564, 4.71844, 4.73744, 4.7564400000000004, 4.77544, 4.79444, 4.79944, 4.814439999999999, 4.8292399999999995, 4.83744, 4.850239999999999, 4.856439999999999, 4.86744, 4.878439999999999, 4.8944399999999995, 4.90804, 4.91344, 4.92744, 4.93544, 4.95024, 4.95444, 4.95832, 4.97344, 4.98744, 4.9988399999999995, 5.008439999999999, 5.0182400000000005, 5.03044, 5.04444, 5.052440000000001, 5.06944, 5.08744, 5.09844, 5.10984, 5.125439999999999, 5.13864, 5.15244, 5.16944, 5.196439999999999, 5.20784, 5.22704, 5.24544, 5.26444, 5.29764, 5.323640000000001, 5.36124, 5.432040000000001], "naming": [0.22511, 0.97931, 1.09551, 1.19671, 1.76731, 1.88331, 1.9433099999999999, 1.97251, 1.9993100000000001, 2.02931, 2.05631, 2.07451, 2.1053100000000002, 2.12511, 2.15231, 2.17451, 2.22351, 2.33891, 2.62131, 2.67331, 2.7345099999999998, 2.76731, 2.78191, 2.79931, 2.80931, 2.82031, 2.82731, 2.8313099999999998, 2.83631, 2.84131, 2.84831, 2.85531, 2.85931, 2.86531, 2.86931, 2.87631, 2.8811099999999996, 2.88431, 2.8913100000000003, 2.89731, 2.89831, 2.90471, 2.9113100000000003, 2.91531, 2.9193100000000003, 2.92531, 2.92931, 2.93331, 2.93631, 2.94331, 2.94631, 2.95031, 2.95431, 2.9593100000000003, 2.96431, 2.97051, 2.9723100000000002, 2.97531, 2.98131, 2.98531, 2.98991, 2.99431, 3.0003100000000003, 3.0049099999999997, 3.0103099999999996, 3.01431, 3.02131, 3.0243100000000003, 3.02931, 3.03531, 3.04231, 3.04771, 3.05031, 3.0543099999999996, 3.0613099999999998, 3.06631, 3.07071, 3.07831, 3.08431, 3.09131, 3.09831, 3.10531, 3.11231, 3.12031, 3.12831, 3.1353099999999996, 3.14231, 3.1493100000000003, 3.15631, 3.16731, 3.17731, 3.18731, 3.1955099999999996, 3.20531, 3.2193099999999997, 3.23331, 3.24331, 3.28191, 3.32411], "attention": [3.14986, 3.90786, 4.018260000000001, 4.10866, 4.18306, 4.30706, 4.78386, 4.85106, 4.879060000000001, 4.90706, 4.925859999999999, 4.95306, 4.96826, 4.99106, 5.00906, 5.02906, 5.04706, 5.06506, 5.08866, 5.10306, 5.12706, 5.14786, 5.16906, 5.18306, 5.23306, 5.26306, 5.2938600000000005, 5.37186, 5.6406600000000005, 5.711060000000001, 5.75106, 5.767060000000001, 5.78106, 5.79706, 5.813059999999999, 5.82506, 5.83706, 5.85106, 5.85306, 5.865060000000001, 5.869059999999999, 5.87706, 5.879060000000001, 5.88266, 5.8910599999999995, 5.89306, 5.89706, 5.90706, 5.90906, 5.9150599999999995, 5.921060000000001, 5.92306, 5.92506, 5.93506, 5.93506, 5.93906, 5.94906, 5.94906, 5.95306, 5.9630600000000005, 5.96506, 5.97106, 5.977060000000001, 5.981059999999999, 5.98906, 5.99106, 5.99506, 6.00226, 6.00506, 6.00906, 6.01706, 6.0190600000000005, 6.0282599999999995, 6.03082, 6.037059999999999, 6.04706, 6.05106, 6.05906, 6.06506, 6.075060000000001, 6.079059999999999, 6.08506, 6.0930599999999995, 6.099060000000001, 6.10906, 6.11906, 6.12706, 6.13306, 6.14306, 6.1570599999999995, 6.16506, 6.17306, 6.18506, 6.198659999999999, 6.20906, 6.22746, 6.25746, 6.29106, 6.32266], "language": [0.10453000000000001, 0.32453000000000004, 0.6689299999999998, 0.86473, 0.90713, 0.95573, 1.00413, 1.04613, 1.0797299999999999, 1.1141300000000003, 1.1553299999999997, 1.1881300000000001, 1.23673, 1.29393, 1.3311300000000001, 1.44333, 1.5271300000000003, 1.6587299999999998, 1.7029299999999998, 1.7411299999999998, 1.76013, 1.7981299999999998, 1.82513, 1.8401299999999996, 1.8561299999999998, 1.8741299999999999, 1.8919300000000001, 1.9071299999999998, 1.92393, 1.9331299999999998, 1.95013, 1.9691299999999998, 1.9831299999999998, 2.00213, 2.0211299999999994, 2.0345299999999997, 2.05653, 2.07713, 2.09613, 2.1161299999999996, 2.1381300000000003, 2.16053, 2.19213, 2.21813, 2.24713, 2.26833, 2.30213, 2.32413, 2.35093, 2.39413, 2.45193, 2.4907300000000006, 2.5603300000000013, 2.6140300000000005, 2.64613, 2.6851299999999996, 2.71513, 2.73413, 2.75313, 2.76013, 2.7721299999999998, 2.7893300000000005, 2.80173, 2.81013, 2.8231300000000004, 2.8311299999999995, 2.84813, 2.85513, 2.86713, 2.87413, 2.8845299999999994, 2.8935299999999997, 2.9071299999999995, 2.91213, 2.9261299999999997, 2.93933, 2.95013, 2.96173, 2.977130000000001, 2.98913, 3.0021299999999997, 3.00913, 3.02113, 3.0387299999999997, 3.05113, 3.05913, 3.07453, 3.09313, 3.11213, 3.13213, 3.15013, 3.17113, 3.19213, 3.21393, 3.2381299999999995, 3.2627299999999995, 3.30813, 3.35073, 3.4335300000000015], "abstract": [-1.0479600000000002, -0.8247600000000003, -0.6527600000000003, -0.4759600000000002, -0.4359600000000002, -0.33596000000000026, -0.2559600000000002, -0.17196000000000017, -0.08396000000000016, -0.04796000000000025, 0.06803999999999971, 0.12403999999999979, 0.1640399999999998, 0.22003999999999982, 0.27603999999999984, 0.3560399999999997, 0.39603999999999984, 0.42803999999999975, 0.46803999999999973, 0.5240399999999998, 0.5600399999999998, 0.6040399999999998, 0.6424399999999999, 0.6920399999999999, 0.7200399999999998, 0.7680399999999998, 0.7960399999999999, 0.8360399999999997, 0.8712399999999996, 0.8920399999999997, 0.9240399999999998, 0.9480399999999998, 0.9800399999999998, 1.0120399999999996, 1.0360399999999998, 1.0680399999999997, 1.1112399999999996, 1.12804, 1.1640399999999997, 1.2000399999999998, 1.2200399999999998, 1.2400399999999998, 1.2640399999999998, 1.3000399999999999, 1.3160399999999997, 1.3392400000000007, 1.36404, 1.3984399999999995, 1.4120399999999997, 1.4520399999999998, 1.4640399999999998, 1.4920399999999996, 1.5080399999999998, 1.5160399999999998, 1.5560399999999999, 1.5880399999999997, 1.6040399999999997, 1.6440399999999997, 1.6792399999999996, 1.7000399999999998, 1.7008400000000001, 1.7416400000000003, 1.7800399999999996, 1.7960399999999996, 1.8120399999999997, 1.84484, 1.8760399999999997, 1.8920399999999997, 1.8920399999999997, 1.9360399999999998, 1.9720399999999996, 1.9880399999999998, 1.9960399999999998, 2.00404, 2.07604, 2.08404, 2.12804, 2.16404, 2.18004, 2.22804, 2.2760399999999996, 2.3240399999999997, 2.35604, 2.3800399999999997, 2.4520399999999998, 2.5080400000000003, 2.54804, 2.5840399999999994, 2.64404, 2.70804, 2.8040399999999996, 2.9000399999999997, 2.95604, 3.0432399999999986, 3.14404, 3.33204, 3.5456400000000037, 3.788039999999996, 4.930440000000001], "memory": [-0.13132, -0.02491999999999997, 0.07587999999999986, 0.16547999999999993, 0.25508000000000003, 0.33908000000000005, 0.45108000000000004, 0.60788, 0.83508, 0.94708, 1.0870799999999998, 1.17108, 1.3558800000000006, 1.57268, 1.77908, 1.86308, 1.9190800000000001, 1.9750800000000002, 2.0254800000000004, 2.0870800000000003, 2.14308, 2.1990800000000004, 2.2830800000000004, 2.41508, 2.5910800000000003, 2.6870800000000004, 2.77908, 2.80708, 2.83508, 2.89108, 2.91908, 2.94708, 2.97508, 3.00308, 3.03108, 3.0590800000000002, 3.11508, 3.14308, 3.1710800000000003, 3.22708, 3.25508, 3.33908, 3.42308, 3.50708, 3.5750800000000003, 3.61908, 3.6950800000000004, 3.75108, 3.77908, 3.80708, 3.83508, 3.86308, 3.86308, 3.89108, 3.91908, 3.94708, 3.9750799999999997, 3.9750800000000006, 4.00308, 4.03108, 4.05908, 4.05908, 4.08708, 4.11508, 4.14308, 4.17508, 4.19908, 4.22708, 4.25508, 4.28308, 4.33908, 4.41508, 4.479080000000001, 4.524679999999997, 4.63908, 4.7230799999999995, 4.75108, 4.7790799999999996, 4.80708, 4.83508, 4.86308, 4.86308, 4.89108, 4.91908, 4.91908, 4.94708, 4.947080000000001, 4.97508, 5.00308, 5.03108, 5.05908, 5.059080000000001, 5.11508, 5.14308, 5.17108, 5.19908, 5.25508, 5.33908, 5.473480000000005], "orientation": [4.01152, 4.08272, 4.9023200000000005, 4.94692, 4.96712, 4.9785200000000005, 4.99612, 5.00812, 5.02212, 5.03712, 5.05112, 5.06712, 5.102320000000001, 5.7335199999999995, 5.84412, 5.882720000000001, 5.9015200000000005, 5.91312, 5.92092, 5.92612, 5.93112, 5.93512, 5.9381200000000005, 5.94112, 5.9461200000000005, 5.94732, 5.95112, 5.95212, 5.9541200000000005, 5.95612, 5.95712, 5.95912, 5.96112, 5.96112, 5.96312, 5.96612, 5.96612, 5.96812, 5.97112, 5.97112, 5.97312, 5.97412, 5.97612, 5.97712, 5.9781200000000005, 5.98112, 5.98112, 5.98312, 5.98512, 5.9861200000000006, 5.98812, 5.98912, 5.9911200000000004, 5.99312, 5.994120000000001, 5.99612, 5.99712, 5.99812, 6.00012, 6.002120000000001, 6.00312, 6.005120000000001, 6.0067200000000005, 6.00812, 6.010120000000001, 6.01112, 6.01312, 6.0151200000000005, 6.01712, 6.018120000000001, 6.02212, 6.0231200000000005, 6.026120000000001, 6.026120000000001, 6.02812, 6.0311200000000005, 6.03212, 6.03512, 6.03612, 6.0391200000000005, 6.042120000000001, 6.04412, 6.04612, 6.04812, 6.05112, 6.05312, 6.05712, 6.06012, 6.06112, 6.0631200000000005, 6.06712, 6.0715200000000005, 6.07512, 6.08112, 6.0871200000000005, 6.09612, 6.10112, 6.11212, 6.122120000000001]}};
+
+/* ================= 語音資源 =================
+   台語沿用施測者版音檔；國語在 audio/guo/。id 需要語言別名時列在 map。 */
+const AUD = {
+  tai: { base: "audio/", map: {
+    intro: "intro_self", serial7: "serial7_self", vigilance: "vigilance_self", done: "done_self",
+    abs_ex: "abs_ex1", abs_ans: "abs_ex3",
+    stim_words: "mem_words", stim_fwd: "digits_fwd", stim_bwd: "digits_bwd", stim_vig: "vigilance_seq",
+  }, chains: { trail: ["trail", "trail_supp"], ori_time: ["ori_date", "ori_hint"] } },
+  guo: { base: "audio/guo/", map: {
+    stim_words: "mem_words", stim_fwd: "digits_fwd_seq", stim_bwd: "digits_bwd_seq", stim_vig: "vigilance_seq",
+  }, chains: {} },
+};
+let L = "tai";
+function urlOf(id){
+  const a = AUD[L];
+  if (id === "beep") return "audio/beep.mp3";
+  if (id === "stop") return "audio/stop.mp3";
+  return a.base + (a.map[id] || id) + ".mp3";
+}
+function clipList(id){
+  const c = AUD[L].chains[id];
+  return (c ? c : [id]).map(urlOf);
+}
+
+/* 單一 <audio> 重用（行動裝置 autoplay 解鎖後可連續換 src 播放） */
+const speaker = document.getElementById("speaker");
+let chainQueue = [], chainDone = null;
+function playChain(urls, onDone){
+  chainQueue = urls.slice(); chainDone = onDone || null;
+  nextInChain();
+}
+function nextInChain(){
+  if (!chainQueue.length){ if (chainDone) { const f = chainDone; chainDone = null; f(); } return; }
+  speaker.src = chainQueue.shift();
+  speaker.playbackRate = 1;
+  speaker.play().catch(()=>{ /* 極端情況：播放被擋，顯示手動鈕 */ showManualPlay(); });
+}
+speaker.addEventListener("ended", nextInChain);
+function stopAudio(){ chainQueue = []; chainDone = null; speaker.pause(); }
+function showManualPlay(){
+  const el = document.getElementById("manualPlay");
+  if (el) el.style.display = "block";
+}
+
+/* ================= 狀態 ================= */
+const S = { demo:{}, scores:{}, draw:{}, strokes:{}, auto:{}, lang:null };
+const REC = {};            // 錄音 blob URL（僅在記憶體，關閉分頁即消失）
+let micOK = false, micStream = null, recorder = null, recChunks = [];
+
+async function ensureMic(){
+  try {
+    micStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+    micOK = true;
+  } catch (e) { micOK = false; }
+  return micOK;
+}
+function startRec(recId){
+  if (!micOK) return false;
+  recChunks = [];
+  recorder = new MediaRecorder(micStream);
+  recorder.ondataavailable = e => recChunks.push(e.data);
+  recorder.onstop = () => { REC[recId] = URL.createObjectURL(new Blob(recChunks, { type: recorder.mimeType })); };
+  recorder.start();
+  return true;
+}
+function stopRec(){ if (recorder && recorder.state !== "inactive") recorder.stop(); }
+
+/* ================= 文案（雙語畫面文字；聽覺刺激絕不顯示） ================= */
+const T = {
+  tai: {
+    listen: "請斟酌聽……", speak: "請大聲講出來", speakDone: "講好矣", next: "下一題",
+    start: "開始", drawDone: "畫好矣", ready: "準備好就揤「開始」",
+    vig: "聽著「一」就揤這粒鈕", thanks: "多謝！測驗結束矣", handback: "請共平板交還予工作人員",
+  },
+  guo: {
+    listen: "請注意聽……", speak: "請大聲說出來", speakDone: "說完了", next: "下一題",
+    start: "開始", drawDone: "畫好了", ready: "準備好請按「開始」",
+    vig: "聽到「一」就按這個鈕", thanks: "謝謝您！測驗結束", handback: "請將平板交回給工作人員",
+  },
+};
+function tt(k){ return T[L][k]; }
+
+/* ================= 流程定義 ================= */
+/* ready 頁 title/hint 不得洩漏答案或聽覺刺激內容 */
+const STEPS = [
+  { type: "lang" },
+  { type: "demo" },
+  { type: "ready", title: "第 1 題　連連看", hint: "會有語音說明玩法" },
+  { type: "trail" },
+  { type: "ready", title: "第 2 題　照圖畫圖", hint: "用手指在畫面上畫" },
+  { type: "draw", id: "cvCube", ref: "cube", clip: "cube", h: 300 },
+  { type: "ready", title: "第 3 題　畫時鐘", hint: "用手指在畫面上畫" },
+  { type: "draw", id: "cvClock", ref: null, clip: "clock", h: 330 },
+  { type: "ready", title: "第 4 題　看圖說動物", hint: "看圖、大聲說出名稱" },
+  { type: "naming", img: "img/animal_lion.png",  rec: "rec_naming_1" },
+  { type: "naming", img: "img/animal_rhino.png", rec: "rec_naming_2" },
+  { type: "naming", img: "img/animal_camel.png", rec: "rec_naming_3" },
+  { type: "ready", title: "第 5 題　記憶", hint: "注意聽，聽完照記得的說出來" },
+  { type: "lr", clips: ["mem1", "stim_words"], rec: "rec_mem_1", max: 25 },
+  { type: "lr", clips: ["mem2", "stim_words"], rec: "rec_mem_2", max: 25 },
+  { type: "play", clips: ["mem3"] },
+  { type: "ready", title: "第 6 題　跟著唸數字", hint: "注意聽，聽完照順序唸出來" },
+  { type: "lr", clips: ["digit_fwd", "stim_fwd"], rec: "rec_fwd", max: 12 },
+  { type: "lr", clips: ["digit_bwd", "stim_bwd"], rec: "rec_bwd", max: 12 },
+  { type: "ready", title: "第 7 題　注意聽、按按鈕", hint: "會有語音說明" },
+  { type: "vig" },
+  { type: "ready", title: "第 8 題　算術", hint: "聽完說明後大聲算出來" },
+  { type: "lr", clips: ["serial7"], rec: "rec_serial7", max: 50, beepStart: true },
+  { type: "ready", title: "第 9 題　重複句子", hint: "注意聽，聽完照著唸一次" },
+  { type: "lr", clips: ["rep1"], rec: "rec_rep1", max: 14 },
+  { type: "lr", clips: ["rep2"], rec: "rec_rep2", max: 14 },
+  { type: "ready", title: "第 10 題　說水果", hint: "一分鐘內盡量說" },
+  { type: "fluency" },
+  { type: "ready", title: "第 11 題　想想看哪裡一樣", hint: "聽完問題大聲回答" },
+  { type: "lr", clips: ["abs_ex"], rec: "rec_abs_ex", max: 12 },
+  { type: "play", clips: ["abs_ans"] },
+  { type: "lr", clips: ["abs_train"], rec: "rec_abs_train", max: 12 },
+  { type: "lr", clips: ["abs_watch"], rec: "rec_abs_watch", max: 12 },
+  { type: "ready", title: "第 12 題　回想詞語", hint: "說出之前記住的詞" },
+  { type: "lr", clips: ["recall"], rec: "rec_recall", max: 25 },
+  { type: "ready", title: "第 13 題　時間與地點", hint: "聽完問題大聲回答" },
+  { type: "lr", clips: ["ori_time"], rec: "rec_ori_time", max: 22 },
+  { type: "lr", clips: ["ori_place"], rec: "rec_ori_place", max: 16 },
+  { type: "done" },
+  { type: "staff" },
+];
+let cur = 0;
+const stage = document.getElementById("stage");
+
+function go(n){
+  stopAudio(); stopRec();
+  cur = Math.max(0, Math.min(n, STEPS.length - 1));
+  document.getElementById("pbar").style.width = (cur / (STEPS.length - 2) * 100) + "%";
+  render();
+}
+function next(){ go(cur + 1); }
+
+/* ================= 渲染 ================= */
+function render(){
+  const st = STEPS[cur];
+  stage.innerHTML = "";
+  const div = document.createElement("div");
+  div.className = "page";
+  stage.appendChild(div);
+  RENDER[st.type](div, st);
+  stage.scrollTop = 0;
+}
+
+const RENDER = {
+  /* --- 語言選擇＋簡介 --- */
+  lang(el){
+    el.innerHTML = `
+      <h2>蒙特利爾認知評估（台灣版）</h2>
+      <p class="bigtext">這是一份認知功能測驗，用來了解您的記憶力與注意力，全部大約 15 分鐘。每一題都會有語音說明。</p>
+      <p class="bigtext">請選擇測驗語言／請揀語言：</p>
+      <button class="langbtn" id="btnTai">台語</button>
+      <button class="langbtn" id="btnGuo">國語</button>
+      <p class="note">＊點選語言即代表同意進行測驗與錄音（錄音僅供評分，留在本機）。</p>`;
+    el.querySelector("#btnTai").onclick = () => chooseLang("tai");
+    el.querySelector("#btnGuo").onclick = () => chooseLang("guo");
+  },
+  /* --- 基本資料（工作人員代填） --- */
+  demo(el){
+    el.innerHTML = `
+      <h2>基本資料（工作人員填寫）</h2>
+      <div class="form">
+        <label>姓名／代號</label><input id="fName" autocomplete="off">
+        <label>病歷號</label><input id="fChart" autocomplete="off">
+        <div class="row">
+          <div><label>年齡（16–90）＊</label><input id="fAge" type="number" inputmode="numeric" autocomplete="off"></div>
+          <div><label>教育年數（0–19）＊</label><input id="fEdu" type="number" inputmode="numeric" autocomplete="off"></div>
+        </div>
+        <label>性別＊</label>
+        <select id="fSex"><option value="">請選擇</option><option value="1">男</option><option value="0">女</option></select>
+      </div>
+      <div class="warnbox" id="micWarn" style="display:none">⚠️ 無法取得麥克風權限——口語題將不會錄音，需工作人員在旁記錄。</div>
+      <button class="bigbtn" id="btnBegin">交給受測者，開始測驗 ›</button>`;
+    el.querySelector("#btnBegin").onclick = async () => {
+      const v = id => el.querySelector(id).value;
+      if (!v("#fAge") || !v("#fEdu") || !v("#fSex")){ alert("請填年齡、教育年數、性別（常模計算必要）"); return; }
+      S.demo = { name: v("#fName"), chartNumber: v("#fChart"), age: v("#fAge"), edu: v("#fEdu"), sex: v("#fSex") };
+      if (!micOK) await ensureMic();
+      if (!micOK) el.querySelector("#micWarn").style.display = "block";
+      /* 解鎖音訊（使用者手勢內播 intro） */
+      playChain(clipList("intro"), null);
+      setTimeout(() => next(), 300);
+    };
+  },
+  /* --- 過場提示頁 --- */
+  ready(el, st){
+    el.innerHTML = `
+      <h2>${st.title}</h2>
+      <p class="bigtext">${st.hint}</p>
+      <p class="note">${tt("ready")}</p>
+      <button class="bigbtn" id="btnGo">${tt("start")} ▶</button>`;
+    el.querySelector("#btnGo").onclick = () => next();
+  },
+  /* --- 交替轉換 --- */
+  trail(el){
+    el.innerHTML = `
+      <div class="statusbox" id="listenBox"><span class="bigicon pulse">🔊</span><span class="bigtext">${tt("listen")}</span></div>
+      <div id="manualPlay" style="display:none"><button class="bigbtn gray" onclick="nextInChain()">▶ 播放說明</button></div>
+      <svg id="trailSvg" viewBox="0 0 560 410"><g id="trailLines"></g><g id="trailNodes"></g></svg>
+      <p class="note" style="text-align:center" id="trailMsg"></p>`;
+    initTrail(el);
+    playChain(clipList("trail"), () => { el.querySelector("#listenBox").style.display = "none"; });
+  },
+  /* --- 畫圖（立方體/時鐘） --- */
+  draw(el, st){
+    el.innerHTML = `
+      <div class="statusbox" id="listenBox"><span class="bigicon pulse">🔊</span><span class="bigtext">${tt("listen")}</span></div>
+      <div id="manualPlay" style="display:none"><button class="bigbtn gray" onclick="nextInChain()">▶ 播放說明</button></div>
+      ${st.ref === "cube" ? `<div class="refimg"><svg width="130" height="130" viewBox="0 0 150 150"><g fill="none" stroke="#1c2b33" stroke-width="2.5">
+        <rect x="25" y="45" width="75" height="75"/><rect x="55" y="20" width="75" height="75"/>
+        <line x1="25" y1="45" x2="55" y2="20"/><line x1="100" y1="45" x2="130" y2="20"/>
+        <line x1="25" y1="120" x2="55" y2="95"/><line x1="100" y1="120" x2="130" y2="95"/></g></svg></div>` : ""}
+      <canvas class="canv" id="${st.id}" height="${st.h}"></canvas>
+      <div class="canvbar">
+        <button onclick="cvUndo('${st.id}')">↩ 復原</button>
+        <button onclick="cvClear('${st.id}')">✕ 清除</button>
+      </div>
+      <button class="bigbtn" onclick="next()">${tt("drawDone")} ›</button>`;
+    initCanvas(st.id);
+    playChain(clipList(st.clip), () => { el.querySelector("#listenBox").style.display = "none"; });
+  },
+  /* --- 命名（畫面僅圖，不得有任何答案文字） --- */
+  naming(el, st){
+    el.innerHTML = `
+      <img class="animalimg" src="${st.img}" alt="">
+      <div class="statusbox" id="recBox" style="display:none"><span><span class="recdot pulse"></span><span class="bigtext">${tt("speak")}</span></span></div>
+      <div id="manualPlay" style="display:none"><button class="bigbtn gray" onclick="nextInChain()">▶ 播放說明</button></div>
+      <button class="bigbtn rec" id="btnDone" style="display:none">${tt("speakDone")} ›</button>`;
+    playChain(clipList("naming"), () => beginRec(el, st.rec, 10));
+  },
+  /* --- 通用：聽（不顯示內容）→ 錄音 --- */
+  lr(el, st){
+    el.innerHTML = `
+      <div class="statusbox" id="listenBox"><span class="bigicon pulse">🔊</span><span class="bigtext">${tt("listen")}</span></div>
+      <div class="statusbox" id="recBox" style="display:none"><span><span class="recdot pulse"></span><span class="bigtext">${tt("speak")}</span></span>
+        <span class="countdown" id="recCd"></span></div>
+      <div id="manualPlay" style="display:none"><button class="bigbtn gray" onclick="nextInChain()">▶ 播放</button></div>
+      <button class="bigbtn rec" id="btnDone" style="display:none">${tt("speakDone")} ›</button>`;
+    playChain(st.clips.flatMap(clipList), () => {
+      const after = () => beginRec(el, st.rec, st.max);
+      if (st.beepStart) playChain(["audio/beep.mp3"], after); else after();
+    });
+  },
+  /* --- 純播放（回饋/預告） --- */
+  play(el, st){
+    el.innerHTML = `<div class="statusbox"><span class="bigicon pulse">🔊</span><span class="bigtext">${tt("listen")}</span></div>
+      <div id="manualPlay" style="display:none"><button class="bigbtn gray" onclick="nextInChain()">▶ 播放</button></div>`;
+    playChain(st.clips.flatMap(clipList), () => setTimeout(next, 500));
+  },
+  /* --- 警覺性（聽到「一」按大鈕；自動計分） --- */
+  vig(el){
+    el.innerHTML = `
+      <div class="statusbox" id="listenBox"><span class="bigicon pulse">🔊</span><span class="bigtext">${tt("listen")}</span></div>
+      <div id="manualPlay" style="display:none"><button class="bigbtn gray" onclick="nextInChain()">▶ 播放說明</button></div>
+      <button class="vigbtn" id="vigBtn" style="display:none">${tt("vig")}</button>`;
+    const ONES = [2,6,7,12,14,18,19,20,22,26,27];   // 台灣版原串「1」的秒位（每秒一字）
+    let taps = [];
+    playChain(clipList("vigilance"), () => {
+      el.querySelector("#listenBox").style.display = "none";
+      const btn = el.querySelector("#vigBtn");
+      btn.style.display = "block";
+      speaker.src = urlOf("stim_vig");
+      btn.onclick = () => { if (!speaker.paused) taps.push(speaker.currentTime); };
+      speaker.onended = () => {
+        speaker.onended = null;
+        /* 計分：每個「一」秒窗 [i, i+1.5) 內有按＝命中；窗外的按＝誤按 */
+        let hits = 0; const used = new Set();
+        for (const i of ONES){
+          const idx = taps.findIndex((t, k) => !used.has(k) && t >= i && t < i + 1.5);
+          if (idx >= 0){ hits++; used.add(idx); }
+        }
+        const fa = taps.length - used.size;
+        const errors = (ONES.length - hits) + fa;
+        S.auto.vig = { hits, fa, errors, total: ONES.length };
+        S.scores.att_vig = errors <= 1 ? 1 : 0;
+        speaker.addEventListener("ended", nextInChain);
+        next();
+      };
+      speaker.removeEventListener("ended", nextInChain);
+      speaker.play().catch(() => showManualPlay());
+    });
+  },
+  /* --- 流暢度（60 秒錄音＋倒數） --- */
+  fluency(el){
+    el.innerHTML = `
+      <div class="statusbox" id="listenBox"><span class="bigicon pulse">🔊</span><span class="bigtext">${tt("listen")}</span></div>
+      <div class="statusbox" id="recBox" style="display:none">
+        <span><span class="recdot pulse"></span><span class="bigtext">${tt("speak")}</span></span>
+        <span class="countdown" id="recCd">60</span></div>
+      <div id="manualPlay" style="display:none"><button class="bigbtn gray" onclick="nextInChain()">▶ 播放說明</button></div>`;
+    playChain(clipList("fluency"), () => {
+      playChain(["audio/beep.mp3"], () => {
+        el.querySelector("#listenBox").style.display = "none";
+        el.querySelector("#recBox").style.display = "flex";
+        startRec("rec_fluency");
+        let t = 60;
+        const cd = el.querySelector("#recCd");
+        const iv = setInterval(() => {
+          cd.textContent = --t;
+          if (t <= 0){
+            clearInterval(iv); stopRec();
+            playChain(["audio/stop.mp3"], () => next());
+          }
+        }, 1000);
+      });
+    });
+  },
+  /* --- 受測者結束頁 --- */
+  done(el){
+    el.innerHTML = `
+      <div class="statusbox" style="margin-top:60px">
+        <span class="bigicon">🌸</span>
+        <p class="bigtext" style="text-align:center">${tt("thanks")}<br>${tt("handback")}</p>
+      </div>
+      <button class="bigbtn gray" id="btnStaff" style="margin-top:60px">工作人員區（評分）</button>`;
+    playChain(clipList("done"), null);
+    el.querySelector("#btnStaff").onclick = () => {
+      const code = prompt("工作人員請輸入代碼：");
+      if (code === "1234") next(); else if (code !== null) alert("代碼錯誤");
+    };
+  },
+  /* --- 工作人員評分頁 --- */
+  staff(el){ renderStaff(el); },
+};
+
+function chooseLang(lang){
+  L = lang; S.lang = lang;
+  ensureMic();          // 提早要權限（在手勢中）
+  next();
+}
+
+/* 聽→錄共用 */
+let recCdTimer = null;
+function beginRec(el, recId, maxSec){
+  const lb = el.querySelector("#listenBox"); if (lb) lb.style.display = "none";
+  const rb = el.querySelector("#recBox"); if (rb) rb.style.display = "flex";
+  const btn = el.querySelector("#btnDone");
+  startRec(recId);
+  let t = maxSec;
+  const cd = el.querySelector("#recCd");
+  if (cd) cd.textContent = t;
+  recCdTimer = setInterval(() => {
+    t--;
+    if (cd) cd.textContent = t;
+    if (t <= 0){ clearInterval(recCdTimer); stopRec(); next(); }
+  }, 1000);
+  if (btn){
+    btn.style.display = "block";
+    btn.onclick = () => { clearInterval(recCdTimer); stopRec(); next(); };
+  }
+}
+
+/* ================= 交替轉換 ================= */
+const NODES = [
+  {t:"1",x:160,y:195,lbl:"開始"},{t:"甲",x:330,y:60},{t:"2",x:425,y:160},{t:"乙",x:300,y:170},
+  {t:"3",x:430,y:305},{t:"丙",x:185,y:372},{t:"4",x:262,y:292},{t:"丁",x:88,y:302},
+  {t:"5",x:58,y:150},{t:"戊",x:150,y:68,lbl:"終點"}];
+const ORDER = ["1","甲","2","乙","3","丙","4","丁","5","戊"];
+let tStep = 0, tErr = 0;
+function initTrail(el){
+  tStep = 0; tErr = 0;
+  const gN = el.querySelector("#trailNodes");
+  NODES.forEach(n => {
+    const g = document.createElementNS("http://www.w3.org/2000/svg","g");
+    g.innerHTML = `<circle cx="${n.x}" cy="${n.y}" r="27"/><text x="${n.x}" y="${n.y}">${n.t}</text>`+
+      (n.lbl? `<text class="lbl" x="${n.x}" y="${n.y+44}">${n.lbl}</text>`:"");
+    g.addEventListener("click", () => {
+      if (tStep >= ORDER.length) return;
+      if (n.t === ORDER[tStep]){
+        g.classList.add("done");
+        if (tStep > 0){
+          const p = NODES.find(m => m.t === ORDER[tStep-1]);
+          const l = document.createElementNS("http://www.w3.org/2000/svg","line");
+          const dx=n.x-p.x, dy=n.y-p.y, dd=Math.hypot(dx,dy);
+          l.setAttribute("x1",p.x+dx/dd*29); l.setAttribute("y1",p.y+dy/dd*29);
+          l.setAttribute("x2",n.x-dx/dd*29); l.setAttribute("y2",n.y-dy/dd*29);
+          el.querySelector("#trailLines").appendChild(l);
+        }
+        tStep++;
+        if (tStep === ORDER.length){
+          S.auto.trail = { errors: tErr };
+          S.scores.trail = tErr === 0 ? 1 : 0;
+          setTimeout(next, 1200);
+        }
+      } else {
+        tErr++; g.classList.add("err");
+        setTimeout(() => g.classList.remove("err"), 600);
+      }
+    });
+    gN.appendChild(g);
+  });
+}
+
+/* ================= Canvas（逐事件座標換算） ================= */
+const cvState = {};
+function initCanvas(id){
+  const cv = document.getElementById(id);
+  const cssH = parseInt(cv.getAttribute("height"));
+  const st = cvState[id] = { cv, ctx:null, strokes:(S.strokes[id]||[]).slice(), curr:null };
+  function setup(){
+    const w = cv.clientWidth || 300;
+    cv.width = w*2; cv.height = cssH*2; cv.style.height = cssH+"px";
+    st.ctx = cv.getContext("2d");
+    st.ctx.setTransform(2,0,0,2,0,0);
+    st.ctx.lineWidth = 2.5; st.ctx.lineCap = "round"; st.ctx.lineJoin = "round"; st.ctx.strokeStyle = "#1c2b33";
+    redraw(id);
+  }
+  setup();
+  window.addEventListener("resize", setup);
+  const pos = e => { const r = cv.getBoundingClientRect();
+    return [(e.clientX-r.left)*(cv.width/2)/r.width, (e.clientY-r.top)*(cv.height/2)/r.height]; };
+  cv.addEventListener("pointerdown", e => { e.preventDefault();
+    try{ cv.setPointerCapture(e.pointerId); }catch(_){}
+    st.curr = [pos(e)]; });
+  cv.addEventListener("pointermove", e => { if (!st.curr) return; e.preventDefault(); st.curr.push(pos(e)); redraw(id); });
+  const up = () => { if (!st.curr) return;
+    if (st.curr.length > 1) st.strokes.push(st.curr);
+    st.curr = null; redraw(id);
+    S.strokes[id] = st.strokes;
+    S.draw[id] = st.strokes.length ? st.cv.toDataURL("image/png") : undefined; };
+  cv.addEventListener("pointerup", up); cv.addEventListener("pointercancel", up);
+}
+function redraw(id){
+  const st = cvState[id], ctx = st.ctx;
+  ctx.clearRect(0,0,st.cv.width,st.cv.height);
+  const all = st.curr ? [...st.strokes, st.curr] : st.strokes;
+  for (const s of all){ ctx.beginPath(); s.forEach((p,i)=> i?ctx.lineTo(p[0],p[1]):ctx.moveTo(p[0],p[1])); ctx.stroke(); }
+}
+function cvUndo(id){ const st=cvState[id]; st.strokes.pop(); redraw(id);
+  S.strokes[id]=st.strokes; S.draw[id]=st.strokes.length? st.cv.toDataURL("image/png"):undefined; }
+function cvClear(id){ const st=cvState[id]; st.strokes=[]; st.curr=null; redraw(id);
+  S.strokes[id]=[]; delete S.draw[id]; }
+
+/* ================= 常模（與施測者版同一套，已逐格對過官方計算表） ================= */
+function normInv(p){
+  if (p<=0||p>=1) return NaN;
+  const a=[-39.69683028665376,220.9460984245205,-275.9285104469687,138.3577518672690,-30.66479806614716,2.506628277459239],
+        b=[-54.47609879822406,161.5858368580409,-155.6989798598866,66.80131188771972,-13.28068155288572],
+        c=[-0.007784894002430293,-0.3223964580411365,-2.400758277161838,-2.549732539343734,4.374664141464968,2.938163982698783],
+        d=[0.007784695709041462,0.3224671290700398,2.445134137142996,3.754408661907416], pl=0.02425;
+  let q,r;
+  if(p<pl){ q=Math.sqrt(-2*Math.log(p));
+    return (((((c[0]*q+c[1])*q+c[2])*q+c[3])*q+c[4])*q+c[5])/((((d[0]*q+d[1])*q+d[2])*q+d[3])*q+1);}
+  if(p<=1-pl){ q=p-0.5; r=q*q;
+    return (((((a[0]*r+a[1])*r+a[2])*r+a[3])*r+a[4])*r+a[5])*q/(((((b[0]*r+b[1])*r+b[2])*r+b[3])*r+b[4])*r+1);}
+  q=Math.sqrt(-2*Math.log(1-p));
+  return -(((((c[0]*q+c[1])*q+c[2])*q+c[3])*q+c[4])*q+c[5])/((((d[0]*q+d[1])*q+d[2])*q+d[3])*q+1);
+}
+function lookupPR(adj, key){
+  const th = NORM.thresholds[key], pr = NORM.percentile;
+  let ans = null;
+  for (let i=0;i<th.length;i++){ if (th[i] <= adj) ans = pr[i]; else break; }
+  return ans;
+}
+function normCalc(raw, age, edu, sex){
+  const A=age-68.08, E=edu-11.19, G=sex-0.5;
+  const adj = {
+    total: raw.total+0.09*A-0.142*E, vs: raw.vs-0.081*G+0.019*A-0.034*E,
+    naming: raw.naming-0.109*G+0.007*A-0.023*E, attention: raw.attention+0.014*A-0.022*E,
+    language: raw.language+0.116*G+0.019*A-0.035*E, abstract: raw.abstract-0.096*A-0.044*E,
+    memory: raw.memory+0.028*A-0.028*E, orientation: raw.orientation+0.005*A-0.008*E };
+  const out = {};
+  for (const k in adj){
+    const pr = lookupPR(adj[k], k);
+    out[k] = { adj: adj[k], pr, z: pr===null? null : normInv(pr/100) };
+  }
+  return out;
+}
+const DOM_LABEL = { total:"總分", vs:"視覺空間/執行", naming:"命名", attention:"專注力",
+                    language:"語言", abstract:"抽象概念", memory:"延遲記憶", orientation:"定向" };
+const DOM_MAX = { total:30, vs:5, naming:3, attention:6, language:3, abstract:2, memory:5, orientation:6 };
+
+/* ================= 工作人員評分頁 ================= */
+function scb(id, text){
+  const ck = S.scores[id] ? "checked" : "";
+  return `<label><input type="checkbox" ${ck} onchange="S.scores['${id}']=this.checked?1:0">${text}</label>`;
+}
+function player(recId, label){
+  return REC[recId]
+    ? `<div><span class="note">${label}</span><audio controls src="${REC[recId]}"></audio></div>`
+    : `<div class="note">${label}：（無錄音——請依現場觀察評分）</div>`;
+}
+function renderStaff(el){
+  el.innerHTML = `
+    <h2>工作人員評分</h2>
+    <p class="note">受測語言：${S.lang === "tai" ? "台語" : "國語"}｜姓名：${S.demo.name||"—"}｜病歷號：${S.demo.chartNumber||"—"}｜年齡 ${S.demo.age}｜教育 ${S.demo.edu} 年</p>
+    <div class="warnbox">⚠️ 錄音只存在本頁記憶體——評分完成、下載報告之前，請勿關閉或重新整理此分頁。</div>
+
+    <div class="sitem"><h4>1. 交替轉換（自動）</h4>
+      <p>錯誤 ${S.auto.trail? S.auto.trail.errors : "—"} 次 → ${scb("trail","順序全對且無錯誤（1 分）")}</p></div>
+    <div class="sitem"><h4>2. 立方體（手繪）</h4>
+      ${S.draw.cvCube? `<img class="drawimg" src="${S.draw.cvCube}">` : `<p class="note">（未作畫）</p>`}
+      ${scb("cube_c1","3D 立體結構")}${scb("cube_c2","所有線條都畫出")}${scb("cube_c3","沒有多餘的線")}${scb("cube_c4","相對邊平行、長度大致相等")}
+      <p class="note">四項全勾＝1 分（自動換算）</p></div>
+    <div class="sitem"><h4>3. 時鐘（手繪）</h4>
+      ${S.draw.cvClock? `<img class="drawimg" src="${S.draw.cvClock}">` : `<p class="note">（未作畫）</p>`}
+      ${scb("clock_contour","輪廓（圓形鐘面）")}${scb("clock_num","數字（12 個齊全、順序象限正確）")}${scb("clock_hand","指針（11:10、時針較短、交會中心）")}</div>
+    <div class="sitem"><h4>4. 命名</h4>
+      ${player("rec_naming_1","動物一（正解：獅子）")}${scb("name_lion","答對：獅子")}
+      ${player("rec_naming_2","動物二（正解：犀牛）")}${scb("name_rhino","答對：犀牛")}
+      ${player("rec_naming_3","動物三（正解：駱駝/單峰駝）")}${scb("name_camel","答對：駱駝")}</div>
+    <div class="sitem"><h4>5. 記憶登錄（不計分，臨床參考）</h4>
+      ${player("rec_mem_1","第一次")}${player("rec_mem_2","第二次")}</div>
+    <div class="sitem"><h4>6. 數字廣度</h4>
+      ${player("rec_fwd","順背（正解 2 1 8 5 4）")}${scb("att_fwd","順背完全正確")}
+      ${player("rec_bwd","倒背（正解 2－4－7）")}${scb("att_bwd","倒背完全正確")}</div>
+    <div class="sitem"><h4>7. 警覺性（自動）</h4>
+      <p>命中 ${S.auto.vig? S.auto.vig.hits : "—"} / ${S.auto.vig? S.auto.vig.total : 11}，誤按 ${S.auto.vig? S.auto.vig.fa : "—"}，錯誤合計 ${S.auto.vig? S.auto.vig.errors : "—"}</p>
+      ${scb("att_vig","錯誤 0–1 個（1 分）")}</div>
+    <div class="sitem"><h4>8. 連續減七</h4>
+      ${player("rec_serial7","作答錄音（正解 93 86 79 72 65）")}
+      ${scb("s7_1","93")}${scb("s7_2","86")}${scb("s7_3","79")}${scb("s7_4","72")}${scb("s7_5","65")}
+      <p class="note">4–5 對＝3 分；2–3 對＝2 分；1 對＝1 分（自動換算）</p></div>
+    <div class="sitem"><h4>9. 重複句子</h4>
+      ${player("rec_rep1", S.lang==="tai" ? "第一句（目標：我知影今仔日來幫忙的是蔡桑）" : "第一句（目標：我知道今天來幫忙的是小吳）")}${scb("rep_1","第一句完全正確")}
+      ${player("rec_rep2", S.lang==="tai" ? "第二句（目標：狗若佇房間內，貓總是覕佇桌仔跤）" : "第二句（目標：當狗在房間時，貓總是躲在桌子下）")}${scb("rep_2","第二句完全正確")}</div>
+    <div class="sitem"><h4>10. 語言流暢（60 秒水果）</h4>
+      ${player("rec_fluency","作答錄音")}
+      <label>數到的水果數：<input type="number" id="fluN" min="0" value="${S.auto.fluN||""}" onchange="S.auto.fluN=parseInt(this.value)||0; S.scores.flu=(S.auto.fluN>=11)?1:0; this.closest('div').querySelector('#fluCb').checked=!!S.scores.flu;"></label>
+      <label><input type="checkbox" id="fluCb" ${S.scores.flu?"checked":""} onchange="S.scores.flu=this.checked?1:0">≥11 個（1 分）</label></div>
+    <div class="sitem"><h4>11. 抽象概念</h4>
+      ${player("rec_abs_ex","例題（橘子/柑仔－香蕉/弓蕉；不計分）")}
+      ${player("rec_abs_train","火車－腳踏車（可接受：交通運輸工具）")}${scb("abs_1","火車－腳踏車 答對")}
+      ${player("rec_abs_watch","尺－手錶（可接受：量度工具）")}${scb("abs_2","尺－手錶 答對")}</div>
+    <div class="sitem"><h4>12. 延遲記憶（正解：臉 絨布 教堂 菊花 紅色）</h4>
+      ${player("rec_recall","作答錄音")}
+      ${scb("rc_1","臉")}${scb("rc_2","絨布")}${scb("rc_3","教堂")}${scb("rc_4","菊花")}${scb("rc_5","紅色")}</div>
+    <div class="sitem"><h4>13. 定向</h4>
+      ${player("rec_ori_time","時間（年/月/日/星期）")}
+      ${scb("or_1","日期")}${scb("or_2","月份")}${scb("or_3","年份")}${scb("or_4","星期")}
+      ${player("rec_ori_place","地點/城市")}
+      ${scb("or_5","地點")}${scb("or_6","城市")}</div>
+
+    <button class="bigbtn" onclick="showResult()">計算結果與常模 ▼</button>
+    <div id="resBody"></div>
+    <div class="canvbar" style="margin-top:10px">
+      <button onclick="printPDF()">下載 PDF 報告（含手繪圖）</button>
+      <button onclick="exportJSON()">下載 JSON</button>
+      <button onclick="uploadNow(this)">上傳雲端</button>
+    </div>
+    <p class="note">MoCA © Z. Nasreddine MD，www.mocatest.org；台灣版譯者：蔡佳芬、傅中玲。自助版為適應性施測（敲桌改按鈕、口語作答錄音後評分），結果解讀請留意與標準施測之差異；台語語音為 AI 合成，正式使用前須母語者審聽。</p>`;
+}
+function domains(){
+  const s = S.scores, sum = ids => ids.reduce((a,i)=>a+(s[i]||0),0);
+  const s7n = sum(["s7_1","s7_2","s7_3","s7_4","s7_5"]);
+  return {
+    vs: (s.trail||0) + (sum(["cube_c1","cube_c2","cube_c3","cube_c4"])===4?1:0) + sum(["clock_contour","clock_num","clock_hand"]),
+    naming: sum(["name_lion","name_rhino","name_camel"]),
+    attention: sum(["att_fwd","att_bwd","att_vig"]) + (s7n>=4?3:s7n>=2?2:s7n>=1?1:0),
+    language: sum(["rep_1","rep_2","flu"]),
+    abstract: sum(["abs_1","abs_2"]),
+    memory: sum(["rc_1","rc_2","rc_3","rc_4","rc_5"]),
+    orientation: sum(["or_1","or_2","or_3","or_4","or_5","or_6"]),
+  };
+}
+let lastNorm = null;
+function showResult(){
+  const d = domains();
+  const raw = {...d, total: Object.values(d).reduce((a,b)=>a+b,0)};
+  const age=parseFloat(S.demo.age), edu=parseFloat(S.demo.edu), sex=parseFloat(S.demo.sex);
+  const ok = !isNaN(age)&&!isNaN(edu)&&!isNaN(sex);
+  lastNorm = ok? normCalc(raw, age, edu, sex) : null;
+  const bonus = (!isNaN(edu)&&edu<=12&&raw.total<30)?1:0;
+  let h = `<p class="bigtext" style="font-size:1.1rem">原始總分 <span class="got">${raw.total} / 30</span>
+    ${bonus? `（教育≤12 年傳統判讀＋1＝${raw.total+1}；臨界值 ≥26）`:``}</p>
+    <table class="simple"><tr><th>領域</th><th>原始</th><th>Adj</th><th>PR</th><th>z</th></tr>`;
+  for (const k of ["total","vs","naming","attention","language","abstract","memory","orientation"]){
+    const n = lastNorm? lastNorm[k] : null;
+    h += `<tr><td class="name">${DOM_LABEL[k]}</td><td>${raw[k]} / ${DOM_MAX[k]}</td>
+      <td>${n? n.adj.toFixed(2):"—"}</td><td>${n? (n.pr===null?"N/A":n.pr):"—"}</td>
+      <td>${n? (n.z===null?"—":n.z.toFixed(2)):"—"}</td></tr>`;
+  }
+  h += `</table><p class="note">常模：Cheng YH, et al. J Chin Med Assoc 2025;88(8):617-623（逐格取自官方計算表）。</p>`;
+  document.getElementById("resBody").innerHTML = h;
+}
+function getExportData(){
+  const d = domains();
+  const rawTotal = Object.values(d).reduce((a,b)=>a+b,0);
+  const edu=parseFloat(S.demo.edu), age=parseFloat(S.demo.age), sex=parseFloat(S.demo.sex);
+  const ok = !isNaN(age)&&!isNaN(edu)&&!isNaN(sex);
+  const norm = ok? normCalc({...d, total: rawTotal}, age, edu, sex) : null;
+  const bonus = (!isNaN(edu)&&edu<=12&&rawTotal<30)?1:0;
+  return {
+    tool: "MoCA-T 受測者自助版 v1",
+    metadata: { exportDate: new Date().toISOString(), assessmentDate: new Date().toISOString().slice(0,10),
+                toolVersion: "self-1.0", language: S.lang },
+    patientInfo: { name: S.demo.name||"", chartNumber: S.demo.chartNumber || ("moca_self_"+new Date().getTime()),
+                   age: parseInt(S.demo.age||0), gender: S.demo.sex==="1"?"男":"女",
+                   education: S.demo.edu||"0", assessmentDate: new Date().toISOString().slice(0,10) },
+    scores: S.scores, domains: d, auto: S.auto,
+    results: { totalScore: rawTotal, educationBonus: bonus,
+      adjTotalScore: norm? parseFloat(norm.total.adj.toFixed(2)) : null,
+      totalPR: norm? norm.total.pr : null,
+      totalZ: norm? (norm.total.z===null? null : parseFloat(norm.total.z.toFixed(2))) : null,
+      domainResults: norm },
+    drawings: S.draw,
+  };
+}
+function exportJSON(){
+  const data = getExportData();
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(new Blob([JSON.stringify(data,null,2)],{type:"application/json"}));
+  a.download = `MoCA-T_self_${data.patientInfo.name||"case"}_${data.patientInfo.chartNumber}.json`;
+  a.click();
+}
+function uploadNow(btn){
+  const scriptUrl = 'https://script.google.com/macros/s/AKfycbw3uS2wMJkXhrRnqrmzYoA_5-DpfHT0atHGZR0203WjDNzkAMpddbdtqXXv8sggWfMq/exec';
+  const data = getExportData();
+  data.drawings = {};
+  btn.textContent = "上傳中…"; btn.disabled = true;
+  fetch(scriptUrl, { method:"POST", cache:"no-cache",
+    headers:{ "Content-Type":"text/plain;charset=utf-8" }, body: JSON.stringify(data) })
+    .then(r => r.json()).then(j => { btn.textContent = j.success? "✔ 已上傳" : "上傳失敗"; })
+    .catch(() => { btn.textContent = "上傳失敗（可稍後重試）"; btn.disabled = false; });
+}
+function printPDF(){
+  const d = domains();
+  const raw = {...d, total: Object.values(d).reduce((a,b)=>a+b,0)};
+  const age=parseFloat(S.demo.age), edu=parseFloat(S.demo.edu), sex=parseFloat(S.demo.sex);
+  const ok = !isNaN(age)&&!isNaN(edu)&&!isNaN(sex);
+  const norm = ok? normCalc(raw, age, edu, sex) : null;
+  const bonus = (!isNaN(edu)&&edu<=12&&raw.total<30)?1:0;
+  let rows = "";
+  for (const k of ["total","vs","naming","attention","language","abstract","memory","orientation"]){
+    const n = norm? norm[k] : null;
+    rows += `<tr><td class="name">${DOM_LABEL[k]}</td><td>${raw[k]} / ${DOM_MAX[k]}</td>
+      <td>${n? n.adj.toFixed(2):"—"}</td><td>${n? (n.pr===null?"N/A（PR<1）":n.pr):"—"}</td>
+      <td>${n? (n.z===null?"—":n.z.toFixed(2)):"—"}</td></tr>`;
+  }
+  let draws = "";
+  if (S.draw.cvCube)  draws += `<figure><img src="${S.draw.cvCube}"><figcaption>立方體複製（受測者手繪）</figcaption></figure>`;
+  if (S.draw.cvClock) draws += `<figure><img src="${S.draw.cvClock}"><figcaption>畫時鐘 11:10（受測者手繪）</figcaption></figure>`;
+  if (!draws) draws = `<p class="rp-notes">（本次無手繪紀錄）</p>`;
+  let pr = document.getElementById("printReport");
+  if (!pr){ pr = document.createElement("div"); pr.id = "printReport"; document.body.appendChild(pr); }
+  pr.innerHTML = `
+    <div class="rp-head"><h1>蒙特利爾認知評估（台灣版）評估報告——受測者自助版</h1>
+      <div style="font-size:9pt;color:#555">MoCA-T Self-administered｜施測語言：${S.lang==="tai"?"台語":"國語"}</div></div>
+    <div style="display:flex;gap:22px;flex-wrap:wrap;font-size:10.5pt;margin:10px 0">
+      <span>姓名／代號：<b>${S.demo.name||"　　　"}</b></span><span>病歷號：<b>${S.demo.chartNumber||"—"}</b></span>
+      <span>年齡：<b>${S.demo.age||"—"}</b></span><span>性別：<b>${S.demo.sex==="1"?"男":"女"}</b></span>
+      <span>教育年數：<b>${S.demo.edu||"—"}</b></span><span>評估日期：<b>${new Date().toLocaleDateString("zh-TW")}</b></span></div>
+    <div style="font-size:13pt;margin:8px 0">原始總分 <b style="font-size:16pt;color:#0f766e">${raw.total} / 30</b>
+      ${bonus? `（教育≤12 年，傳統判讀加 1 分＝${raw.total+1}；臨界值 ≥26）`:`（傳統臨界值 ≥26）`}</div>
+    <table><tr><th>領域</th><th>原始分數</th><th>校正分數 (Adj)</th><th>百分等級 (PR)</th><th>z 分數</th></tr>${rows}</table>
+    <div class="rp-draws">${draws}</div>
+    <div style="margin-top:20px;font-size:10.5pt;display:flex;gap:60px"><span>評分人：＿＿＿＿＿＿＿＿</span><span>核閱：＿＿＿＿＿＿＿＿</span></div>
+    <div class="rp-notes">本測驗以自助模式進行（語音導引、口語作答錄音後由工作人員評分；警覺性以按鈕替代敲桌、交替轉換以觸控點選替代畫線），
+    結果解讀請留意與標準施測之差異。常模：Cheng YH, et al. <i>J Chin Med Assoc</i>. 2025;88(8):617-623。
+    MoCA © Z. Nasreddine MD，www.mocatest.org；台灣版譯者：蔡佳芬、傅中玲。</div>`;
+  const imgs = pr.querySelectorAll("img");
+  if (!imgs.length){ window.print(); return; }
+  let n = 0;
+  const chk = () => { if (++n === imgs.length) window.print(); };
+  imgs.forEach(im => im.complete ? chk() : (im.onload = chk, im.onerror = chk));
+}
+
+render();
+</script>
+</body>
+</html>
