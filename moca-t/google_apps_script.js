@@ -61,6 +61,14 @@ function doPost(e) {
   }
 }
 
+// ====== 施測語言（受測者自助版 metadata.language: tai/guo；施測者版為台語工具）======
+function langOf(data) {
+  var l = (data.metadata && data.metadata.language) ? String(data.metadata.language) : "";
+  if (l === "guo" || l === "國語") return "國語";
+  if (l === "tai" || l === "台語") return "台語";
+  return "台語";   // 未標記時預設（施測者版為台語施測工具）
+}
+
 // ====== MoCA-T 母試算表（欄位順序 = CSV 表頭順序，為跨系統 SSOT，勿任意調換）======
 function appendMocaRow(data, chartNumber, patientName) {
   var csvFile;
@@ -73,7 +81,7 @@ function appendMocaRow(data, chartNumber, patientName) {
     if (files.hasNext()) {
       csvFile = files.next();
     } else {
-      var header = "評估日期,匯出時間,病歷號,病患姓名,年齡,性別,教育程度(年數),原始總分,教育加分,常模校正總分(Adj),百分等級(PR),z分數,領域_視覺空間原始,領域_命名原始,領域_專注力原始,領域_語言原始,領域_抽象原始,領域_延遲記憶原始,領域_定向原始\n";
+      var header = "評估日期,匯出時間,病歷號,病患姓名,年齡,性別,教育程度(年數),原始總分,教育加分,常模校正總分(Adj),百分等級(PR),z分數,領域_視覺空間原始,領域_命名原始,領域_專注力原始,領域_語言原始,領域_抽象原始,領域_延遲記憶原始,領域_定向原始,語言\n";
       csvFile = folder.createFile("所有MoCA評估資料整合.csv", header, "text/csv;charset=utf-8");
     }
   }
@@ -98,10 +106,22 @@ function appendMocaRow(data, chartNumber, patientName) {
     cleanCsvCell(d.language !== undefined ? d.language : ""),
     cleanCsvCell(d.abstract !== undefined ? d.abstract : ""),
     cleanCsvCell(d.memory !== undefined ? d.memory : ""),
-    cleanCsvCell(d.orientation !== undefined ? d.orientation : "")
+    cleanCsvCell(d.orientation !== undefined ? d.orientation : ""),
+    cleanCsvCell(langOf(data))
   ].join(",") + "\n";
 
-  csvFile.setContent(csvFile.getBlob().getDataAsString("UTF-8") + row);
+  // 既有母表表頭若尚無「語言」欄，自動升級（只改表頭列，舊資料列不動）
+  // ⚠️ 必須精確比對欄名——表頭本就含「領域_語言原始」，用子字串搜尋會誤判已升級
+  var content = csvFile.getBlob().getDataAsString("UTF-8");
+  var nl = content.indexOf("\n");
+  if (nl > 0) {
+    var header = content.substring(0, nl).replace(/\r$/, "");
+    if (header.split(",").indexOf("語言") === -1) {
+      content = header + ",語言\n" + content.substring(nl + 1);
+    }
+  }
+  if (content.length && content.charAt(content.length - 1) !== "\n") content += "\n";
+  csvFile.setContent(content + row);
 }
 
 // ====== 原結構問卷母表（欄位完全維持原樣，不影響既有問卷）======
