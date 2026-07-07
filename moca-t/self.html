@@ -512,6 +512,7 @@ function initTrail(el){
         }
       } else {
         tErr++; g.classList.add("err");
+        // 點錯不會前進，只會閃紅提示（符合 MoCA 計分規則：任何錯處未更正＝0 分）
         setTimeout(() => g.classList.remove("err"), 600);
       }
     });
@@ -662,14 +663,12 @@ function renderStaff(el){
     <button class="bigbtn" onclick="showResult()">計算結果與常模 ▼</button>
     <div id="resBody"></div>
     <div class="canvbar" style="margin-top:10px">
+      <button onclick="confirmAndUpload()" id="confirmBtn" style="background:var(--accent);color:#fff;font-weight:700">✔ 確認評分並上傳雲端</button>
       <button onclick="printPDF()">下載 PDF 報告（含手繪圖）</button>
       <button onclick="exportJSON()">下載 JSON</button>
-      <button onclick="uploadNow(this)" id="uploadBtn">上傳雲端</button>
       <button onclick="resetToHome()" style="background:#fff;color:var(--accent);border:2px solid var(--accent)">🏠 回到首頁（清空資料）</button>
     </div>
     <p class="note">MoCA © Z. Nasreddine MD，www.mocatest.org；台灣版譯者：蔡佳芬、傅中玲。自助版為適應性施測（敲桌改按鈕、口語作答錄音後評分），結果解讀請留意與標準施測之差異；台語語音為 AI 合成，正式使用前須母語者審聽。</p>`;
-  // 自動上傳（無感，不顯示按鈕狀態）
-  setTimeout(() => uploadSilent(), 500);
 }
 function domains(){
   const s = S.scores, sum = ids => ids.reduce((a,i)=>a+(s[i]||0),0);
@@ -744,18 +743,22 @@ function uploadNow(btn){
     .then(r => r.json()).then(j => { btn.textContent = j.success? "✔ 已上傳" : "上傳失敗"; })
     .catch(() => { btn.textContent = "上傳失敗（可稍後重試）"; btn.disabled = false; });
 }
-/* 無感自動上傳（不顯示按鈕狀態，失敗不提示） */
-function uploadSilent(){
+/* 確認評分後上傳（先計算結果，再上傳雲端） */
+function confirmAndUpload(){
+  // 先計算結果
+  showResult();
+  // 上傳雲端
   const scriptUrl = 'https://script.google.com/macros/s/AKfycbw3uS2wMJkXhrRnqrmzYoA_5-DpfHT0atHGZR0203WjDNzkAMpddbdtqXXv8sggWfMq/exec';
   const data = getExportData();
   data.drawings = {};
+  const btn = document.getElementById("confirmBtn");
+  if (btn) { btn.textContent = "上傳中…"; btn.disabled = true; }
   fetch(scriptUrl, { method:"POST", cache:"no-cache",
     headers:{ "Content-Type":"text/plain;charset=utf-8" }, body: JSON.stringify(data) })
     .then(r => r.json()).then(j => {
-      const btn = document.getElementById("uploadBtn");
-      if (btn && j.success) btn.textContent = "✔ 已自動上傳";
+      if (btn) btn.textContent = j.success ? "✔ 已上傳雲端" : "上傳失敗";
     })
-    .catch(() => { /* 靜默失敗，不提示使用者 */ });
+    .catch(() => { if (btn) btn.textContent = "上傳失敗（可稍後重試）"; });
 }
 /* 清空資料回到首頁（與原始版行為一致） */
 function resetToHome(){
