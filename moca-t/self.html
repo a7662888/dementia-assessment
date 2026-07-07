@@ -356,15 +356,16 @@ const RENDER = {
       <div id="manualPlay" style="display:none"><button class="bigbtn gray" onclick="nextInChain()">▶ 播放說明</button></div>
       <button class="vigbtn" id="vigBtn" style="display:none">${tt("vig")}</button>`;
     const ONES = [2,6,7,12,14,18,19,20,22,26,27];   // 台灣版原串「1」的秒位（每秒一字）
-    let taps = [];
+    let taps = [];   // 每次進入 vig 頁面都重新初始化，防止重播時殘留舊資料
     playChain(clipList("vigilance"), () => {
       el.querySelector("#listenBox").style.display = "none";
       const btn = el.querySelector("#vigBtn");
       btn.style.display = "block";
       speaker.src = urlOf("stim_vig");
       btn.onclick = () => { if (!speaker.paused) taps.push(speaker.currentTime); };
-      speaker.onended = () => {
+      speaker.onended = function onVigEnd(){
         speaker.onended = null;
+        speaker.removeEventListener("ended", onVigEnd);
         /* 計分：每個「一」秒窗 [i, i+1.5) 內有按＝命中；窗外的按＝誤按 */
         let hits = 0; const used = new Set();
         for (const i of ONES){
@@ -375,7 +376,6 @@ const RENDER = {
         const errors = (ONES.length - hits) + fa;
         S.auto.vig = { hits, fa, errors, total: ONES.length };
         S.scores.att_vig = errors <= 1 ? 1 : 0;
-        speaker.addEventListener("ended", nextInChain);
         next();
       };
       speaker.removeEventListener("ended", nextInChain);
