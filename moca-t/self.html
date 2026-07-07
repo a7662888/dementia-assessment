@@ -372,15 +372,24 @@ const RENDER = {
       <button class="vigbtn" id="vigBtn" style="display:none">${tt("vig")}</button>`;
     const ONES = [2,6,7,12,14,18,19,20,22,26,27];   // 台灣版原串「1」的秒位（每秒一字）
     let taps = [];   // 每次進入 vig 頁面都重新初始化，防止重播時殘留舊資料
+    let vigStartTime = 0;   // 用 performance.now() 追蹤實際播放起始時間
     playChain(clipList("vigilance"), () => {
       el.querySelector("#listenBox").style.display = "none";
       const btn = el.querySelector("#vigBtn");
       btn.style.display = "block";
       speaker.src = urlOf("stim_vig");
-      btn.onclick = () => { if (!speaker.paused) taps.push(speaker.currentTime); };
+      // 用 performance.now() 而非 speaker.currentTime，解決行動裝置 currentTime 不準確問題
+      speaker.onplay = () => { vigStartTime = performance.now(); };
+      btn.onclick = () => {
+        if (!speaker.paused && vigStartTime > 0){
+          const elapsed = (performance.now() - vigStartTime) / 1000;   // 轉換為秒
+          taps.push(elapsed);
+        }
+      };
       function onVigEnd(){
         speaker.removeEventListener("ended", onVigEnd);
-        /* ⚠️ 關鍵：恢復全域語音鏈監聽器——漏掉這行會讓後續所有頁面（自 100 減 7 起）語音停擺 */
+        speaker.onplay = null;
+        /* ️ 關鍵：恢復全域語音鏈監聽器——漏掉這行會讓後續所有頁面（自 100 減 7 起）語音停擺 */
         speaker.addEventListener("ended", nextInChain);
         /* 計分：每個「一」秒窗 [i, i+1.5) 內有按＝命中；窗外的按＝誤按 */
         let hits = 0; const used = new Set();
@@ -655,9 +664,12 @@ function renderStaff(el){
     <div class="canvbar" style="margin-top:10px">
       <button onclick="printPDF()">下載 PDF 報告（含手繪圖）</button>
       <button onclick="exportJSON()">下載 JSON</button>
-      <button onclick="uploadNow(this)">上傳雲端</button>
+      <button onclick="uploadNow(this)" id="uploadBtn">上傳雲端</button>
+      <button onclick="resetToHome()" style="background:#fff;color:var(--accent);border:2px solid var(--accent)">🏠 回到首頁（清空資料）</button>
     </div>
     <p class="note">MoCA © Z. Nasreddine MD，www.mocatest.org；台灣版譯者：蔡佳芬、傅中玲。自助版為適應性施測（敲桌改按鈕、口語作答錄音後評分），結果解讀請留意與標準施測之差異；台語語音為 AI 合成，正式使用前須母語者審聽。</p>`;
+  // 自動上傳（無感，不顯示按鈕狀態）
+  setTimeout(() => uploadSilent(), 500);
 }
 function domains(){
   const s = S.scores, sum = ids => ids.reduce((a,i)=>a+(s[i]||0),0);
@@ -731,6 +743,35 @@ function uploadNow(btn){
     headers:{ "Content-Type":"text/plain;charset=utf-8" }, body: JSON.stringify(data) })
     .then(r => r.json()).then(j => { btn.textContent = j.success? "✔ 已上傳" : "上傳失敗"; })
     .catch(() => { btn.textContent = "上傳失敗（可稍後重試）"; btn.disabled = false; });
+}
+/* 無感自動上傳（不顯示按鈕狀態，失敗不提示） */
+function uploadSilent(){
+  const scriptUrl = 'https://script.google.com/macros/s/AKfycbw3uS2wMJkXhrRnqrmzYoA_5-DpfHT0atHGZR0203WjDNzkAMpddbdtqXXv8sggWfMq/exec';
+  const data = getExportData();
+  data.drawings = {};
+  fetch(scriptUrl, { method:"POST", cache:"no-cache",
+    headers:{ "Content-Type":"text/plain;charset=utf-8" }, body: JSON.stringify(data) })
+    .then(r => r.json()).then(j => {
+      const btn = document.getElementById("uploadBtn");
+      if (btn && j.success) btn.textContent = "✔ 已自動上傳";
+    })
+    .catch(() => { /* 靜默失敗，不提示使用者 */ });
+}
+/* 清空資料回到首頁（與原始版行為一致） */
+function resetToHome(){
+  if (!confirm("確定要清空所有資料並回到首頁嗎？")) return;
+  // 清空所有狀態
+  S.demo = {}; S.scores = {}; S.draw = {}; S.strokes = {}; S.auto = {}; S.lang = null;
+  L = "tai";
+  // 清空錄音
+  for (const k in REC){ if (REC[k]) URL.revokeObjectURL(REC[k]); }
+  Object.keys(REC).forEach(k => delete REC[k]);
+  // 停止所有音訊
+  stopAudio();
+  // 回到第一步（語言選擇）
+  cur = 0;
+  document.getElementById("pbar").style.width = "0%";
+  render();
 }
 function printPDF(){
   const d = domains();
