@@ -103,7 +103,8 @@ const AUD = {
     abs_ex: "abs_ex1", abs_ans: "abs_ex3",
     stim_words: "mem_words", stim_fwd: "digits_fwd", stim_bwd: "digits_bwd", stim_vig: "vigilance_seq",
   }, chains: { trail: ["trail", "trail_supp"], ori_time: ["ori_date", "ori_hint"],
-               fluency: ["fluency_prompt", "fluency_topic"] } },
+               /* topic 用去掉重複開頭的自助版短句，避免「恁有一分鐘…」聽起來講兩遍 */
+               fluency: ["fluency_prompt", "fluency_topic_self"] } },
   guo: { base: "audio/guo/", map: {
     stim_words: "mem_words", stim_fwd: "digits_fwd_seq", stim_bwd: "digits_bwd_seq", stim_vig: "vigilance_seq",
   }, chains: {} },
@@ -138,6 +139,11 @@ function stopAudio(){ chainQueue = []; chainDone = null; speaker.pause(); }
 function showManualPlay(){
   const el = document.getElementById("manualPlay");
   if (el) el.style.display = "block";
+}
+/* 手動恢復播放：重播「當前被擋的段落」（src 已就緒），不是跳下一段 */
+function resumeAudio(btn){
+  if (btn && btn.parentElement) btn.parentElement.style.display = "none";
+  speaker.play().catch(() => showManualPlay());
 }
 
 /* ================= 狀態 ================= */
@@ -227,6 +233,11 @@ const stage = document.getElementById("stage");
 
 function go(n){
   stopAudio(); stopRec();
+  clearInterval(recCdTimer);   // 防呆：離頁清錄音倒數
+  /* 防呆：每次換頁強制重建語音鏈監聽（先移除再掛，冪等）——
+     任何頁面若動過 speaker 的監聽器，離開該頁時一律自動復原 */
+  speaker.removeEventListener("ended", nextInChain);
+  speaker.addEventListener("ended", nextInChain);
   cur = Math.max(0, Math.min(n, STEPS.length - 1));
   document.getElementById("pbar").style.width = (cur / (STEPS.length - 2) * 100) + "%";
   render();
@@ -279,9 +290,13 @@ const RENDER = {
       S.demo = { name: v("#fName"), chartNumber: v("#fChart"), age: v("#fAge"), edu: v("#fEdu"), sex: v("#fSex") };
       if (!micOK) await ensureMic();
       if (!micOK) el.querySelector("#micWarn").style.display = "block";
-      /* 解鎖音訊（使用者手勢內播 intro） */
-      playChain(clipList("intro"), null);
-      setTimeout(() => next(), 300);
+      /* 在使用者手勢內播完整段開場簡介（同時解鎖音訊），播完才進第一題
+         ——不可提早 next()：換頁會 stopAudio() 把簡介掐掉 */
+      el.querySelector("#btnBegin").style.display = "none";
+      el.querySelector(".form").insertAdjacentHTML("beforebegin",
+        `<div class="statusbox"><span class="bigicon pulse">🔊</span><span class="bigtext">${tt("listen")}</span></div>
+         <div id="manualPlay" style="display:none"><button class="bigbtn gray" onclick="resumeAudio(this)">▶ 播放</button></div>`);
+      playChain(clipList("intro"), () => next());
     };
   },
   /* --- 過場提示頁 --- */
@@ -297,7 +312,7 @@ const RENDER = {
   trail(el){
     el.innerHTML = `
       <div class="statusbox" id="listenBox"><span class="bigicon pulse">🔊</span><span class="bigtext">${tt("listen")}</span></div>
-      <div id="manualPlay" style="display:none"><button class="bigbtn gray" onclick="nextInChain()">▶ 播放說明</button></div>
+      <div id="manualPlay" style="display:none"><button class="bigbtn gray" onclick="resumeAudio(this)">▶ 播放說明</button></div>
       <svg id="trailSvg" viewBox="0 0 560 410"><g id="trailLines"></g><g id="trailNodes"></g></svg>
       <p class="note" style="text-align:center" id="trailMsg"></p>`;
     initTrail(el);
@@ -307,7 +322,7 @@ const RENDER = {
   draw(el, st){
     el.innerHTML = `
       <div class="statusbox" id="listenBox"><span class="bigicon pulse">🔊</span><span class="bigtext">${tt("listen")}</span></div>
-      <div id="manualPlay" style="display:none"><button class="bigbtn gray" onclick="nextInChain()">▶ 播放說明</button></div>
+      <div id="manualPlay" style="display:none"><button class="bigbtn gray" onclick="resumeAudio(this)">▶ 播放說明</button></div>
       ${st.ref === "cube" ? `<div class="refimg"><svg width="130" height="130" viewBox="0 0 150 150"><g fill="none" stroke="#1c2b33" stroke-width="2.5">
         <rect x="25" y="45" width="75" height="75"/><rect x="55" y="20" width="75" height="75"/>
         <line x1="25" y1="45" x2="55" y2="20"/><line x1="100" y1="45" x2="130" y2="20"/>
@@ -326,7 +341,7 @@ const RENDER = {
     el.innerHTML = `
       <img class="animalimg" src="${st.img}" alt="">
       <div class="statusbox" id="recBox" style="display:none"><span><span class="recdot pulse"></span><span class="bigtext">${tt("speak")}</span></span></div>
-      <div id="manualPlay" style="display:none"><button class="bigbtn gray" onclick="nextInChain()">▶ 播放說明</button></div>
+      <div id="manualPlay" style="display:none"><button class="bigbtn gray" onclick="resumeAudio(this)">▶ 播放說明</button></div>
       <button class="bigbtn rec" id="btnDone" style="display:none">${tt("speakDone")} ›</button>`;
     playChain(clipList("naming"), () => beginRec(el, st.rec, 10));
   },
@@ -336,7 +351,7 @@ const RENDER = {
       <div class="statusbox" id="listenBox"><span class="bigicon pulse">🔊</span><span class="bigtext">${tt("listen")}</span></div>
       <div class="statusbox" id="recBox" style="display:none"><span><span class="recdot pulse"></span><span class="bigtext">${tt("speak")}</span></span>
         <span class="countdown" id="recCd"></span></div>
-      <div id="manualPlay" style="display:none"><button class="bigbtn gray" onclick="nextInChain()">▶ 播放</button></div>
+      <div id="manualPlay" style="display:none"><button class="bigbtn gray" onclick="resumeAudio(this)">▶ 播放</button></div>
       <button class="bigbtn rec" id="btnDone" style="display:none">${tt("speakDone")} ›</button>`;
     playChain(st.clips.flatMap(clipList), () => {
       const after = () => beginRec(el, st.rec, st.max);
@@ -346,14 +361,14 @@ const RENDER = {
   /* --- 純播放（回饋/預告） --- */
   play(el, st){
     el.innerHTML = `<div class="statusbox"><span class="bigicon pulse">🔊</span><span class="bigtext">${tt("listen")}</span></div>
-      <div id="manualPlay" style="display:none"><button class="bigbtn gray" onclick="nextInChain()">▶ 播放</button></div>`;
+      <div id="manualPlay" style="display:none"><button class="bigbtn gray" onclick="resumeAudio(this)">▶ 播放</button></div>`;
     playChain(st.clips.flatMap(clipList), () => setTimeout(next, 500));
   },
   /* --- 警覺性（聽到「一」按大鈕；自動計分） --- */
   vig(el){
     el.innerHTML = `
       <div class="statusbox" id="listenBox"><span class="bigicon pulse">🔊</span><span class="bigtext">${tt("listen")}</span></div>
-      <div id="manualPlay" style="display:none"><button class="bigbtn gray" onclick="nextInChain()">▶ 播放說明</button></div>
+      <div id="manualPlay" style="display:none"><button class="bigbtn gray" onclick="resumeAudio(this)">▶ 播放說明</button></div>
       <button class="vigbtn" id="vigBtn" style="display:none">${tt("vig")}</button>`;
     const ONES = [2,6,7,12,14,18,19,20,22,26,27];   // 台灣版原串「1」的秒位（每秒一字）
     let taps = [];   // 每次進入 vig 頁面都重新初始化，防止重播時殘留舊資料
@@ -363,9 +378,10 @@ const RENDER = {
       btn.style.display = "block";
       speaker.src = urlOf("stim_vig");
       btn.onclick = () => { if (!speaker.paused) taps.push(speaker.currentTime); };
-      speaker.onended = function onVigEnd(){
-        speaker.onended = null;
+      function onVigEnd(){
         speaker.removeEventListener("ended", onVigEnd);
+        /* ⚠️ 關鍵：恢復全域語音鏈監聽器——漏掉這行會讓後續所有頁面（自 100 減 7 起）語音停擺 */
+        speaker.addEventListener("ended", nextInChain);
         /* 計分：每個「一」秒窗 [i, i+1.5) 內有按＝命中；窗外的按＝誤按 */
         let hits = 0; const used = new Set();
         for (const i of ONES){
@@ -377,8 +393,9 @@ const RENDER = {
         S.auto.vig = { hits, fa, errors, total: ONES.length };
         S.scores.att_vig = errors <= 1 ? 1 : 0;
         next();
-      };
+      }
       speaker.removeEventListener("ended", nextInChain);
+      speaker.addEventListener("ended", onVigEnd);
       speaker.play().catch(() => showManualPlay());
     });
   },
@@ -389,7 +406,7 @@ const RENDER = {
       <div class="statusbox" id="recBox" style="display:none">
         <span><span class="recdot pulse"></span><span class="bigtext">${tt("speak")}</span></span>
         <span class="countdown" id="recCd">60</span></div>
-      <div id="manualPlay" style="display:none"><button class="bigbtn gray" onclick="nextInChain()">▶ 播放說明</button></div>`;
+      <div id="manualPlay" style="display:none"><button class="bigbtn gray" onclick="resumeAudio(this)">▶ 播放說明</button></div>`;
     playChain(clipList("fluency"), () => {
       playChain(["audio/beep.mp3"], () => {
         el.querySelector("#listenBox").style.display = "none";
