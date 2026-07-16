@@ -1488,6 +1488,14 @@
                 if (s <= 0.85) return 2;
                 return 3;
             }
+            // 個人照料（Personal Care）依 CDR 官方評分表僅有 0/1/2/3，無 0.5「疑似」級；
+            // 疑似區間收斂為 0（個人照料通常在失智較後期才受損，早期保留）。
+            function mapSeverityToCDR_PC(s) {
+                if (s <= 0.25) return 0;
+                if (s <= 0.6)  return 1;
+                if (s <= 0.85) return 2;
+                return 3;
+            }
             function boxAvg(arr) {
                 if (arr.length === 0) return 0;
                 return arr.reduce((a, b) => a + b, 0) / arr.length;
@@ -1522,7 +1530,7 @@
             const pArr = [
                 adlScore('adl9_7','adl3'), adlScore('adl9_11','adl3'), adlScore('adl9_12','adl3')
             ];
-            const personalCare = mapSeverityToCDR(boxAvg(pArr));
+            const personalCare = mapSeverityToCDR_PC(boxAvg(pArr));
 
             // Global CDR — Morris 簡化演算法：memory 為 anchor
             const boxes = { memory, orientation, judgment, community, homeHobbies, personalCare };
