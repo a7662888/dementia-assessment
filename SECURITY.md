@@ -22,33 +22,34 @@
 
 ---
 
-## 2. 待執行：清除 git 歷史中的資料檔
+## 2. 已執行：清除 git 歷史中的資料檔（2026-08-30）
 
-`git rm --cached` 只讓檔案**未來**不再被追蹤，**歷史 commit 仍可取回**。目前歷史中的是測試資料，風險可控；但在收真人資料前務必清乾淨，並確認流程不會重蹈覆轍。
+已完成：
 
-```bash
-# 1) 先備份整個 repo（不可逆操作前的保險）
-cp -r dementia-assessment dementia-assessment.backup
+1. `git filter-repo` 從全部 37 個 commit 移除 `data/*.json`、`reports/*.csv`、`reports/*.xlsx`（保留 `.gitkeep`）。
+2. 一併移除 `.github/workflows/`——該管線會把含個資的報表自動 commit 回公開 repo，是 S2 的成因；本機統計改跑 `py -3 -X utf8 scripts/merge_data.py`（腳本仍在）。
+3. `git push --force` 改寫遠端 main。
+4. 備份保留於 `D:\secondbrain\Codex\dementia-assessment.backup-20260830-134330`。
 
-# 2) 安裝 git-filter-repo（比 filter-branch 安全快速）
-pip install git-filter-repo
+驗證：走 main 路徑的資料檔皆已 404。
 
-# 3) 從所有歷史中移除資料路徑
-cd dementia-assessment
-git filter-repo --path data/ --path reports/ --invert-paths --force
+### ⚠️ 殘留風險：舊 commit SHA 仍可下載
 
-# 4) 檢查歷史已清空
-git log --all --oneline -- data/ reports/    # 應無輸出
+實測確認，force push **不會**讓 GitHub 立即回收 unreachable objects：
 
-# 5) 強制推送（會改寫遠端歷史；協作者需重新 clone）
-git remote add origin https://github.com/a7662888/dementia-assessment.git
-git push origin --force --all
-git push origin --force --tags
-```
+| 路徑 | 結果 |
+|---|---|
+| `raw.githubusercontent.com/.../main/reports/all_assessments_latest.csv` | 404 ✅ |
+| `raw.githubusercontent.com/.../764e5a4.../reports/all_assessments_latest.csv` | **200，內容完整** ❌ |
 
-⚠️ 強制推送會改寫遠端歷史。若有他人 fork 或 clone，舊資料仍可能留存於其副本與 GitHub 的快取中；**這是「先前已公開」無法完全回收的本質限制**。
+舊的 `index.html`（含硬編碼 GAS 端點）同樣仍可由舊 SHA 取得。
 
----
+因目前外洩的只有測試資料（姓名／病歷號為 `123`、`456`），風險可接受。**但收真人資料前**應擇一處理：
+
+1. 向 GitHub Support 申請對本 repo 執行 gc／清除 unreachable objects（官方處理敏感資料外洩的途徑）。
+2. 或刪除 repo 重建。
+
+⚠️ 舊端點 URL 既然已經公開過，**唯一有效的處置是封存該 GAS 部署**（見 §3.2），而不是把 URL 從程式碼裡刪掉。
 
 ## 3. 待執行：repo 可見性與 GAS 部署
 
