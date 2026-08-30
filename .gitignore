@@ -2,9 +2,18 @@
 data/*.json
 data/*.csv
 data/*.xlsx
+data/*.xls
 reports/*.csv
+reports/*.json
 reports/*.xlsx
 reports/*.xls
+reports/*.zip
+reports/*.pdf
+
+# 任何本機匯出／隔離副本都不得進入公開 repo
+exports/
+private-data/
+security-quarantine/
 
 # 保留資料夾結構
 !data/.gitkeep
@@ -13,3 +22,5 @@ reports/*.xls
 # 本機設定（含 token）不要外流
 apps-script/.clasp.json
 .env
+.env.*
+!.env.example

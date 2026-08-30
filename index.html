@@ -112,6 +112,12 @@
             color: #dc2626;
         }
 
+        .form-label .optional {
+            color: #6b7280;
+            font-weight: 400;
+            font-size: 13px;
+        }
+
         .form-input, .form-select {
             width: 100%;
             padding: 12px;
@@ -549,8 +555,8 @@
                     <li>請由了解患者狀況的家屬或照顧者協助填寫</li>
                     <li>評估約需10-15分鐘，請依實際情況誠實作答</li>
                     <li>未勾選的題目將視為「無此症狀」（正常）</li>
-                    <li><strong>完成評估後，資料將以 HTTPS 加密傳輸，儲存於研究者管理的 Google Drive（儲存時為未加密之 JSON 檔）</strong></li>
-                    <li>完成後可下載完整報告或匯出資料供分析</li>
+                    <li><strong>本公開版本不會傳送或上傳填答資料；資料只在目前瀏覽器分頁中處理</strong></li>
+                    <li>完成後可自行下載報告或 JSON；下載檔可能含健康資訊，請存放於受控裝置</li>
                 </ul>
             </div>
 
@@ -570,19 +576,19 @@
             <div class="section-title">👤 基本資料</div>
             <div class="form-grid">
                 <div class="form-group">
-                    <label class="form-label">病患姓名 <span class="required">*</span></label>
-                    <input type="text" id="patientName" class="form-input" placeholder="請輸入姓名">
+                    <label class="form-label">病患姓名 <span class="optional">（選填）</span></label>
+                    <input type="text" id="patientName" class="form-input" placeholder="可留空，僅用於報告標示">
                 </div>
                 <div class="form-group">
-                    <label class="form-label">病歷號 <span class="required">*</span></label>
-                    <input type="text" id="chartNumber" class="form-input" placeholder="請輸入病歷號">
+                    <label class="form-label">病歷號 <span class="optional">（選填）</span></label>
+                    <input type="text" id="chartNumber" class="form-input" placeholder="可留空，僅用於報告標示">
                 </div>
                 <div class="form-group">
                     <label class="form-label">出生日期 <span class="required">*</span></label>
                     <input type="date" id="birthDate" class="form-input">
                 </div>
                 <div class="form-group">
-                    <label class="form-label">性別 <span class="required">*</span></label>
+                    <label class="form-label">性別 <span class="optional">（選填）</span></label>
                     <select id="gender" class="form-select">
                         <option value="">請選擇</option>
                         <option value="男">男</option>
@@ -607,24 +613,24 @@
                     <input type="date" id="assessmentDate" class="form-input">
                 </div>
                 <div class="form-group">
-                    <label class="form-label">資訊提供者姓名 <span class="required">*</span></label>
-                    <input type="text" id="informantName" class="form-input" placeholder="填寫者姓名">
+                    <label class="form-label">資訊提供者姓名 <span class="optional">（選填）</span></label>
+                    <input type="text" id="informantName" class="form-input" placeholder="可留空，僅用於報告標示">
                 </div>
                 <div class="form-group">
-                    <label class="form-label">與患者關係 <span class="required">*</span></label>
+                    <label class="form-label">與患者關係 <span class="optional">（選填）</span></label>
                     <input type="text" id="informantRelation" class="form-input" placeholder="例如：配偶、子女、照顧者">
                 </div>
             </div>
 
-            <div class="info-box" style="background:#fffbeb; border-left-color:#d97706;">
+            <div id="consentBlock" class="info-box" style="display:none; background:#fffbeb; border-left-color:#d97706;">
                 <h3>📋 蒐集個人資料告知事項與同意（個人資料保護法第 8 條）</h3>
                 <ul>
                     <li><strong>蒐集者</strong>：<span id="dataControllerName">（請填寫負責之機構／研究者）</span></li>
                     <li><strong>蒐集目的</strong>：失智症臨床評估與相關研究分析</li>
-                    <li><strong>個資類別</strong>：姓名、病歷號、出生日期、性別、教育程度，及本問卷之健康與病史資訊（屬個資法第 6 條特種個資）</li>
-                    <li><strong>利用期間、地區、對象及方式</strong>：自蒐集日起至研究結束或您要求刪除時止；儲存於研究者管理之 Google Drive；僅供上述目的之分析使用</li>
+                    <li><strong>個資類別</strong>：您於本頁填寫的欄位，及本問卷之健康與病史資訊（屬個資法第 6 條特種個資）</li>
+                    <li><strong>利用期間、地區、對象及方式</strong>：自蒐集日起至研究結束或您要求刪除時止；儲存於研究者管理之 Google Drive（以 HTTPS 傳輸，儲存時為未加密之 JSON）；僅供上述目的之分析使用</li>
                     <li><strong>您的權利</strong>：得向蒐集者查詢、閱覽、複製、補充或更正、請求停止蒐集處理利用或刪除您的個人資料</li>
-                    <li><strong>不提供的影響</strong>：不同意時本工具仍可於本機完成評估與下載報告，僅不會將資料上傳雲端</li>
+                    <li><strong>不提供的影響</strong>：不同意時仍可完整完成評估並下載報告，僅不會將資料上傳雲端</li>
                 </ul>
                 <div style="margin-top:12px;">
                     <label style="display:flex; align-items:flex-start; gap:8px; cursor:pointer;">
@@ -632,9 +638,20 @@
                         <span>我已閱讀並瞭解上述告知事項，<strong>同意</strong>將本次評估資料上傳並儲存至研究者管理之雲端空間。</span>
                     </label>
                     <div style="margin-top:6px; font-size:13px; color:#6b7280;">
-                        未勾選亦可進行評估：資料只留在本機，不會上傳。
+                        未勾選亦可完成評估並下載報告，資料只留在本機、不會上傳。
                     </div>
                 </div>
+            </div>
+
+            <div id="localOnlyNote" class="info-box" style="background:#fffbeb; border-left-color:#d97706;">
+                <h3>🔒 本機資料處理說明</h3>
+                <ul>
+                    <li>本頁不連接資料接收端，也不會在背景自動上傳。</li>
+                    <li><strong>只有「出生日期」為必填</strong>（用於推算年齡，會影響評估判讀）；姓名、病歷號、性別與填寫者資訊皆為選填，<strong>全部留空也能完成評估與下載報告</strong>。</li>
+                    <li>關閉或重新載入分頁會清除頁面中的填答狀態；已下載的檔案不會自動刪除。</li>
+                    <li>若非必要，請使用個案代碼，不要在共用或不受控裝置輸入直接識別資料。</li>
+                    <li>研究或臨床正式收案仍須由機構另行完成個資法、IRB、身份授權、保存期限與刪除流程。</li>
+                </ul>
             </div>
 
             <div class="button-group">
@@ -646,6 +663,7 @@
 
         <div id="questionSteps" class="content hidden"></div>
 
+        <div id="uploadStatus" style="display:none; padding:10px 24px; font-size:14px; font-weight:600;"></div>
         <div id="resultsPage" class="content hidden"></div>
     </div>
 
@@ -656,6 +674,80 @@
         let patientInfo = {};
         let globalResults = {};
         let uploadConsent = { agreed: false, agreedAt: null, noticeVersion: null };
+
+        // ── 雲端硬碟儲存設定 ──────────────────────────────────────────
+        // 部署 apps-script/Code.gs 後，把 /exec 網址與 SHARED_TOKEN 填在這裡。
+        // 兩者維持佔位字串時＝未設定：同意區塊不顯示、任何情況都不上傳（fail closed）。
+        // 注意：前端沒有秘密。token 只擋隨機掃描的機器人，擋不住看過原始碼的人；
+        // 真正的強防護是部署時把存取權收成「僅限特定使用者／網域」，讓 Google 先驗身分。
+        const UPLOAD_CONFIG = {
+            scriptUrl: 'REPLACE_WITH_YOUR_APPS_SCRIPT_EXEC_URL',
+            sharedToken: 'REPLACE_WITH_YOUR_SHARED_TOKEN'
+        };
+
+        function isUploadConfigured() {
+            return !!UPLOAD_CONFIG.scriptUrl
+                && UPLOAD_CONFIG.scriptUrl.indexOf('REPLACE_WITH') !== 0
+                && UPLOAD_CONFIG.scriptUrl.indexOf('https://') === 0;
+        }
+
+        // 未設定接收端時，隱藏同意區塊——避免出現「勾了也不會上傳」的誤導文案。
+        document.addEventListener('DOMContentLoaded', function () {
+            const block = document.getElementById('consentBlock');
+            const localNote = document.getElementById('localOnlyNote');
+            if (block) block.style.display = isUploadConfigured() ? '' : 'none';
+            if (localNote) localNote.style.display = isUploadConfigured() ? 'none' : '';
+        });
+
+        function uploadToGoogleDrive_Silent(jsonData) {
+            if (!isUploadConfigured()) { return; }
+            if (typeof jsonData !== 'string' || !jsonData.startsWith('{')) {
+                console.error('Upload skipped: invalid JSON string.');
+                return;
+            }
+            let payload;
+            try { payload = JSON.parse(jsonData); }
+            catch (e) { console.error('Upload skipped: JSON parse failed.'); return; }
+
+            // 雙重把關：送出函式內再驗一次同意（伺服器端還會再驗第三次）
+            if (!payload.consent || payload.consent.agreed !== true) {
+                console.info('Upload skipped: no consent.');
+                return;
+            }
+            payload.token = UPLOAD_CONFIG.sharedToken;
+
+            fetch(UPLOAD_CONFIG.scriptUrl, {
+                method: 'POST',
+                cache: 'no-cache',
+                headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+                body: JSON.stringify(payload)
+            })
+            .then(function (r) {
+                if (!r.ok) { throw new Error('HTTP ' + r.status); }
+                return r.json();
+            })
+            .then(function (result) {
+                if (result && result.success) {
+                    console.log('Upload success:', result.fileName || '(unnamed)');
+                    showUploadStatus('已儲存至雲端硬碟', true);
+                } else {
+                    throw new Error(result ? result.message : 'unknown error');
+                }
+            })
+            .catch(function (err) {
+                // 不再靜默吞掉失敗——使用者以為存好了卻沒存，比沒有這個功能更糟
+                console.error('Upload failed:', err.message);
+                showUploadStatus('雲端儲存失敗（' + err.message + '），請改用下載報告保存', false);
+            });
+        }
+
+        function showUploadStatus(msg, ok) {
+            const el = document.getElementById('uploadStatus');
+            if (!el) return;
+            el.textContent = (ok ? '✅ ' : '⚠️ ') + msg;
+            el.style.color = ok ? '#059669' : '#b45309';
+            el.style.display = '';
+        }
 
         // 檔名安全化：移除路徑分隔字元與控制字元，避免使用者輸入影響下載檔名
         function safeFileNamePart(s) {
@@ -918,17 +1010,21 @@
             const informantName = document.getElementById('informantName').value.trim();
             const informantRelation = document.getElementById('informantRelation').value.trim();
 
-            if (!name || !chartNumber || !birthDate || !gender || !informantName || !informantRelation) {
-                alert('請填寫所有必填欄位（標註 * 者）');
+            // 最小蒐集（個資法 §5 比例原則）：只有出生日期會影響評估邏輯
+            // （推算年齡供 sanity check 與早發判斷），其餘欄位純屬報告標示用途，
+            // 一律選填。不要為了「表格好看」而強制蒐集無功能的直接識別碼。
+            if (!birthDate) {
+                alert('請填寫出生日期（用於推算年齡，會影響評估判讀）');
                 return;
             }
 
-            // 個資法 §8 告知後同意：未勾選則本次資料只留在本機，不上傳
+            // 個資法 §8 告知後同意。未設定接收端時同意區塊不顯示，此處必然為 false（fail closed）。
             const consentBox = document.getElementById('consentUpload');
+            const agreed = isUploadConfigured() && !!(consentBox && consentBox.checked);
             uploadConsent = {
-                agreed: !!(consentBox && consentBox.checked),
-                agreedAt: (consentBox && consentBox.checked) ? new Date().toISOString() : null,
-                noticeVersion: 'pdpa-notice-2026-08'
+                agreed: agreed,
+                agreedAt: agreed ? new Date().toISOString() : null,
+                noticeVersion: isUploadConfigured() ? 'pdpa-notice-2026-08' : 'local-only-2026-08'
             };
 
             patientInfo = {
@@ -1899,16 +1995,15 @@
             globalResults = calculateScores();
             const results = globalResults; 
 
-            // 僅在使用者已依告知事項勾選同意時才上傳；否則資料只留在本機。
-            if (uploadConsent.agreed) {
+            // 只有「已設定接收端」且「已取得同意」兩者同時成立才上傳；否則純本機。
+            if (isUploadConfigured() && uploadConsent.agreed) {
                 try {
-                    const jsonString = generateJSONDataString();
-                    uploadToGoogleDrive_Silent(jsonString);
+                    uploadToGoogleDrive_Silent(generateJSONDataString());
                 } catch (e) {
                     console.error("Auto-save failed:", e);
                 }
             } else {
-                console.info("未取得上傳同意，本次資料僅保留於本機。");
+                console.info("未上傳：" + (isUploadConfigured() ? "未取得同意。" : "本版本未設定資料接收端。"));
             }
 
             const recsData = generateRecommendations(results); 
@@ -2135,13 +2230,15 @@
             report += '═══════════════════════════════════════════════════════════════\n\n';
             report += '【基本資料】\n';
             report += '────────────────────────────────────────────────\n';
-            report += '病患姓名：' + patientInfo.name + '\n';
-            report += '病歷號：' + patientInfo.chartNumber + '\n';
+            report += '紀錄編號：' + patientInfo.recordId + '\n';
+            report += '病患姓名：' + (patientInfo.name || '未填寫') + '\n';
+            report += '病歷號：' + (patientInfo.chartNumber || '未填寫') + '\n';
             report += '出生日期：' + patientInfo.birthDate + (age ? ' (' + age + '歲)' : '') + '\n';
-            report += '性別：' + patientInfo.gender + '\n';
+            report += '性別：' + (patientInfo.gender || '未填寫') + '\n';
             report += '教育程度：' + (patientInfo.education || '未填寫') + '\n';
             report += '評估日期：' + patientInfo.assessmentDate + '\n';
-            report += '資訊提供者：' + patientInfo.informantName + '（' + patientInfo.informantRelation + '）\n\n';
+            report += '資訊提供者：' + (patientInfo.informantName || '未填寫')
+                + '（' + (patientInfo.informantRelation || '未填寫') + '）\n\n';
             
             report += '【評估結果摘要】\n';
             report += '────────────────────────────────────────────────\n';
@@ -2232,7 +2329,8 @@
             const url = URL.createObjectURL(blob);
             const a = document.createElement('a');
             a.href = url;
-            a.download = '失智症評估報告_' + safeFileNamePart(patientInfo.name) + '_' + safeFileNamePart(patientInfo.assessmentDate) + '.txt';
+            // 檔名只放自產的 recordId，不放姓名/病歷號（仍過安全化，避免日後改動 recordId 產生器時破功）
+            a.download = 'dementia_assessment_report_' + safeFileNamePart(patientInfo.recordId) + '_' + new Date().getTime() + '.txt';
             document.body.appendChild(a);
             a.click();
             document.body.removeChild(a);
@@ -2273,82 +2371,13 @@
             const jsonString = generateJSONDataString();
             const dataUri = 'data:application/json;charset=utf-8,'+ encodeURIComponent(jsonString);
             
-            const exportFileDefaultName = 'dementia_assessment_' + safeFileNamePart(patientInfo.chartNumber) + '_' + new Date().getTime() + '.json';
+            const exportFileDefaultName = 'dementia_assessment_' + safeFileNamePart(patientInfo.recordId) + '_' + new Date().getTime() + '.json';
             
             const linkElement = document.createElement('a');
             linkElement.setAttribute('href', dataUri);
             linkElement.setAttribute('download', exportFileDefaultName);
             linkElement.click(); 
         }
-
-        // [MODIFIED] v2.0: (SILENT) 上傳到 Google Drive (移除 alert)
-        // ==========================================
-// 上傳至 Google Drive（經 Apps Script 接收端）
-// 2026-08-30 資安強化：需同意才送、附共用權杖、不再吞掉錯誤
-// ==========================================
-// 上傳設定：endpoint 與 token 皆為前端可見（前端沒有秘密）。
-// token 只擋掉隨機掃描與誤觸，真正的驗證與速率限制在 Apps Script 端（見 apps-script/Code.gs）。
-const UPLOAD_CONFIG = {
-    // 🔧 部署 apps-script/Code.gs 後，把新的 /exec URL 填在這裡
-    scriptUrl: 'REPLACE_WITH_YOUR_APPS_SCRIPT_EXEC_URL',
-    // 🔧 與 Apps Script 指令碼屬性 SHARED_TOKEN 相同的字串
-    sharedToken: 'REPLACE_WITH_YOUR_SHARED_TOKEN'
-};
-
-function uploadToGoogleDrive_Silent(jsonData) { // jsonData 為 JSON 字串
-    if (!UPLOAD_CONFIG.scriptUrl || UPLOAD_CONFIG.scriptUrl.indexOf('REPLACE_WITH') === 0) {
-        console.warn('尚未設定上傳端點，略過上傳（資料仍可於本機下載）。');
-        return;
-    }
-
-    // 基本格式檢查
-    if (typeof jsonData !== 'string' || jsonData.length < 2 || !jsonData.startsWith('{')) {
-        console.error('Upload skipped: invalid JSON string.');
-        return;
-    }
-
-    // 二次確認同意狀態；未同意一律不送（與 showResults 的閘門雙重把關）
-    let payload;
-    try {
-        payload = JSON.parse(jsonData);
-    } catch (e) {
-        console.error('Upload skipped: JSON parse failed.');
-        return;
-    }
-    if (!payload.consent || payload.consent.agreed !== true) {
-        console.info('Upload skipped: no consent.');
-        return;
-    }
-
-    // 附上權杖後送出（token 不落地，由伺服器端剝除）
-    payload.token = UPLOAD_CONFIG.sharedToken;
-
-    fetch(UPLOAD_CONFIG.scriptUrl, {
-        method: 'POST',
-        cache: 'no-cache',
-        headers: {
-            'Content-Type': 'text/plain;charset=utf-8'
-        },
-        body: JSON.stringify(payload)
-    })
-    .then(function(response) {
-        if (!response.ok) {
-            throw new Error('HTTP ' + response.status);
-        }
-        return response.json();
-    })
-    .then(function(result) {
-        if (result && result.success) {
-            console.log('Upload success:', result.fileName || '(unnamed)');
-        } else {
-            throw new Error(result ? result.message : 'unknown error');
-        }
-    })
-    .catch(function(error) {
-        console.error('Upload failed:', error.message);
-    });
-}
-
 
         // 重新評估 (v2.0 logic)
         function restartAssessment() {
@@ -2368,9 +2397,13 @@ function uploadToGoogleDrive_Silent(jsonData) { // jsonData 為 JSON 字串
                 document.getElementById('assessmentDate').valueAsDate = new Date();
                 document.getElementById('informantName').value = '';
                 document.getElementById('informantRelation').value = '';
+                // 公開版本固定不上傳。
                 // 同意狀態不得沿用到下一位受試者
                 uploadConsent = { agreed: false, agreedAt: null, noticeVersion: null };
-                document.getElementById('consentUpload').checked = false;
+                const cb = document.getElementById('consentUpload');
+                if (cb) cb.checked = false;
+                const us = document.getElementById('uploadStatus');
+                if (us) us.style.display = 'none';
                 updateProgress();
                 window.scrollTo(0, 0);
             }
