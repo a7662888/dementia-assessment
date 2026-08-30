@@ -549,7 +549,7 @@
                     <li>請由了解患者狀況的家屬或照顧者協助填寫</li>
                     <li>評估約需10-15分鐘，請依實際情況誠實作答</li>
                     <li>未勾選的題目將視為「無此症狀」（正常）</li>
-                    <li><strong>完成評估後，資料將自動加密儲存至雲端</strong></li>
+                    <li><strong>完成評估後，資料將以 HTTPS 加密傳輸，儲存於研究者管理的 Google Drive（儲存時為未加密之 JSON 檔）</strong></li>
                     <li>完成後可下載完整報告或匯出資料供分析</li>
                 </ul>
             </div>
@@ -616,6 +616,27 @@
                 </div>
             </div>
 
+            <div class="info-box" style="background:#fffbeb; border-left-color:#d97706;">
+                <h3>📋 蒐集個人資料告知事項與同意（個人資料保護法第 8 條）</h3>
+                <ul>
+                    <li><strong>蒐集者</strong>：<span id="dataControllerName">（請填寫負責之機構／研究者）</span></li>
+                    <li><strong>蒐集目的</strong>：失智症臨床評估與相關研究分析</li>
+                    <li><strong>個資類別</strong>：姓名、病歷號、出生日期、性別、教育程度，及本問卷之健康與病史資訊（屬個資法第 6 條特種個資）</li>
+                    <li><strong>利用期間、地區、對象及方式</strong>：自蒐集日起至研究結束或您要求刪除時止；儲存於研究者管理之 Google Drive；僅供上述目的之分析使用</li>
+                    <li><strong>您的權利</strong>：得向蒐集者查詢、閱覽、複製、補充或更正、請求停止蒐集處理利用或刪除您的個人資料</li>
+                    <li><strong>不提供的影響</strong>：不同意時本工具仍可於本機完成評估與下載報告，僅不會將資料上傳雲端</li>
+                </ul>
+                <div style="margin-top:12px;">
+                    <label style="display:flex; align-items:flex-start; gap:8px; cursor:pointer;">
+                        <input type="checkbox" id="consentUpload" style="margin-top:4px;">
+                        <span>我已閱讀並瞭解上述告知事項，<strong>同意</strong>將本次評估資料上傳並儲存至研究者管理之雲端空間。</span>
+                    </label>
+                    <div style="margin-top:6px; font-size:13px; color:#6b7280;">
+                        未勾選亦可進行評估：資料只留在本機，不會上傳。
+                    </div>
+                </div>
+            </div>
+
             <div class="button-group">
                 <button class="btn btn-primary" onclick="startAssessment()">
                     開始評估 →
@@ -633,7 +654,17 @@
         let currentStep = 0;
         let responses = {};
         let patientInfo = {};
-        let globalResults = {}; 
+        let globalResults = {};
+        let uploadConsent = { agreed: false, agreedAt: null, noticeVersion: null };
+
+        // 檔名安全化：移除路徑分隔字元與控制字元，避免使用者輸入影響下載檔名
+        function safeFileNamePart(s) {
+            return String(s == null ? '' : s)
+                .replace(/[\\/:*?"<>|\u0000-\u001f]/g, "_")
+                .replace(/^\.+/, '_')
+                .trim()
+                .slice(0, 40) || 'unknown';
+        }
 
         // 優化版問卷結構 v2.0
         const questionSections = [
@@ -892,7 +923,17 @@
                 return;
             }
 
+            // 個資法 §8 告知後同意：未勾選則本次資料只留在本機，不上傳
+            const consentBox = document.getElementById('consentUpload');
+            uploadConsent = {
+                agreed: !!(consentBox && consentBox.checked),
+                agreedAt: (consentBox && consentBox.checked) ? new Date().toISOString() : null,
+                noticeVersion: 'pdpa-notice-2026-08'
+            };
+
             patientInfo = {
+                // recordId 供伺服器端組檔名用，不含可識別資訊
+                recordId: 'r' + Date.now().toString(36),
                 name: name,
                 chartNumber: chartNumber,
                 birthDate: birthDate,
@@ -1858,11 +1899,16 @@
             globalResults = calculateScores();
             const results = globalResults; 
 
-            try {
-                const jsonString = generateJSONDataString(); 
-                uploadToGoogleDrive_Silent(jsonString);
-            } catch (e) {
-                console.error("Auto-save failed:", e);
+            // 僅在使用者已依告知事項勾選同意時才上傳；否則資料只留在本機。
+            if (uploadConsent.agreed) {
+                try {
+                    const jsonString = generateJSONDataString();
+                    uploadToGoogleDrive_Silent(jsonString);
+                } catch (e) {
+                    console.error("Auto-save failed:", e);
+                }
+            } else {
+                console.info("未取得上傳同意，本次資料僅保留於本機。");
             }
 
             const recsData = generateRecommendations(results); 
@@ -2186,7 +2232,7 @@
             const url = URL.createObjectURL(blob);
             const a = document.createElement('a');
             a.href = url;
-            a.download = '失智症評估報告_' + patientInfo.name + '_' + patientInfo.assessmentDate + '.txt';
+            a.download = '失智症評估報告_' + safeFileNamePart(patientInfo.name) + '_' + safeFileNamePart(patientInfo.assessmentDate) + '.txt';
             document.body.appendChild(a);
             a.click();
             document.body.removeChild(a);
@@ -2213,6 +2259,7 @@
                     assessmentDate: patientInfo.assessmentDate
                 },
                 patientInfo: patientInfo,
+                consent: uploadConsent,
                 responses: responses,
                 results: resultsWithoutLegacy,
                 legacyScores: legacyBlock,
@@ -2226,7 +2273,7 @@
             const jsonString = generateJSONDataString();
             const dataUri = 'data:application/json;charset=utf-8,'+ encodeURIComponent(jsonString);
             
-            const exportFileDefaultName = 'dementia_assessment_' + patientInfo.chartNumber + '_' + new Date().getTime() + '.json';
+            const exportFileDefaultName = 'dementia_assessment_' + safeFileNamePart(patientInfo.chartNumber) + '_' + new Date().getTime() + '.json';
             
             const linkElement = document.createElement('a');
             linkElement.setAttribute('href', dataUri);
@@ -2236,58 +2283,69 @@
 
         // [MODIFIED] v2.0: (SILENT) 上傳到 Google Drive (移除 alert)
         // ==========================================
-// 複製並取代您 HTML 檔案中的 uploadToGoogleDrive_Silent 函數
-// (修正：直接傳遞 JSON 字串)
+// 上傳至 Google Drive（經 Apps Script 接收端）
+// 2026-08-30 資安強化：需同意才送、附共用權杖、不再吞掉錯誤
 // ==========================================
-function uploadToGoogleDrive_Silent(jsonData) { // jsonData 應該已經是字串
-    // 🔧 請將下面的 URL 替換為您的 Google Apps Script URL
-    const scriptUrl = 'https://script.google.com/macros/s/AKfycbw3uS2wMJkXhrRnqrmzYoA_5-DpfHT0atHGZR0203WjDNzkAMpddbdtqXXv8sggWfMq/exec'; // <--- 請確保這裡填寫了您正確的 URL
+// 上傳設定：endpoint 與 token 皆為前端可見（前端沒有秘密）。
+// token 只擋掉隨機掃描與誤觸，真正的驗證與速率限制在 Apps Script 端（見 apps-script/Code.gs）。
+const UPLOAD_CONFIG = {
+    // 🔧 部署 apps-script/Code.gs 後，把新的 /exec URL 填在這裡
+    scriptUrl: 'REPLACE_WITH_YOUR_APPS_SCRIPT_EXEC_URL',
+    // 🔧 與 Apps Script 指令碼屬性 SHARED_TOKEN 相同的字串
+    sharedToken: 'REPLACE_WITH_YOUR_SHARED_TOKEN'
+};
 
-    // 驗證 jsonData 是否為有效的字串 (基本檢查)
-    if (typeof jsonData !== 'string' || jsonData.length < 2 || !jsonData.startsWith('{')) {
-         console.error('Google Drive Upload Failed: Invalid JSON data string provided.');
-         return; // 如果 jsonData 無效，則不執行 fetch
+function uploadToGoogleDrive_Silent(jsonData) { // jsonData 為 JSON 字串
+    if (!UPLOAD_CONFIG.scriptUrl || UPLOAD_CONFIG.scriptUrl.indexOf('REPLACE_WITH') === 0) {
+        console.warn('尚未設定上傳端點，略過上傳（資料仍可於本機下載）。');
+        return;
     }
 
-    fetch(scriptUrl, {
+    // 基本格式檢查
+    if (typeof jsonData !== 'string' || jsonData.length < 2 || !jsonData.startsWith('{')) {
+        console.error('Upload skipped: invalid JSON string.');
+        return;
+    }
+
+    // 二次確認同意狀態；未同意一律不送（與 showResults 的閘門雙重把關）
+    let payload;
+    try {
+        payload = JSON.parse(jsonData);
+    } catch (e) {
+        console.error('Upload skipped: JSON parse failed.');
+        return;
+    }
+    if (!payload.consent || payload.consent.agreed !== true) {
+        console.info('Upload skipped: no consent.');
+        return;
+    }
+
+    // 附上權杖後送出（token 不落地，由伺服器端剝除）
+    payload.token = UPLOAD_CONFIG.sharedToken;
+
+    fetch(UPLOAD_CONFIG.scriptUrl, {
         method: 'POST',
-        // **修正:** mode: 'no-cors' 移除或註解掉，因為 Apps Script Web App 通常需要 CORS 才能回傳 JSON 成功訊息
-        // mode: 'no-cors', // 如果您的 Apps Script 不需要回傳，可以保留，但建議移除以接收回傳
-        cache: 'no-cache', // 避免快取舊請求
+        cache: 'no-cache',
         headers: {
-             // **修正:** 改用 'text/plain' 傳送純字串，讓 Apps Script 端更容易解析
-             // 'Content-Type': 'application/json',
-            'Content-Type': 'text/plain;charset=utf-8', // Apps Script 的 e.postData.contents 更容易處理純文字
+            'Content-Type': 'text/plain;charset=utf-8'
         },
-        // **修正:** 直接使用傳入的 jsonData 字串作為 body
-        body: jsonData
+        body: JSON.stringify(payload)
     })
     .then(function(response) {
-        // 即使是 no-cors, fetch 也不會拋出錯誤，而是返回一個 opaque response
-        // 如果移除 no-cors，這裡可以檢查 response.ok
-        if (response.ok) {
-            return response.json(); // 嘗試解析 Apps Script 回傳的 JSON
+        if (!response.ok) {
+            throw new Error('HTTP ' + response.status);
         }
-        // 如果 fetch 失敗 (網路問題或 CORS 問題)
-        // 嘗試從 response 讀取文字錯誤訊息 (如果有的話)
-        return response.text().then(text => {
-             throw new Error('Network response was not ok. Status: ' + response.status + ' Body: ' + text);
-        });
+        return response.json();
     })
     .then(function(result) {
-        // Apps Script 成功回傳 JSON
         if (result && result.success) {
-            console.log('Google Drive Upload Success:', result.fileName || 'Unknown Filename');
+            console.log('Upload success:', result.fileName || '(unnamed)');
         } else {
-            // Apps Script 回傳了 JSON 但 success 為 false 或格式不對
-            throw new Error(result ? result.message : 'Unknown upload error from script');
+            throw new Error(result ? result.message : 'unknown error');
         }
     })
     .catch(function(error) {
-        // 捕捉 fetch 本身的錯誤 或 then 中拋出的錯誤
-        console.error('Google Drive Upload Failed:', error.message);
-        // 您可以在這裡加入一個給使用者的溫和提示，例如在頁面某處顯示一個小小的錯誤圖示
-        // 但由於是 "Silent" 模式，避免使用 alert()
+        console.error('Upload failed:', error.message);
     });
 }
 
@@ -2310,6 +2368,9 @@ function uploadToGoogleDrive_Silent(jsonData) { // jsonData 應該已經是字�
                 document.getElementById('assessmentDate').valueAsDate = new Date();
                 document.getElementById('informantName').value = '';
                 document.getElementById('informantRelation').value = '';
+                // 同意狀態不得沿用到下一位受試者
+                uploadConsent = { agreed: false, agreedAt: null, noticeVersion: null };
+                document.getElementById('consentUpload').checked = false;
                 updateProgress();
                 window.scrollTo(0, 0);
             }
