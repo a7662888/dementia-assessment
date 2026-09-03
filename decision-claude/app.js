@@ -149,8 +149,9 @@
     return items.map(function (it) {
       if (it.type === 'choice') return renderChoice(it);
       if (it.type === 'number') return renderNumber(it);
-      if (it.type === 'likert5') return renderScale(it, it.labels || labels);
-      if (it.type === 'likert4') return renderScale(it, labels);
+      if (it.type === 'likert5' || it.type === 'likert4' || it.type === 'likert3') {
+        return renderScale(it, it.labels || labels);
+      }
       return null;
     });
   }
@@ -187,7 +188,7 @@
       sec.intro ? h('p', { class: 'note', text: sec.intro }) : null,
       h('form', { onsubmit: function (e) { e.preventDefault(); } }, [
         frag(renderItems(sec.items || [], labels)),
-        sec.items2 ? frag(renderItems(sec.items2, null)) : null
+        sec.items2 ? frag(renderItems(sec.items2, labels)) : null
       ]),
       actions([
         h('button', { id: 'nextBtn', class: 'btn btn--primary', type: 'button',
@@ -272,6 +273,8 @@
         h('p', { html: '它能做的是：讓您看見<strong>自己身上有哪些風險因子、各自的權重多大、哪些還能改變</strong>。真正有用的是下一頁的內容。' })
       ]),
 
+      referenceBlock(res),
+
       h('h2', { text: '逐項明細' }),
       h('div', { class: 'tbl-scroll' }, [
         h('table', {}, [
@@ -314,6 +317,27 @@
     return parts.join('');
   }
 
+  /* 與已發表社群樣本的相對位置。比理論範圍有意義，但必須講清楚它不是台灣常模。 */
+  function referenceBlock(res) {
+    var R2 = res.reference, REF = window.COGDRISK.reference;
+    var higher = res.total > R2.mean;
+    return h('div', { class: 'card' }, [
+      h('h3', { text: '和真實人群比起來呢？', style: 'margin-top:0' }),
+      h('p', { html:
+        '在一份 ' + R2.n + ' 人的社群成人樣本中，CogDrisk 短版分數平均為 <strong>' + R2.mean +
+        '</strong>（標準差 ' + R2.sd + '），實際落在 ' + R2.min + ' 到 ' + R2.max + ' 之間。' +
+        '您的 <strong>' + fmt(res.total) + '</strong> 分' +
+        (higher ? '高於' : '低於或等於') + '該樣本的平均，大約在第 <strong>' + R2.percentile + '</strong> 百分位附近。' }),
+      !R2.withinObserved ? h('p', { class: 'note', text:
+        '您的分數落在該樣本實際觀察範圍（' + R2.min + ' 到 ' + R2.max + '）之外，' +
+        '所以上面的百分位只能當作方向性的參考。' }) : null,
+      h('p', { class: 'q__help', text: REF.note }),
+      h('p', { class: 'q__help', text:
+        '百分位是以常態分布近似換算的，原始分數不必然呈常態；而且分數高低不等於疾病風險高低，' +
+        '這個工具沒有發表分數與發病率的對照。' })
+    ]);
+  }
+
   function assumptionsBlock(res) {
     if (!res.assumptionRows.length) return null;
     return h('details', {}, [
@@ -337,7 +361,8 @@
     var s = res.subscales, items = [];
     if (s.bmi) items.push(['BMI', s.bmi.bmi.toFixed(1)]);
     if (s.isi) items.push(['失眠嚴重度 ISI', s.isi.total + ' / 28（' + s.isi.band + '）']);
-    if (s.cesd) items.push(['憂鬱症狀 CES-D-10', s.cesd.total + ' / 30' + (s.cesd.positive ? '（達 ≥10 之閾值）' : '（未達閾值）')]);
+    if (s.cesd) items.push(['憂鬱症狀 CES-D-10', s.cesd.total + ' / 30' + (s.cesd.positive ? '（達 ≥8 之切分點）' : '（未達切分點）')]);
+    if (s.ucla) items.push(['孤獨感 UCLA-3', s.ucla.total + ' / 9' + (s.ucla.positive ? '（達 ≥6 之切分點）' : '（未達切分點）')]);
     if (s.cognitive) items.push(['動腦活動', s.cognitive.total + ' / 24']);
     items.push(['每週中高強度活動', s.mvpa + ' 分鐘' + (s.mvpa >= 150 ? '（已達建議量）' : '（未達 150 分鐘）')]);
     return h('details', {}, [
@@ -365,7 +390,7 @@
     /* 動腦活動只要不是最高組就給建議：中間組仍有往上的空間，
        不必等到落在最低組才提醒。 */
     want('education', res.subscales.cognitive && res.subscales.cognitive.tier !== 'highest');
-    want('socialIsolation', a.lonely === 'yes' || a.socialContact === 'rarely');
+    want('socialIsolation', (by.loneliness && by.loneliness.modifiable) || a.socialContact === 'rarely');
     want('depression', by.depression && by.depression.modifiable);
     want('tbi', a.tbi === 'lost' || a.tbi === 'dazed');
     want('airPollution', a.airPollution === 'some' || a.airPollution === 'high');

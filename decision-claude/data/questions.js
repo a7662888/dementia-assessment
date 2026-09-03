@@ -140,18 +140,23 @@ window.QUESTIONS = {
       ]
     },
 
-    /* ---------------- 社交 ---------------- */
-    { id: 'social', title: '社交', items: [
-      { id: 'lonely', type: 'choice', scores: true, label: '整體而言，您會覺得孤單嗎？',
-        help: 'CogDrisk 計分採用的是主觀孤獨感，而不是社交活動的次數。',
-        options: [ { value: 'yes', label: '會' }, { value: 'no', label: '不會' } ] },
-      { id: 'socialContact', type: 'choice', scores: false, label: '您多久與家人或朋友面對面往來一次？',
-        options: [
-          { value: 'weekly', label: '每週至少一次' },
-          { value: 'monthly', label: '大約每月一次' },
-          { value: 'rarely', label: '幾個月一次或更少' }
-        ] }
-    ]},
+    /* ---------------- 社交（UCLA 三題版孤獨感量表） ---------------- */
+    { id: 'social', title: '社交與陪伴',
+      intro: 'CogDrisk 計分採用的是主觀孤獨感，而不是社交活動的次數。以下三題為三題版 UCLA 孤獨感量表。',
+      scaleLabels: ['幾乎不會', '有時候', '經常'],
+      items: [
+        { id: 'ucla1', type: 'likert3', scores: true, label: '您多常覺得自己缺少同伴？' },
+        { id: 'ucla2', type: 'likert3', scores: true, label: '您多常覺得自己被冷落？' },
+        { id: 'ucla3', type: 'likert3', scores: true, label: '您多常覺得自己與他人疏離？' }
+      ],
+      items2: [
+        { id: 'socialContact', type: 'choice', scores: false, label: '您多久與家人或朋友面對面往來一次？',
+          options: [
+            { value: 'weekly', label: '每週至少一次' },
+            { value: 'monthly', label: '大約每月一次' },
+            { value: 'rarely', label: '幾個月一次或更少' }
+          ] }
+      ]},
 
     /* ---------------- 飲食與習慣 ---------------- */
     { id: 'habits', title: '飲食與生活習慣', items: [
@@ -189,14 +194,18 @@ window.QUESTIONS = {
 
   /* 量表計分參數 */
   scoring: {
-    isi: { items: 7, perItemMax: 4, total: 28, threshold: 15,
-      thresholdLabel: 'ISI ≥ 15 視為中重度失眠',
+    isi: { items: 7, perItemMax: 4, total: 28, threshold: 8,
+      thresholdLabel: 'ISI ≥ 8 視為閾下失眠以上',
       bands: [ { max: 7, label: '無臨床顯著失眠' }, { max: 14, label: '閾下失眠' }, { max: 21, label: '中度臨床失眠' }, { max: 28, label: '重度臨床失眠' } ] },
-    cesd10: { items: 10, perItemMax: 3, total: 30, threshold: 10, reverseItems: ['cesd5', 'cesd8'],
-      thresholdLabel: 'CES-D-10 ≥ 10 視為具憂鬱症狀' },
+    cesd10: { items: 10, perItemMax: 3, total: 30, threshold: 8, reverseItems: ['cesd5', 'cesd8'],
+      thresholdLabel: 'CES-D-10 ≥ 8 視為具憂鬱症狀（Kootar 2023 補充資料明載之 CogDrisk 切分點）' },
     cognitive: { items: 6, perItemMax: 4, total: 24,
-      tertiles: { lowest: 8, middle: 16 },
-      note: '原文未發表三分組的切分點，本站以本題組可得分數範圍（0–24）三等分：0–8 為最低、9–16 為中間、17–24 為最高。' },
+      /* 門檻依 Anstey 2024 已發表的分組比例（最低 88.4%／中間 10.8%／最高 0.8%）校準，
+         不是把 0–24 等分三份——等分會讓太多人被歸為中間組而拿到 −5 分。 */
+      bands: { middleMin: 17, highestMin: 22 },
+      note: '≤16 為最低組、17–21 為中間組、≥22 為最高組。門檻依 Anstey 2024 短版樣本的分組比例校準。' },
+    ucla3: { items: 3, perItemMin: 1, perItemMax: 3, total: 9, threshold: 6,
+      thresholdLabel: 'UCLA-3 總分 ≥ 6 視為孤獨（滿分 9）' },
     mvpa: { threshold: 150, note: 'MVPA 分鐘／週 = 高強度天數 × 每天分鐘 + 中等強度天數 × 每天分鐘。' },
     bmi: { underweight: 18.5, normal: 25, overweight: 30 }
   }

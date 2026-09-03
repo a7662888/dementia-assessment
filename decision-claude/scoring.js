@@ -59,9 +59,19 @@
     var vals = ids.map(function (i) { return ans[i]; });
     if (vals.some(function (v) { return v == null; })) return null;
     var total = sum(vals);
-    var tier = total <= S.cognitive.tertiles.lowest ? 'lowest'
-             : total <= S.cognitive.tertiles.middle ? 'middle' : 'highest';
+    var tier = total >= S.cognitive.bands.highestMin ? 'highest'
+             : total >= S.cognitive.bands.middleMin ? 'middle' : 'lowest';
     return { total: total, max: S.cognitive.total, tier: tier };
+  }
+
+  /* UCLA 三題版孤獨感量表：每題 1–3 分，總分 3–9。
+     介面上每題存 0–2，這裡加回 3 還原成已發表的 3–9 量尺。 */
+  function uclaScore(ans) {
+    var ids = ['ucla1', 'ucla2', 'ucla3'];
+    var vals = ids.map(function (i) { return ans[i]; });
+    if (vals.some(function (v) { return v == null; })) return null;
+    var total = sum(vals) + ids.length;
+    return { total: total, max: S.ucla3.total, min: ids.length, positive: total >= S.ucla3.threshold };
   }
 
   function mvpaMinutes(ans) {
@@ -186,22 +196,22 @@
         modifiable: afYes });
     }
 
-    /* 失眠（操作化假設） */
+    /* 失眠（工具已確定為 ISI，切分點仍為假設） */
     var isi = isiScore(ans);
     if (isi) {
       add({ key: 'insomnia', label: '失眠', applied: true, points: isi.positive ? W.insomnia.yes : 0,
         answer: 'ISI ' + isi.total + '／' + isi.max + '（' + isi.band + '）',
-        reason: '原表定義為「臨床診斷之失眠症」，本站以 ISI ≥ 15 代替。',
+        reason: 'CogDrisk 採 Morin 失眠嚴重度量表（ISI），但未發表切分點；本站以 ≥ 8 認定。',
         modifiable: isi.positive, isAssumption: 'insomnia' });
     }
 
-    /* 憂鬱（操作化假設） */
+    /* 憂鬱（切分點已由 Kootar 2023 補充資料確定，不再是假設） */
     var cesd = cesdScore(ans);
     if (cesd) {
       add({ key: 'depression', label: '憂鬱症狀', applied: true, points: cesd.positive ? W.depression.yes : 0,
-        answer: 'CES-D-10 ' + cesd.total + '／' + cesd.max,
-        reason: '原表定義為 CES-D（20 題版）> 20，本站採 10 題版 ≥ 10。',
-        modifiable: cesd.positive, isAssumption: 'depression' });
+        answer: 'CES-D-10 ' + cesd.total + '／' + cesd.max + (cesd.positive ? '（達 ≥8 之切分點）' : '（未達切分點）'),
+        reason: 'CogDrisk 採 CES-D 10 題版、切分點 8（Kootar 2023 補充資料 Part B 明載）。',
+        modifiable: cesd.positive });
     }
 
     /* 身體活動 */
@@ -215,7 +225,7 @@
         modifiable: !active, isProtective: active });
     }
 
-    /* 認知活動（操作化假設） */
+    /* 認知活動（分組門檻仍為假設） */
     var cog = cognitiveScore(ans);
     if (cog) {
       var tierLabel = { lowest: '最低組', middle: '中間組', highest: '最高組' }[cog.tier];
@@ -225,12 +235,13 @@
         modifiable: cog.tier === 'lowest', isProtective: cog.tier !== 'lowest', isAssumption: 'cognitiveEngagement' });
     }
 
-    /* 孤獨感 */
-    if (ans.lonely) {
-      var lonelyYes = ans.lonely === 'yes';
-      add({ key: 'loneliness', label: '孤獨感', applied: true, points: lonelyYes ? W.loneliness.lonely : 0,
-        answer: lonelyYes ? '會覺得孤單' : '不會覺得孤單',
-        reason: '原表的社交因子採用的是主觀孤獨感。', modifiable: lonelyYes });
+    /* 孤獨感（UCLA 三題版；切分點仍為假設） */
+    var ucla = uclaScore(ans);
+    if (ucla) {
+      add({ key: 'loneliness', label: '孤獨感', applied: true, points: ucla.positive ? W.loneliness.lonely : 0,
+        answer: 'UCLA-3 ' + ucla.total + '／' + ucla.max + (ucla.positive ? '（達 ≥6 之切分點）' : '（未達切分點）'),
+        reason: 'CogDrisk 採三題版 UCLA 孤獨感量表，但未發表切分點；本站以 ≥ 6 認定。',
+        modifiable: ucla.positive, isAssumption: 'loneliness' });
     }
 
     /* 魚類攝取 */
@@ -288,14 +299,30 @@
       else { swingUp += a.swing; }
     });
 
+    /* ---------- 相對於社群參考分布的位置（Anstey 2024, n=647） ----------
+     * 用 z 分數換算到常態分布的百分位，只是粗略定位：原始分數不必然常態，
+     * 且該樣本為澳洲線上社群成人，不是台灣常模。介面上會如實標示。 */
+    var REF = window.COGDRISK.reference;
+    function normCdf(z) {
+      var t = 1 / (1 + 0.2316419 * Math.abs(z));
+      var d = 0.3989423 * Math.exp(-z * z / 2);
+      var p = d * t * (0.3193815 + t * (-0.3565638 + t * (1.781478 + t * (-1.821256 + t * 1.330274))));
+      return z > 0 ? 1 - p : p;
+    }
+    var z = (total - REF.mean) / REF.sd;
+    var pct = Math.round(normCdf(z) * 100);
+    var withinObserved = total >= REF.min && total <= REF.max;
+
     return {
       rows: rows,
       total: total,
       range: { min: rangeMin, max: rangeMax },
       assumptionBand: { low: total - swingDown, high: total + swingUp },
       assumptionRows: assumptionRows,
-      subscales: { isi: isi, cesd: cesd, cognitive: cog, mvpa: mvpaMinutes(ans), bmi: b },
-      ageBand: band
+      subscales: { isi: isi, cesd: cesd, cognitive: cog, ucla: ucla, mvpa: mvpaMinutes(ans), bmi: b },
+      ageBand: band,
+      reference: { mean: REF.mean, sd: REF.sd, min: REF.min, max: REF.max, n: REF.n,
+                   z: z, percentile: Math.max(1, Math.min(99, pct)), withinObserved: withinObserved }
     };
   }
 
@@ -349,26 +376,33 @@
              positive: yes >= window.SCALES.ad8.cutoff };
   }
 
-  /* ---------- SCD-plus 特徵 ---------- */
+  /* ---------- SCD-plus 特徵 ----------
+   * 重要：資料缺漏時一律回傳 null（無法判定），絕不能因為沒作答就當成「沒有這個特徵」，
+   * 否則只填一邊的人會被系統性低估。 */
   function scdPlus(ans, ad8) {
     var p = scdsPartI(ans);
     var out = [];
     function push(id, label, met, from) { out.push({ id: id, label: label, met: met, from: from }); }
+    function yn(v) { return v === 'yes' ? true : v === 'no' ? false : null; }
 
-    push('memory', '以記憶方面的退化為主', ans.scdPlusMemory === 'yes', '本人作答');
+    push('memory', '以記憶方面的退化為主', yn(ans.scdPlusMemory), '補充題');
     push('onset60', '60 歲以後才開始出現',
       ans.scdPlusOnsetAge != null ? ans.scdPlusOnsetAge >= 60 : null, '由開始年齡推算');
-    push('within5y', '症狀在過去 5 年內出現', ans.scdPlusWithin5y === 'yes', '本人作答');
-    push('concern', '對此感到擔心', p.worry != null ? p.worry >= 3 : null, 'SCDS 第一部分 f（擔心程度 ≥ 3）');
-    push('worseThanPeers', '覺得自己比同年齡的人差', p.c === 'yes', 'SCDS 第一部分 c');
-    push('persistent', '症狀持續存在', ans.scdPlusPersistent === 'yes', '本人作答');
-    push('helpSeeking', '曾因此求助醫療', p.d === 'yes' || p.e === 'yes', 'SCDS 第一部分 d／e');
+    push('within5y', '症狀在過去 5 年內出現', yn(ans.scdPlusWithin5y), '補充題');
+    push('persistent', '症狀持續存在', yn(ans.scdPlusPersistent), '補充題');
+    push('concern', '對此感到擔心',
+      p.worry != null ? p.worry >= 3 : null, 'SCDS 第一部分 f（擔心程度 ≥ 3）');
+    push('worseThanPeers', '覺得比同年齡的人差', yn(p.c), 'SCDS 第一部分 c');
+    push('helpSeeking', '曾因此求助醫療',
+      (p.d == null && p.e == null) ? null : (p.d === 'yes' || p.e === 'yes'), 'SCDS 第一部分 d／e');
     push('informant', '親近的家人或朋友也觀察到',
-      ad8 ? ad8.total >= 1 : null, ad8 ? 'AD-8 至少一題勾選「有改變」' : '家屬尚未填寫 AD-8');
+      ad8 ? ad8.total >= 1 : null, ad8 ? 'AD-8 至少一題勾選「有改變」' : '家屬未填寫 AD-8');
 
     var met = out.filter(function (f) { return f.met === true; }).length;
+    var absent = out.filter(function (f) { return f.met === false; }).length;
     var unknown = out.filter(function (f) { return f.met === null; }).length;
-    return { features: out, met: met, unknown: unknown, of: out.length };
+    return { features: out, met: met, absent: absent, unknown: unknown,
+             assessable: met + absent, of: out.length };
   }
 
   window.SCORING = {

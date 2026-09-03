@@ -14,6 +14,21 @@ window.REFS = {
     note: '本站題目結構參考此短版（51 題）。原問卷之使用與改作須向 UNSW（Prof. Kaarin Anstey）取得授權；本站僅重新撰寫繁中題目並標註來源，未逐字重製原問卷。',
     url: 'https://www.cogdrisk.com.au/'
   },
+  anstey2024sf: {
+    label: 'Anstey 2024（CogDrisk 短版開發與同時效度）',
+    cite: 'Anstey KJ, Huque MH, Kootar S, Eramudugolla R, Li M. Development and Concurrent Validity of the Short-Form CogDrisk Dementia Risk Assessment Tool. J Prev Alzheimers Dis. 2024;11(6):1751-1758.',
+    doi: '10.14283/jpad.2024.108',
+    note: '短版與標準版的 ICC 為 0.92。本站的社群參考分布（平均 9.7、標準差 5.3、實際範圍 −2.6 至 27.9，n=647）與認知活動、失眠、憂鬱、孤獨感的分類比例均取自此文 Table 2。',
+    url: 'https://doi.org/10.14283/jpad.2024.108'
+  },
+  kootar2023: {
+    label: 'Kootar 2023（CogDrisk 四世代驗證，含變數操作化補充資料）',
+    cite: 'Kootar S, Huque MH, Eramudugolla R, et al. Validation of the CogDrisk Instrument as Predictive of Dementia in Four General Community-Dwelling Populations. J Prev Alzheimers Dis. 2023;10(3):478-487.',
+    doi: '10.14283/jpad.2023.38',
+    pmid: '37357288',
+    note: '其補充資料 Part B（Supplementary Information 1）逐項列出 CogDrisk 各風險因子的量測工具，本站據此把憂鬱的切分點定為 CES-D-10 ≥ 8，並確認失眠採 Morin 失眠嚴重度量表（ISI）、孤獨感採三題版 UCLA 量表、身體活動採 IPAQ 短版。',
+    url: 'https://doi.org/10.14283/jpad.2023.38'
+  },
   huque2023: {
     label: 'Huque 2023（風險工具比較）',
     cite: 'Huque MH, Kootar S, Eramudugolla R, et al. CogDrisk, ANU-ADRI, CAIDE, and LIBRA Risk Scores for Estimating Dementia Risk. JAMA Netw Open. 2023;6(8):e2331460.',

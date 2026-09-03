@@ -9,6 +9,33 @@
   var SC = window.SCALES, S = window.SCORING, ATT = window.ATT;
 
   function ans() { return state.answers; }
+  function filler() { return ans().scdFiller || 'both'; }
+
+  /* 依「誰來填」決定步驟順序。自填與家屬填可以二擇一，不必兩者都做。 */
+  var FLOWS = {
+    self:      ['scd-p1', 'scd-p2', 'scd-extra', 'scd-result'],
+    informant: ['ad8', 'scd-extra', 'scd-result'],
+    both:      ['scd-p1', 'scd-p2', 'scd-extra', 'ad8', 'scd-result']
+  };
+  function flow() { return FLOWS[filler()] || FLOWS.both; }
+  function stepIndex(step) { return flow().indexOf(step); }
+  function nextOf(step) {
+    var f = flow(), i = f.indexOf(step);
+    return (i >= 0 && i + 1 < f.length) ? f[i + 1] : 'scd-result';
+  }
+  function prevOf(step) {
+    var f = flow(), i = f.indexOf(step);
+    return i > 0 ? f[i - 1] : 'scd-who';
+  }
+  /* 進度條：不含結果頁 */
+  function stepProgress(step) {
+    var f = flow().filter(function (s) { return s !== 'scd-result'; });
+    return { cur: f.indexOf(step) + 1, total: f.length };
+  }
+  function prog(step) {
+    var p = stepProgress(step);
+    return progress(p.cur, p.total, '主觀認知減退評估');
+  }
 
   function yesNo(id, label, yes, no, help) {
     return h('div', { class: 'q' }, [
@@ -49,19 +76,53 @@
       redFlag(),
       h('p', { text: '「主觀認知減退」指的是自己覺得記憶或思考能力變差，但一般認知測驗還在正常範圍。它不是疾病診斷，而是一個值得留意、也值得追蹤的狀態。' }),
       h('div', { class: 'card' }, [
-        h('h3', { text: '接下來會做三件事' }),
-        h('p', { html: '<strong>一、由您本人填寫台灣主觀認知功能退化量表（SCDS）。</strong>先問六個關於整體感受的問題，再用 14 題比較「現在」與「一年前」。' }),
-        h('p', { html: '<strong>二、由最了解您日常狀況的家屬填寫 AD-8。</strong>家屬的觀察與本人的自述意義不同，兩者都需要，會分開記錄。' }),
-        h('p', { html: '<strong>三、整理 SCD-plus 特徵。</strong>這是國際上用來標示「哪些主觀認知減退比較需要留意」的一組特徵，多數可以從前兩步的答案直接推得。' })
+        h('h3', { text: '這個評估由兩份問卷組成，可以只填其中一份' }),
+        h('p', { html: '<strong>本人填寫：台灣主觀認知功能退化量表（SCDS）。</strong>先問六個關於整體感受的問題，再用 14 題比較「現在」與「一年前」。' }),
+        h('p', { html: '<strong>家屬填寫：AD-8。</strong>由最了解當事人日常狀況的家屬或照顧者填寫八題。' }),
+        h('p', { html: '<strong>兩份都填最完整</strong>，因為本人的自述與家屬的觀察意義不同，會分開記錄；但只填一份也能得到結果，系統會明確標示哪些項目因此無法判定。' }),
+        h('p', { html: '最後會整理 <strong>SCD-plus 特徵</strong>——國際上用來標示「哪些主觀認知減退比較需要留意」的一組特徵，多數可以從前面的答案直接推得。' })
       ]),
       h('p', { class: 'note', html:
         '要先說清楚：<strong>SCDS 沒有經驗證的切分點</strong>，原始論文明白指出切分點仍待縱貫研究驗證。而且在原研究中，主觀認知減退組與輕度認知障礙組的分數幾乎相同（32.86 對 32.73）。' +
         '所以本站不會告訴您「您有」或「您沒有」主觀認知減退，只會呈現您的分數落在哪裡，以及哪些特徵值得帶去門診討論。' }),
       disclaimer(),
       actions([
-        btn('開始填寫', function () { go('scd-p1'); }),
+        btn('開始填寫', function () { go('scd-who'); }),
         btn('回首頁', function () { go('home'); }, 'ghost')
       ])
+    ]);
+  }
+
+  /* ---------------- 誰來填 ---------------- */
+  function who() {
+    navNeeds = [];
+    function choose(v) { set('scdFiller', v); go(flow()[0]); }
+    return frag([
+      h('h1', { text: '這次由誰填寫？' }),
+      h('p', { text: '選擇最符合現在情況的一項。之後隨時可以回來補填另一份。' }),
+      h('div', { class: 'paths' }, [
+        h('button', { class: 'path', type: 'button', onclick: function () { choose('both'); } }, [
+          h('span', { class: 'path__kicker', text: '最完整' }),
+          h('span', { class: 'path__title', text: '本人與家屬都填' }),
+          h('span', { class: 'path__desc', text: 'SCDS（本人）＋ AD-8（家屬），八項 SCD-plus 特徵都能判定。約 15 分鐘。' }),
+          h('span', { class: 'path__go', text: '兩份都填 →' })
+        ]),
+        h('button', { class: 'path', type: 'button', onclick: function () { choose('self'); } }, [
+          h('span', { class: 'path__kicker', text: '只有本人' }),
+          h('span', { class: 'path__title', text: '我自己填' }),
+          h('span', { class: 'path__desc', text: '只填 SCDS 與補充題。「家人是否也觀察到」這一項會標為無法判定。約 10 分鐘。' }),
+          h('span', { class: 'path__go', text: '本人填寫 →' })
+        ]),
+        h('button', { class: 'path', type: 'button', onclick: function () { choose('informant'); } }, [
+          h('span', { class: 'path__kicker', text: '只有家屬' }),
+          h('span', { class: 'path__title', text: '我是家屬，替家人填' }),
+          h('span', { class: 'path__desc', text: '只填 AD-8 與補充題。三項屬於當事人主觀經驗的特徵會標為無法判定。約 5 分鐘。' }),
+          h('span', { class: 'path__go', text: '家屬填寫 →' })
+        ])
+      ]),
+      h('p', { class: 'note', text:
+        'ISTAART 立場文件指出，由親近家屬佐證的主觀認知減退，預測價值高於僅有本人自述。若情況允許，兩份都填會得到比較完整的判讀。' }),
+      actions([ btn('上一步', function () { go('scd-intro'); }, 'ghost') ])
     ]);
   }
 
@@ -70,8 +131,8 @@
     var w = SC.scds.worry;
     var needs = SC.scds.partI.map(function (q) { return 'scdsP' + q.id; }).concat(['scdsPf']);
     return frag([
-      progress(1, 4, '主觀認知減退評估'),
-      h('h1', { text: '第一部分：您對自己認知功能的整體感受' }),
+      prog('scd-p1'),
+      h('h1', { text: '您對自己認知功能的整體感受' }),
       h('p', { class: 'note', text: '這一部分請由本人填寫。' }),
       frag(SC.scds.partI.map(function (q) {
         return yesNo('scdsP' + q.id, q.q, q.yes, q.no);
@@ -88,7 +149,8 @@
             ]);
           }))
       ]),
-      actions([ nextBtn('下一部分', 'scd-p2', needs), btn('上一步', function () { go('scd-intro'); }, 'ghost') ])
+      actions([ nextBtn('下一部分', nextOf('scd-p1'), needs),
+                btn('上一步', function () { go(prevOf('scd-p1')); }, 'ghost') ])
     ]);
   }
 
@@ -96,8 +158,8 @@
   function partII() {
     var needs = SC.scds.items.map(function (it) { return 'scds' + it.n; });
     return frag([
-      progress(2, 4, '主觀認知減退評估'),
-      h('h1', { text: '第二部分：與一年前相比' }),
+      prog('scd-p2'),
+      h('h1', { text: '與一年前相比' }),
       h('p', { class: 'note', text: SC.scds.partIIIntro }),
       frag(SC.scds.items.map(function (it) {
         var id = 'scds' + it.n;
@@ -120,35 +182,42 @@
             ]))
         ]);
       })),
-      actions([ nextBtn('下一部分', 'scd-extra', needs), btn('上一步', function () { go('scd-p1'); }, 'ghost') ])
+      actions([ nextBtn('下一部分', nextOf('scd-p2'), needs),
+                btn('上一步', function () { go(prevOf('scd-p2')); }, 'ghost') ])
     ]);
   }
 
-  /* ---------------- SCD-plus 補充題 ---------------- */
+  /* ---------------- SCD-plus 補充題（自填／家屬版問法不同） ---------------- */
   function extra() {
-    var needs = ['scdPlusMemory', 'scdPlusOnsetAge', 'scdPlusWithin5y', 'scdPlusPersistent'];
+    var voice = filler() === 'informant' ? 'informant' : 'self';
+    var qs = SC.scdPlus.extraQuestions;
+    var needs = qs.map(function (q) { return q.id; });
+    var nxt = nextOf('scd-extra');
+    var nextLabel = nxt === 'ad8' ? '下一部分：家屬填寫 AD-8' : '看整理結果';
+
     return frag([
-      progress(3, 4, '主觀認知減退評估'),
-      h('h1', { text: '第三部分：症狀的樣貌' }),
-      h('p', { class: 'note', text:
-        '這四題用來補齊 SCD-plus 特徵。其餘特徵可以從您前面的作答與家屬的 AD-8 直接推得，不必重複回答。' }),
-      yesNo('scdPlusMemory', '您的困擾主要是「記憶」方面嗎？',
-        '是，主要是記憶', '不是，主要是專注力、情緒或其他方面',
-        '以記憶為主的退化，是 SCD-plus 特徵之一。'),
-      h('div', { class: 'q' }, [
-        h('label', { class: 'q__label', for: 'onsetAge', text: '這些困擾大約是從幾歲開始的？' }),
-        h('span', { class: 'q__help', text: '60 歲以後才開始，是 SCD-plus 特徵之一。若不確定，填最接近的年齡即可。' }),
-        h('div', { class: 'num' }, [
-          h('input', { type: 'number', id: 'onsetAge', inputmode: 'numeric', min: 18, max: 110,
-            value: ans().scdPlusOnsetAge != null ? ans().scdPlusOnsetAge : '',
-            oninput: function (e) {
-              set('scdPlusOnsetAge', e.target.value === '' ? undefined : Number(e.target.value)); navRefresh(); } }),
-          h('span', { text: '歲' })
-        ])
-      ]),
-      yesNo('scdPlusWithin5y', '這些困擾是在過去 5 年內出現的嗎？', '是', '不是，更久以前就有了'),
-      yesNo('scdPlusPersistent', '這些困擾是持續存在的嗎？', '是，持續存在', '不是，只是偶爾'),
-      actions([ nextBtn('下一部分：家屬填寫', 'ad8', needs), btn('上一步', function () { go('scd-p2'); }, 'ghost') ])
+      prog('scd-extra'),
+      h('h1', { text: '症狀的樣貌' }),
+      h('p', { class: 'note', text: voice === 'informant'
+        ? '請就您觀察到的情況作答。這幾題用來補齊 SCD-plus 特徵。'
+        : '這幾題用來補齊 SCD-plus 特徵。其餘特徵可以從您前面的作答直接推得，不必重複回答。' }),
+      frag(qs.map(function (q) {
+        var w = q[voice];
+        if (q.type === 'yesno') return yesNo(q.id, w.q, w.yes, w.no, q.help);
+        return h('div', { class: 'q' }, [
+          h('label', { class: 'q__label', for: 'f_' + q.id, text: w.q }),
+          q.help ? h('span', { class: 'q__help', text: q.help }) : null,
+          h('div', { class: 'num' }, [
+            h('input', { type: 'number', id: 'f_' + q.id, inputmode: 'numeric', min: 18, max: 110,
+              value: ans()[q.id] != null ? ans()[q.id] : '',
+              oninput: function (e) {
+                set(q.id, e.target.value === '' ? undefined : Number(e.target.value)); navRefresh(); } }),
+            h('span', { text: '歲' })
+          ])
+        ]);
+      })),
+      actions([ nextBtn(nextLabel, nxt, needs),
+                btn('上一步', function () { go(prevOf('scd-extra')); }, 'ghost') ])
     ]);
   }
 
@@ -156,8 +225,8 @@
   function ad8() {
     var needs = SC.ad8.items.map(function (_, i) { return 'ad8_' + i; });
     return frag([
-      progress(4, 4, '主觀認知減退評估'),
-      h('h1', { text: '第四部分：家屬版 AD-8' }),
+      prog('ad8'),
+      h('h1', { text: '家屬版 AD-8' }),
       h('p', { class: 'note', text: SC.ad8.intro }),
       h('div', { class: 'card card--flat' },
         SC.ad8.notes.map(function (t) { return h('p', { class: 'q__help', text: '· ' + t }); })),
@@ -176,7 +245,8 @@
         ]);
       })),
       h('p', { class: 'q__help', text: SC.ad8.scoring }),
-      actions([ nextBtn('看整理結果', 'scd-result', needs), btn('上一步', function () { go('scd-extra'); }, 'ghost') ])
+      actions([ nextBtn('看整理結果', nextOf('ad8'), needs),
+                btn('上一步', function () { go(prevOf('ad8')); }, 'ghost') ])
     ]);
   }
 
@@ -202,12 +272,23 @@
 
     function v(x) { return x ? (x.complete ? x.raw : x.prorated) : null; }
 
+    var f = filler();
+    var fillerLabel = { self: '本人填寫', informant: '家屬填寫', both: '本人與家屬都填寫' }[f];
+
     return frag([
       h('h1', { text: '整理結果' }),
-      h('p', { text: '以下把三份問卷的結果整理成可以直接帶去門診的摘要。請注意：這是整理，不是判讀，更不是診斷。' }),
+      h('p', { text: '以下整理成可以直接帶去門診的摘要。請注意：這是整理，不是判讀，更不是診斷。' }),
+      h('p', { class: 'note', html: '本次填寫方式：<strong>' + esc(fillerLabel) + '</strong>。' +
+        esc(SC.scdPlus.coverageNotes[f] || '') }),
+      f !== 'both' ? h('div', { class: 'actions' }, [
+        btn(f === 'self' ? '補填家屬版 AD-8' : '補填本人版 SCDS', function () {
+          set('scdFiller', 'both');
+          go(f === 'self' ? 'ad8' : 'scd-p1');
+        }, 'ghost')
+      ]) : null,
 
       /* AD-8 */
-      h('h2', { text: '家屬觀察（AD-8）' }),
+      (ad || f !== 'self') ? h('h2', { text: '家屬觀察（AD-8）' }) : null,
       ad ? h('div', { class: 'card' }, [
         h('div', { class: 'score' }, [
           h('div', {}, [ h('span', { class: 'score__num', text: String(ad.total) }),
@@ -218,14 +299,14 @@
         ad.unknown ? h('p', { class: 'note', text:
           '其中有 ' + ad.unknown + ' 題回答「不知道」，依規則不計分，總分可能因此低估。' }) : null,
         h('p', { html: ad.positive
-          ? '<strong>AD-8 是本次三份問卷中，唯一有經驗證切分點的一份。</strong>達到 2 分代表建議安排進一步的臨床評估，但這是篩檢結果，不是診斷。'
+          ? '<strong>本站使用的量表中，只有 AD-8 有經驗證的切分點。</strong>達到 2 分代表建議安排進一步的臨床評估，但這是篩檢結果，不是診斷。'
           : '<strong>未達切分點不等於沒有問題。</strong>AD-8 針對的是「與過去相比的改變」，很早期或以非記憶症狀為主的變化可能不會被抓到。若本人持續有困擾，仍值得就醫評估。' }),
         h('ul', {}, SC.ad8.caveats.map(function (t) { return h('li', { class: 'q__help', text: t }); }))
-      ]) : h('p', { text: '尚未填寫。' }),
-      refLine('ad8tw'),
+      ]) : (f !== 'self' ? h('p', { text: '尚未填寫。' }) : null),
+      ad ? refLine('ad8tw') : null,
 
       /* SCDS */
-      h('h2', { text: '本人自述（SCDS）' }),
+      (sc || f !== 'informant') ? h('h2', { text: '本人自述（SCDS）' }) : null,
       sc ? frag([
         h('p', { text: '下表是您的分數，以及原始研究中三組人的平均值與標準差，供對照參考。' }),
         h('div', { class: 'tbl-scroll' }, [
@@ -252,24 +333,27 @@
           h('p', { text: '原始研究只有 175 人，且組別平均是以教育程度與擔憂量表為共變數調整後的結果。把個人分數和這些平均值比較，只能當作粗略定位。' })
         ]),
         h('ul', {}, SC.scds.caveats.map(function (t) { return h('li', { class: 'q__help', text: t }); }))
-      ]) : h('p', { text: '尚未填寫。' }),
-      refLine('tsai2021'),
+      ]) : (f !== 'informant' ? h('p', { text: '尚未填寫。' }) : null),
+      sc ? refLine('tsai2021') : null,
 
       /* SCD-plus */
       h('h2', { text: 'SCD-plus 特徵' }),
-      h('p', { text: '您目前具備 ' + sp.met + ' 項（共 ' + sp.of + ' 項）' +
-        (sp.unknown ? '，另有 ' + sp.unknown + ' 項資料不足無法判斷。' : '。') }),
+      h('p', { html: '在可以判定的 <strong>' + sp.assessable + '</strong> 項當中，您具備 <strong>' +
+        sp.met + '</strong> 項。' +
+        (sp.unknown ? '另有 ' + sp.unknown + ' 項因為這次沒有填寫對應的問卷，無法判定。' : '八項全部都能判定。') }),
+      sp.unknown ? h('p', { class: 'q__help', text:
+        '無法判定的項目一律標為「資料不足」，不會被當成「沒有這個特徵」——否則只填一邊的人會被系統性低估。' }) : null,
       h('div', { class: 'tbl-scroll' }, [
         h('table', {}, [
           h('thead', {}, [ h('tr', {}, [ h('th', { text: '特徵' }), h('th', { text: '判定' }), h('th', { text: '依據' }) ]) ]),
-          h('tbody', {}, sp.features.map(function (f) {
-            return h('tr', { class: f.met === true ? '' : 'is-muted' }, [
-              h('td', { text: f.label }),
-              h('td', {}, [ f.met === true
+          h('tbody', {}, sp.features.map(function (ft) {
+            return h('tr', { class: ft.met === true ? '' : 'is-muted' }, [
+              h('td', { text: ft.label }),
+              h('td', {}, [ ft.met === true
                 ? h('span', { class: 'tag tag--strong', text: '具備' })
-                : f.met === false ? h('span', { class: 'tag tag--off', text: '無' })
+                : ft.met === false ? h('span', { class: 'tag tag--off', text: '無' })
                 : h('span', { class: 'tag tag--thin', text: '資料不足' }) ]),
-              h('td', { class: 'q__help', text: f.from })
+              h('td', { class: 'q__help', text: ft.from })
             ]);
           }))
         ])
@@ -285,7 +369,7 @@
       actions([
         btn('列印或存成 PDF（帶去門診）', function () { window.print(); }),
         btn('了解臨床診斷會做什麼', function () { go('clinical'); }),
-        btn('修改答案', function () { go('scd-p1'); }, 'ghost'),
+        btn('修改答案', function () { go(flow()[0]); }, 'ghost'),
         btn('回首頁', function () { go('home'); }, 'ghost')
       ])
     ]);
@@ -293,15 +377,25 @@
 
   function nextSteps(ad, sp) {
     var out = [];
-    var strong = (ad && ad.positive) || sp.met >= 5;
-    if (strong) {
+    /* 只填一邊時可判定的特徵較少，因此除了絕對項數，也看「可判定項目中的比例」，
+       避免因為沒填另一份問卷而被低估。 */
+    var manyFeatures = sp.met >= 5 ||
+      (sp.assessable >= 4 && sp.met / sp.assessable >= 0.75);
+    var reasons = [];
+    if (ad && ad.positive) reasons.push('家屬版 AD-8 已達 2 分的門檻');
+    if (manyFeatures) reasons.push('在可判定的 ' + sp.assessable + ' 項 SCD-plus 特徵中具備了 ' + sp.met + ' 項');
+
+    if (reasons.length) {
       out.push(h('p', { html: '<strong>建議安排神經內科或記憶門診的評估。</strong>' +
-        (ad && ad.positive ? '家屬版 AD-8 已達 2 分的門檻' : '') +
-        (ad && ad.positive && sp.met >= 5 ? '，而且' : '') +
-        (sp.met >= 5 ? '您具備了 ' + sp.met + ' 項 SCD-plus 特徵' : '') + '。' }));
+        reasons.join('，而且') + '。' }));
     } else {
       out.push(h('p', { html: '<strong>目前沒有明確指向需要立刻就醫的訊號，但這不是「沒事」的證明。</strong>' +
         '如果困擾持續、加重，或家人開始注意到變化，請安排門診評估。' }));
+    }
+    if (sp.unknown) {
+      out.push(h('p', { class: 'note', text:
+        '這次有 ' + sp.unknown + ' 項特徵因為只填了一邊而無法判定，上面的判斷是在資料不完整的情況下做的。' +
+        '補填另一份問卷會讓判讀更完整。' }));
     }
     out.push(h('p', { text: '不論結果如何，以下三件事都值得做：' }));
     out.push(h('ul', {}, [
@@ -560,6 +654,7 @@
 
   window.SCD_VIEWS = {
     'scd-intro': intro,
+    'scd-who': who,
     'scd-p1': partI,
     'scd-p2': partII,
     'scd-extra': extra,

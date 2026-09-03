@@ -101,15 +101,40 @@ window.SCALES.ad8 = {
 window.SCALES.scdPlus = {
   ref: 'moretti2025',
   features: [
-    { id: 'memory',      label: '以記憶方面的退化為主',           source: 'scds',   ask: '您的困擾主要是「記憶」方面（而不是專注力、情緒或其他）嗎？' },
-    { id: 'onset60',     label: '60 歲以後才開始出現',             source: 'auto',   ask: null },
-    { id: 'within5y',    label: '症狀在過去 5 年內出現',           source: 'ask',    ask: '這些困擾大約是什麼時候開始的？' },
-    { id: 'concern',     label: '對此感到擔心',                    source: 'scds',   ask: null },
-    { id: 'worseThanPeers', label: '覺得自己比同年齡的人差',       source: 'scds',   ask: null },
-    { id: 'persistent',  label: '症狀持續存在，不是偶爾一下',      source: 'ask',    ask: '這些困擾是持續存在的嗎？' },
-    { id: 'helpSeeking', label: '曾因此求助醫療',                  source: 'scds',   ask: null },
-    { id: 'informant',   label: '親近的家人或朋友也觀察到',        source: 'ad8',    ask: null }
+    { id: 'memory',         label: '以記憶方面的退化為主',        needs: 'extra' },
+    { id: 'onset60',        label: '60 歲以後才開始出現',          needs: 'extra' },
+    { id: 'within5y',       label: '症狀在過去 5 年內出現',        needs: 'extra' },
+    { id: 'persistent',     label: '症狀持續存在，不是偶爾一下',   needs: 'extra' },
+    { id: 'concern',        label: '對此感到擔心',                 needs: 'self' },
+    { id: 'worseThanPeers', label: '覺得比同年齡的人差',           needs: 'self' },
+    { id: 'helpSeeking',    label: '曾因此求助醫療',               needs: 'self' },
+    { id: 'informant',      label: '親近的家人或朋友也觀察到',     needs: 'informant' }
   ],
+
+  /* 補充題：本人填與家屬填的問法不同，內容相同 */
+  extraQuestions: [
+    { id: 'scdPlusMemory', type: 'yesno',
+      self:      { q: '您的困擾主要是「記憶」方面嗎？', yes: '是，主要是記憶', no: '不是，主要是專注力、情緒或其他方面' },
+      informant: { q: '他／她的困擾主要是「記憶」方面嗎？', yes: '是，主要是記憶', no: '不是，主要是專注力、情緒或其他方面' },
+      help: '以記憶為主的退化，是 SCD-plus 特徵之一。' },
+    { id: 'scdPlusOnsetAge', type: 'age',
+      self:      { q: '這些困擾大約是從您幾歲開始的？' },
+      informant: { q: '這些困擾大約是從他／她幾歲開始的？' },
+      help: '60 歲以後才開始，是 SCD-plus 特徵之一。若不確定，填最接近的年齡即可。' },
+    { id: 'scdPlusWithin5y', type: 'yesno',
+      self:      { q: '這些困擾是在過去 5 年內出現的嗎？', yes: '是', no: '不是，更久以前就有了' },
+      informant: { q: '這些困擾是在過去 5 年內出現的嗎？', yes: '是', no: '不是，更久以前就有了' } },
+    { id: 'scdPlusPersistent', type: 'yesno',
+      self:      { q: '這些困擾是持續存在的嗎？', yes: '是，持續存在', no: '不是，只是偶爾' },
+      informant: { q: '這些困擾是持續存在的嗎？', yes: '是，持續存在', no: '不是，只是偶爾' } }
+  ],
+  /* 只填一邊時，能判定的特徵會變少——這件事要對使用者講清楚，不能讓分母悄悄縮水 */
+  coverageNotes: {
+    self: '您只填了本人的部分。「親近家人是否也觀察到」這一項需要家屬填寫 AD-8 才能判定。ISTAART 立場文件指出，由親近家屬佐證的主觀認知減退，預測價值高於僅有本人自述——若情況允許，建議請家屬也填一份。',
+    informant: '目前只有家屬填寫的部分。「對此感到擔心」「覺得比同年齡的人差」「曾因此求助醫療」這三項屬於當事人的主觀經驗，需要由本人填寫 SCDS 才能判定。',
+    both: '本人與家屬都已填寫，八項特徵都能判定。'
+  },
+
   interpretation: [
     '這些特徵是「風險加權」，不是診斷標準。具備愈多項，日後進展到輕度認知障礙或失智症的機率相對較高；但具備多項的人也可能長期維持穩定。',
     'ISTAART 立場文件指出，主觀認知減退者約有兩倍機率進展到輕度認知障礙或失智症，部分高風險世代的年進展率約為 7%（至輕度認知障礙）與 2%（至失智症）；同時也有相當比例的人長期穩定，甚至在 15 年追蹤中約 40% 症狀緩解。',
