@@ -54,17 +54,22 @@
   }
 
   var navNeeds = [];
+  /* 只有 undefined 與空字串代表「還沒作答」。
+     像 AD-8 的「不知道」這種「有意義的答案」一律視為已作答，否則使用者會卡住送不出。
+     0 也是合法答案（量表第一個選項），所以不能用 falsy 判斷。 */
+  function answered(id) {
+    var v = ans()[id];
+    return v !== undefined && v !== '';
+  }
+  function allAnswered() { return navNeeds.every(answered); }
   function navRefresh() {
     var b = document.getElementById('nextBtn');
-    if (b) b.disabled = !navNeeds.every(function (id) {
-      var v = ans()[id]; return v !== undefined && v !== null && v !== '';
-    });
+    if (b) b.disabled = !allAnswered();
   }
   function nextBtn(label, target, needs) {
     navNeeds = needs || [];
     return h('button', { id: 'nextBtn', class: 'btn btn--primary', type: 'button',
-      text: label, disabled: !navNeeds.every(function (id) {
-        var v = ans()[id]; return v !== undefined && v !== null && v !== ''; }),
+      text: label, disabled: !allAnswered(),
       onclick: function () { go(target); } });
   }
 
@@ -237,7 +242,8 @@
           h('div', { class: 'scale__opts', role: 'radiogroup', 'aria-label': t },
             SC.ad8.options.map(function (o) {
               return h('label', { class: 'scale__opt' }, [
-                h('input', { type: 'radio', name: id, checked: ans()[id] === o.value,
+                h('input', { type: 'radio', name: id, value: String(o.value),
+                  checked: ans()[id] === o.value,
                   onchange: function () { set(id, o.value); navRefresh(); } }),
                 h('span', { text: o.label })
               ]);
@@ -340,9 +346,9 @@
       h('h2', { text: 'SCD-plus 特徵' }),
       h('p', { html: '在可以判定的 <strong>' + sp.assessable + '</strong> 項當中，您具備 <strong>' +
         sp.met + '</strong> 項。' +
-        (sp.unknown ? '另有 ' + sp.unknown + ' 項因為這次沒有填寫對應的問卷，無法判定。' : '八項全部都能判定。') }),
+        (sp.unknown ? '另有 ' + sp.unknown + ' 項無法判定，各自的原因列在下表「依據」欄。' : '八項全部都能判定。') }),
       sp.unknown ? h('p', { class: 'q__help', text:
-        '無法判定的項目一律標為「資料不足」，不會被當成「沒有這個特徵」——否則只填一邊的人會被系統性低估。' }) : null,
+        '無法判定的項目一律標為「資料不足」，不會被當成「沒有這個特徵」——否則資料不齊的人會被系統性低估。' }) : null,
       h('div', { class: 'tbl-scroll' }, [
         h('table', {}, [
           h('thead', {}, [ h('tr', {}, [ h('th', { text: '特徵' }), h('th', { text: '判定' }), h('th', { text: '依據' }) ]) ]),
@@ -394,8 +400,8 @@
     }
     if (sp.unknown) {
       out.push(h('p', { class: 'note', text:
-        '這次有 ' + sp.unknown + ' 項特徵因為只填了一邊而無法判定，上面的判斷是在資料不完整的情況下做的。' +
-        '補填另一份問卷會讓判讀更完整。' }));
+        '這次有 ' + sp.unknown + ' 項特徵無法判定（原因見上表），上面的判斷是在資料不完整的情況下做的。' +
+        '補齊另一份問卷、或請填答者確認原本回答「不知道」的題目，都會讓判讀更完整。' }));
     }
     out.push(h('p', { text: '不論結果如何，以下三件事都值得做：' }));
     out.push(h('ul', {}, [

@@ -157,12 +157,14 @@
   }
 
   /* 判斷本頁是否作答完整 */
+  /* 只有 undefined 與空字串代表「還沒作答」。0 是合法答案（量表第一個選項），
+     「不知道」這類有意義的答案也算已作答——不要用 falsy 或 != null 判斷。 */
   function sectionComplete(sec) {
     var all = (sec.items || []).concat(sec.items2 || []);
     return all.every(function (it) {
       var v = state.answers[it.id];
       if (it.dependsOn && !state.answers[it.dependsOn]) return true;  // 天數為 0 時不必填分鐘
-      return v !== undefined && v !== null && v !== '';
+      return v !== undefined && v !== '';
     });
   }
 

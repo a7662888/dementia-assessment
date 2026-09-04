@@ -128,8 +128,47 @@ var ad8one = { ad8_0: 1 }; for (var j = 1; j < 8; j++) ad8one['ad8_' + j] = 0;
 check('AD-8 僅 1 題 → 未達切點', S.ad8Score(ad8one).positive, false);
 var ad8two = { ad8_0: 1, ad8_1: 1 }; for (var k = 2; k < 8; k++) ad8two['ad8_' + k] = 0;
 check('AD-8 2 題 → 達切點', S.ad8Score(ad8two).positive, true);
-var ad8unk = { ad8_0: 1, ad8_1: null }; for (var m = 2; m < 8; m++) ad8unk['ad8_' + m] = 0;
+var UNK = 'unknown';
+var ad8unk = { ad8_0: 1, ad8_1: UNK }; for (var m = 2; m < 8; m++) ad8unk['ad8_' + m] = 0;
 check('AD-8「不知道」不計分', S.ad8Score(ad8unk).total, 1);
+check('AD-8「不知道」仍算已作答', S.ad8Score(ad8unk).answered, 8);
+check('AD-8「不知道」計入 unknown 欄位', S.ad8Score(ad8unk).unknown, 1);
+check('AD-8 填滿（含不知道）視為完整', S.ad8Score(ad8unk).complete, true);
+
+console.log('\n-- 迴歸：填了「不知道」必須送得出去 --');
+/* 曾經的 bug：「不知道」的值是 null，而完成度檢查排除 null，
+   導致選了「不知道」等同未作答，下一步按鈕永遠停用。 */
+check('「不知道」的值不是 null',
+  window.SCALES.ad8.options.some(function (o) { return o.value === null; }), false);
+check('「不知道」的值是可辨識的標記',
+  window.SCALES.ad8.options.find(function (o) { return o.label === '不知道'; }).value, UNK);
+check('沒有任何選項用 null 當值',
+  window.SCALES.ad8.options.every(function (o) { return o.value !== null; }), true);
+/* 重現送出條件：只有 undefined／空字串算未作答 */
+function submittable(a) {
+  return window.SCALES.ad8.items.every(function (_, i) {
+    var v = a['ad8_' + i]; return v !== undefined && v !== '';
+  });
+}
+var ad8allUnk = {}; for (var u = 0; u < 8; u++) ad8allUnk['ad8_' + u] = UNK;
+check('八題全填「不知道」→ 可以送出', submittable(ad8allUnk), true);
+check('混合作答含「不知道」→ 可以送出', submittable(ad8unk), true);
+var ad8partial = { ad8_0: 1 };
+check('有題目沒作答 → 仍不可送出', submittable(ad8partial), false);
+
+console.log('\n-- 迴歸：全是「不知道」不可被當成「家人沒觀察到」 --');
+var spAllUnk = S.scdPlus({}, S.ad8Score(ad8allUnk));
+check('八題全「不知道」→ 家屬佐證標為資料不足',
+  spAllUnk.features.find(function (f) { return f.id === 'informant'; }).met, 'null');
+var ad8noWithUnk = { ad8_0: 0, ad8_1: UNK }; for (var w = 2; w < 8; w++) ad8noWithUnk['ad8_' + w] = 0;
+check('沒有「有改變」但有「不知道」→ 資料不足而非「無」',
+  S.scdPlus({}, S.ad8Score(ad8noWithUnk)).features.find(function (f) { return f.id === 'informant'; }).met, 'null');
+var ad8allNo = {}; for (var q = 0; q < 8; q++) ad8allNo['ad8_' + q] = 0;
+check('八題全「沒有改變」→ 明確判為「無」',
+  S.scdPlus({}, S.ad8Score(ad8allNo)).features.find(function (f) { return f.id === 'informant'; }).met, false);
+var ad8yesUnk = { ad8_0: 1, ad8_1: UNK }; for (var y = 2; y < 8; y++) ad8yesUnk['ad8_' + y] = UNK;
+check('有一題「有改變」→ 即使其餘皆不知道仍判為「具備」',
+  S.scdPlus({}, S.ad8Score(ad8yesUnk)).features.find(function (f) { return f.id === 'informant'; }).met, true);
 
 console.log('\n== SCDS ==');
 var scdsAll = {}; window.SCALES.scds.items.forEach(function (it) { scdsAll['scds' + it.n] = 5; });

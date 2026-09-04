@@ -365,14 +365,19 @@
   }
 
   /* ---------- AD-8 ---------- */
+  /* 三種狀態要分清楚：
+   *   undefined  = 還沒作答
+   *   'unknown'  = 作答了，答案是「不知道」（依量表規則不計分）
+   *   0 / 1      = 明確的否 / 是
+   * 早期版本用 null 表示「不知道」，和「還沒作答」撞在一起，導致填了「不知道」就送不出。 */
   function ad8Score(ans) {
     var vals = window.SCALES.ad8.items.map(function (_, i) { return ans['ad8_' + i]; });
     if (vals.every(function (v) { return v === undefined; })) return null;
     var yes = vals.filter(function (v) { return v === 1; }).length;
-    var unknown = vals.filter(function (v) { return v === null; }).length;
+    var unknown = vals.filter(function (v) { return v === 'unknown'; }).length;
     var answered = vals.filter(function (v) { return v !== undefined; }).length;
     return { total: yes, unknown: unknown, answered: answered,
-             complete: answered === 8,
+             complete: answered === window.SCALES.ad8.items.length,
              positive: yes >= window.SCALES.ad8.cutoff };
   }
 
@@ -395,8 +400,20 @@
     push('worseThanPeers', '覺得比同年齡的人差', yn(p.c), 'SCDS 第一部分 c');
     push('helpSeeking', '曾因此求助醫療',
       (p.d == null && p.e == null) ? null : (p.d === 'yes' || p.e === 'yes'), 'SCDS 第一部分 d／e');
-    push('informant', '親近的家人或朋友也觀察到',
-      ad8 ? ad8.total >= 1 : null, ad8 ? 'AD-8 至少一題勾選「有改變」' : '家屬未填寫 AD-8');
+    /* 只要有一題「有改變」就成立；但若一題都沒有、卻還有「不知道」，
+       那些「不知道」裡可能就藏著「有改變」，因此是無法判定，不能算成「無」。 */
+    var informantMet = null, informantFrom = '家屬未填寫 AD-8';
+    if (ad8) {
+      if (ad8.total >= 1) {
+        informantMet = true; informantFrom = 'AD-8 至少一題勾選「有改變」';
+      } else if (ad8.unknown > 0) {
+        informantMet = null;
+        informantFrom = 'AD-8 沒有任何一題勾選「有改變」，但有 ' + ad8.unknown + ' 題為「不知道」，無法確定';
+      } else {
+        informantMet = false; informantFrom = 'AD-8 沒有任何一題勾選「有改變」';
+      }
+    }
+    push('informant', '親近的家人或朋友也觀察到', informantMet, informantFrom);
 
     var met = out.filter(function (f) { return f.met === true; }).length;
     var absent = out.filter(function (f) { return f.met === false; }).length;
