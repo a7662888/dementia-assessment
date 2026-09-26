@@ -490,42 +490,37 @@
     return frag([
       h('h1', { text: '記憶與腦健康：先看懂現在的位置，再決定下一步' }),
       h('p', { text: '這個工具幫您依目前的狀況，找到適合的評估路徑：風險預測與預防、主觀認知減退的釐清，或是已經在考慮生物標記檢查與新藥治療時的決策準備。' }),
+      h('p', { class: 'promise', text: '您的作答只留在這台裝置的瀏覽器分頁，不會送出或上傳；關閉分頁就清除。' }),
 
       redFlag(),
 
       h('h2', { text: '請選擇比較接近您的情況' }),
       h('div', { class: 'paths' }, [
         h('button', { class: 'path', type: 'button', onclick: function () { state.path = 'risk'; go('risk:0'); } }, [
-          h('span', { class: 'path__kicker', text: '路徑一' }),
           h('span', { class: 'path__title', text: '目前沒有明顯的認知困擾' }),
           h('span', { class: 'path__desc', text: '包含認知正常，或近期做過篩檢結果正常者。可以了解自己有哪些風險因子、各自權重多大，並取得依證據排序的預防重點。約 10 分鐘。' }),
           h('span', { class: 'path__go', text: '開始風險評估與預防建議 →' })
         ]),
         h('button', { class: 'path', type: 'button', onclick: function () { state.path = 'scd'; go('scd-intro'); } }, [
-          h('span', { class: 'path__kicker', text: '路徑二' }),
           h('span', { class: 'path__title', text: '自己覺得記憶或思考變差了' }),
-          h('span', { class: 'path__desc', text: '由本人填寫台灣主觀認知功能退化量表（SCDS），家屬另填 AD-8，再依 SCD-plus 特徵整理出可以帶去門診討論的摘要。約 15 分鐘。' }),
+          h('span', { class: 'path__desc', text: '您自己填一份記憶與思考的自評問卷，家屬另填一份八題的觀察表，最後整理成一頁可以帶去門診和醫師討論的摘要。約 15 分鐘。' }),
           h('span', { class: 'path__go', text: '開始主觀認知減退評估 →' })
         ])
       ]),
 
       h('h2', { text: '已經在考慮檢查或治療？' }),
-      h('div', { class: 'paths' }, [
-        h('button', { class: 'path', type: 'button', onclick: function () { go('clinical'); } }, [
-          h('span', { class: 'path__kicker', text: '延伸' }),
+      h('div', { class: 'paths paths--minor' }, [
+        h('button', { class: 'path path--minor', type: 'button', onclick: function () { go('clinical'); } }, [
           h('span', { class: 'path__title', text: '臨床診斷會做些什麼' }),
           h('span', { class: 'path__desc', text: '門診會問什麼、做哪些認知測驗與檢查，以及您可以先準備什麼。' }),
           h('span', { class: 'path__go', text: '了解診斷流程 →' })
         ]),
-        h('button', { class: 'path', type: 'button', onclick: function () { go('att'); } }, [
-          h('span', { class: 'path__kicker', text: '延伸' }),
-          h('span', { class: 'path__title', text: '生物標記與新藥治療的決策' }),
-          h('span', { class: 'path__desc', text: '已確認或懷疑早期阿茲海默症時，要不要做 amyloid PET／CSF、要不要接受抗類澱粉蛋白單株抗體治療（ATT）。醫病共享決策輔助工具。' }),
-          h('span', { class: 'path__go', text: '進入 SDM 決策工具 →' })
+        h('button', { class: 'path path--minor', type: 'button', onclick: function () { go('att'); } }, [
+          h('span', { class: 'path__title', text: '檢查與新藥治療的決策' }),
+          h('span', { class: 'path__desc', text: '已確認或懷疑是早期阿茲海默症時，幫您整理要不要做類澱粉蛋白檢查（正子造影或腦脊髓液），以及要不要接受新一代抗類澱粉蛋白藥物治療，方便和醫師一起決定。' }),
+          h('span', { class: 'path__go', text: '進入治療決策輔助 →' })
         ])
       ]),
-
-      disclaimer(),
 
       h('details', {}, [
         h('summary', { text: '這個網站的證據來源與方法' }),

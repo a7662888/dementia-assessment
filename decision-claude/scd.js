@@ -107,19 +107,16 @@
       h('p', { text: '選擇最符合現在情況的一項。之後隨時可以回來補填另一份。' }),
       h('div', { class: 'paths' }, [
         h('button', { class: 'path', type: 'button', onclick: function () { choose('both'); } }, [
-          h('span', { class: 'path__kicker', text: '最完整' }),
-          h('span', { class: 'path__title', text: '本人與家屬都填' }),
+          h('span', { class: 'path__title' }, ['本人與家屬都填 ', h('span', { class: 'tag tag--strong', text: '資訊最完整' })]),
           h('span', { class: 'path__desc', text: 'SCDS（本人）＋ AD-8（家屬），八項 SCD-plus 特徵都能判定。約 15 分鐘。' }),
           h('span', { class: 'path__go', text: '兩份都填 →' })
         ]),
         h('button', { class: 'path', type: 'button', onclick: function () { choose('self'); } }, [
-          h('span', { class: 'path__kicker', text: '只有本人' }),
           h('span', { class: 'path__title', text: '我自己填' }),
           h('span', { class: 'path__desc', text: '只填 SCDS 與補充題。「家人是否也觀察到」這一項會標為無法判定。約 10 分鐘。' }),
           h('span', { class: 'path__go', text: '本人填寫 →' })
         ]),
         h('button', { class: 'path', type: 'button', onclick: function () { choose('informant'); } }, [
-          h('span', { class: 'path__kicker', text: '只有家屬' }),
           h('span', { class: 'path__title', text: '我是家屬，替家人填' }),
           h('span', { class: 'path__desc', text: '只填 AD-8 與補充題。三項屬於當事人主觀經驗的特徵會標為無法判定。約 5 分鐘。' }),
           h('span', { class: 'path__go', text: '家屬填寫 →' })
